@@ -1,50 +1,71 @@
 from PyQt6.QtWidgets import QTextEdit, QSplitter, QWidget, QVBoxLayout
-from .components import CodeEditor
+from .components import CodeEditor, MinimapBox
 from typing import Union
+from .core import CONSTS
+import pprint
 
 class ImageViewer(QSplitter):
     pass
 
 class EditorWidget(QSplitter):
     def __init__(self, parent, *args, **kvargs):
-        super().__init__(parent, *args, **kvargs)    
+        super().__init__(parent)    
         self._editors = {
-            "names":{},
-            "ids":{},
-            "mains":{},
-            "mirrors":{}
+            "names":{},  # the names of the editors (their identification)
+            "ids":{},    # ids to help to search for an editor
+            "childs":{}, # the editors who has mirrors(childs)
+            "mirrors":{} # the editors who are mirrors
         }
+        self._components = {
+            "minimaps":{}
+        }
+
+        self._kvargs = kvargs
         self._id_editor = 0
         self._build()
     
     def _build(self):
+        """
+
+        """
         self.new_editor("main")
         self.new_editor("mirror", mirror=True, mirror_of = "main")
+        pprint.pprint(self._editors)
     
     def new_editor(self, name:str, mirror:bool = False, mirror_of:Union[str, int]=None):
+        """
+
+        """
         editor = CodeEditor(self)
+        minimap = MinimapBox(self)
         self._editors["names"][name] = editor
         self._editors["ids"][self._id_editor] = editor
+        self._components["minimaps"][name] = minimap
         if mirror:
             if (
                 mirror_of in self._editors["names"].keys()
                 or
                 mirror_of in self._editors["ids"].keys()
-            ):
-                if isinstance(mirror_of, int):
-                    main = self._editors["ids"][mirror_of]
-                elif isinstance(mirror_of, str):
-                    main = self._editors["names"][mirror_of]
-
-                if mirror_of in self._editors["mains"].keys():
-                    self._editors["mains"][mirror_of].append(editor)
-                    
-                else:
-                    self._editors["mains"][mirror_of] = [editor]
-                self._editors["mirrors"][name] = editor
-
+            ):  
+                self.create_mirror(editor, name, mirror_of)
+            
         self.addWidget(editor)
+        self.addWidget(minimap)
         self._id_editor += 1
+
+    def create_mirror(self, editor, name, mirror_of):
+            
+            if isinstance(mirror_of, int):
+                main = self._editors["ids"][mirror_of]
+            elif isinstance(mirror_of, str):
+                main = self._editors["names"][mirror_of]
+
+            if mirror_of in self._editors["childs"].keys():
+                self._editors["childs"][mirror_of].append(editor)
+            else:
+                self._editors["childs"][mirror_of] = [editor]
+            self._editors["mirrors"][name] = main
+
 
 class Chelly(QWidget):
     def __init__(self, parent, file:str = None, text:str = None):
@@ -63,10 +84,11 @@ class Chelly(QWidget):
     
     def _build(self):
         self.container_main = QVBoxLayout(self)
-        self.container_main.setContentsMargins(left=0, top=0, right=0, bottom = 0)
+        self.container_main.setContentsMargins(0, 0, 0, 0)
         self.setLayout(self.container_main)
 
-        self.editorview = EditorWidget(self)
+        self.editorview = EditorWidget(self, file = self._file, text = self._text)
+        self.container_main.addWidget(self.editorview)
     
     def is_mirror(self, editor):
         pass
