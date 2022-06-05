@@ -66,6 +66,8 @@ class EditorWidget(QSplitter):
                 self._editors["childs"][mirror_of] = [editor]
             self._editors["mirrors"][name] = main
 
+            editor.chelly_editor.setDocument(main.chelly_editor.document())
+
 
 class Chelly(QWidget):
     def __init__(self, parent, file:str = None, text:str = None):
