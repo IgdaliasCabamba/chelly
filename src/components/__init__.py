@@ -1,4 +1,5 @@
 from .april import *
+from .generic_editor import *
 from .breadcrumbs import *
 from .code_editor import *
 from .completions import *
