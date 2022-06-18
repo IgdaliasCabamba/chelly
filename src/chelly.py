@@ -1,4 +1,6 @@
 from PyQt6.QtWidgets import QTextEdit, QSplitter, QWidget, QVBoxLayout
+
+from src.components.code_editor import ChellyEditor
 from .components import CodeEditor, MinimapBox
 from typing import Union
 from .core import CONSTS
@@ -32,7 +34,7 @@ class EditorWidget(QSplitter):
         self.new_editor("mirror", mirror=True, mirror_of = "main")
         pprint.pprint(self._editors)
     
-    def new_editor(self, name:str, mirror:bool = False, mirror_of:Union[str, int]=None):
+    def new_editor(self, name:str, mirror:bool = False, mirror_of:Union[str, int]=None) -> CodeEditor:
         """
 
         """
@@ -51,9 +53,11 @@ class EditorWidget(QSplitter):
             
         self.addWidget(editor)
         self.addWidget(minimap)
+        self.build_editor(editor)
         self._id_editor += 1
+        return editor
 
-    def create_mirror(self, editor, name, mirror_of):
+    def create_mirror(self, editor:CodeEditor, name:str, mirror_of:Union[int, str])-> None:
             
             if isinstance(mirror_of, int):
                 main = self._editors["ids"][mirror_of]
@@ -67,6 +71,16 @@ class EditorWidget(QSplitter):
             self._editors["mirrors"][name] = main
 
             editor.chelly_editor.setDocument(main.chelly_editor.document())
+    
+    def build_editor(self, editor) -> None:
+        print(self._kvargs)
+        editor.editor.setPlainText(self._kvargs["text"])
+    
+    def get_editor(self, name:str, editor:bool=True) -> Union[CodeEditor, ChellyEditor]:
+        if name in self._editors["names"].keys():
+            if editor:
+                return self._editors["names"][name].editor
+            return self._editors["names"][name]
 
 
 class Chelly(QWidget):
@@ -121,5 +135,3 @@ class Chelly(QWidget):
 
     def set_cursor_pos(self, editor):
         pass
-
-    

@@ -84,13 +84,17 @@ class ChellyEditor(QPlainTextEdit):
             bottom = top + int(self.blockBoundingRect(block).height())
             block_nbr = block.blockNumber()
         
-        pprint.pprint(self._visible_blocks)
+        #pprint.pprint(self._visible_blocks)
 
 class CodeEditor(QWidget):
     def __init__(self, parent):
         super().__init__(parent)
 
         self.build()
+    
+    @property
+    def editor(self):
+        return self.chelly_editor
     
     def build(self):
         self.container = QVBoxLayout(self)
