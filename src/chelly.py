@@ -1,4 +1,4 @@
-from PyQt6.QtWidgets import QTextEdit, QSplitter, QWidget, QVBoxLayout
+from PySide6.QtWidgets import QTextEdit, QSplitter, QWidget, QVBoxLayout
 
 from src.components.code_editor import ChellyEditor
 from .components import CodeEditor, MinimapBox

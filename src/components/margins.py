@@ -1,6 +1,6 @@
-from PyQt6.QtGui import QFont, QTextCursor, QColor, QPainter
-from PyQt6.QtWidgets import QWidget
-from PyQt6.QtCore import Qt, QSize, QRect
+from PySide6.QtGui import QFont, QTextCursor, QColor, QPainter
+from PySide6.QtWidgets import QWidget
+from PySide6.QtCore import Qt, QSize, QRect
 
 class LineNumberMargin(QWidget):
     """Line Number Widget for Editor based 
@@ -79,3 +79,12 @@ class LineNumberMargin(QWidget):
 
         if rect.contains(self.editor.viewport().rect()):
             self.update_line_number_area_width(0)
+
+class SymbolMargin:
+    pass
+
+class TextMargin:
+    pass
+
+class FoldingMargin:
+    pass

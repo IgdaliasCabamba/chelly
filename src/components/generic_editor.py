@@ -1,11 +1,11 @@
-from PyQt6.QtWidgets import QTextEdit, QPlainTextEdit
-from PyQt6.QtCore import Qt, pyqtSignal
-from PyQt6.QtGui import QColor, QTextFormat
+from PySide6.QtWidgets import QTextEdit, QPlainTextEdit
+from PySide6.QtCore import Qt, Signal
+from PySide6.QtGui import QColor, QTextFormat
 from .margins import LineNumberMargin
 
 class GenericCodeEditor(QPlainTextEdit):
     
-    on_resized = pyqtSignal()
+    on_resized = Signal()
 
     def __init__(self, parent):
         super().__init__(parent)

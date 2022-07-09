@@ -1,6 +1,7 @@
-from PyQt6.QtWidgets import QPlainTextEdit, QWidget, QScrollBar
-from PyQt6.QtCore import Qt
+from PySide6.QtWidgets import QPlainTextEdit, QWidget, QScrollBar
+from PySide6.QtCore import Qt
 from ..core import CONSTS
+from ..functions import TextFunctions
 
 class ScrollBar(QScrollBar):
     def __init__(self, editor, parent) -> None:
@@ -39,10 +40,10 @@ class SliderArea(QWidget):
         first_visible_line = self.minimap.editor.firstVisibleBlock()
 
         pos_parent = self.mapToParent(event.pos())
-        position = self.minimap.SendScintilla(
-            QsciScintilla.SCI_POSITIONFROMPOINT, pos_parent.x(), pos_parent.y()
+        line = (
+            TextFunctions(self.minimap.editor)
+            .get_line_nbr_from_position(pos_parent.y())
         )
-        line = self.minimap.SendScintilla(QsciScintilla.SCI_LINEFROMPOSITION, position)
         self.line_on_visible_area = (line - first_visible_line) + 1
 
     def mouseReleaseEvent(self, event):
@@ -58,12 +59,11 @@ class SliderArea(QWidget):
 
     def leaveEvent(self, event):
         super().leaveEvent(event)
-        self.change_transparency(iconsts.MINIMAP_SLIDER_OPACITY_MID)
+        self.change_transparency(CONSTS.MINIMAP_SLIDER_OPACITY_MID)
 
     def enterEvent(self, event):
         super().enterEvent(event)
-        self.change_transparency(iconsts.MINIMAP_SLIDER_OPACITY_MAX)
-
+        self.change_transparency(CONSTS.MINIMAP_SLIDER_OPACITY_MAX)
 
 
 class MiniMap(QPlainTextEdit):

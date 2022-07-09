@@ -1,22 +1,33 @@
-from PyQt6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QPlainTextEdit, QTextEdit
-from PyQt6.QtGui import QColor, QTextFormat
-from PyQt6.QtCore import Qt, QRect, pyqtSignal
+import imp
+from PySide6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QPlainTextEdit, QTextEdit
+from PySide6.QtGui import QColor, QTextFormat, QTextOption, QPainter, QFont, QFontMetrics
+from PySide6.QtCore import Qt, QRect, Signal
 from .breadcrumbs import Breadcrumb
 from .margins import LineNumberMargin
+from .widgets_manager import MarginManager
 from .generic_editor import GenericCodeEditor
 import pprint
 
 class ChellyEditor(QPlainTextEdit):
     
-    on_resized = pyqtSignal()
-    on_painted = pyqtSignal(object)
+    on_resized = Signal()
+    on_painted = Signal(object)
 
     def __init__(self, parent):
         super().__init__(parent)
+        self._config()
         self.cursorPositionChanged.connect(self.highlight_current_line)
         self.highlight_current_line()
-        self.number_bar = LineNumberMargin(self)
+        
+        self.margins = MarginManager(self)
+        self.number_bar = self.margins.append(LineNumberMargin)
+
         self._visible_blocks = list()
+
+    def _config(self):
+        self.setTabStopDistance(QFontMetrics(self.font()).horizontalAdvance(' ') * 4)
+
+        self.setWordWrapMode(QTextOption.WrapMode.NoWrap)
     
     @property
     def visible_blocks(self):
@@ -38,6 +49,19 @@ class ChellyEditor(QPlainTextEdit):
         self._update_visible_blocks(event)
         super().paintEvent(event)
         self.on_painted.emit(event)
+        
+        with QPainter(self.viewport()) as painter:
+            font = self.font()
+            font_metrics = QFontMetrics(font)
+            self.font_width = font_metrics.horizontalAdvance(' ') * 4.5
+            self.font_height = font_metrics.height()
+
+            longest_line = 20
+            from_top = 0
+            painter.setPen(QColor(0, 100, 100))
+            for i in range(0, longest_line):
+                the_x = self.font_width + (i * self.font_width)
+                painter.drawLine(the_x, from_top, the_x, from_top + self.font_height)
     
     def resizeEvent(self, event) -> None:
         super().resizeEvent(event)
