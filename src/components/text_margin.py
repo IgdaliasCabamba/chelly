@@ -1,0 +1,2 @@
+class TextMargin:
+    pass

@@ -1,0 +1,2 @@
+class SymbolMargin:
+    pass
