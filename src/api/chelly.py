@@ -1,10 +1,7 @@
-from PySide6.QtCore import QRect, Qt, Signal
-from PySide6.QtGui import (QColor, QFont, QFontMetrics, QPainter, QTextFormat,
-                           QTextOption)
-from PySide6.QtWidgets import (QHBoxLayout, QPlainTextEdit, QTextEdit,
-                               QVBoxLayout, QWidget)
-
+from PySide6.QtCore import Signal
+from PySide6.QtWidgets import QPlainTextEdit
 from ..managers import FeaturesManager, LanguagesManager, PanelsManager
+from ..core import Properties, LexerExceptions, PropertiesExceptions, PanelsExceptions, FeaturesExceptions
 
 
 class ChellyEditor(QPlainTextEdit):
@@ -14,61 +11,78 @@ class ChellyEditor(QPlainTextEdit):
 
     def __init__(self, parent):
         super().__init__(parent)
-        self._config()
-
         self._panels = PanelsManager(self)
         self._features = FeaturesManager(self)
+        self._lexer = LanguagesManager(self)
+        self._properties = Properties(self)
 
         self._visible_blocks = list()
+
+    @property
+    def lexer(self) -> LanguagesManager:
+        return self._lexer
+
+    @lexer.setter
+    def lexer(self, new_manager: LanguagesManager) -> LanguagesManager:
+        if new_manager is LanguagesManager:
+            self._lexer = new_manager()
+        elif isinstance(new_manager, LanguagesManager):
+            self._lexer = new_manager
+        else:
+            raise LexerExceptions.LexerValueError(
+                f"invalid type: {new_manager} expected: {LanguagesManager}")
+
+
+    @property
+    def properties(self) -> Properties:
+        return self._properties
+
+    @properties.setter
+    def properties(self, new_manager: Properties) -> Properties:
+        if new_manager is Properties:
+            self._properties = new_manager()
+        elif isinstance(new_manager, Properties):
+            self._properties = new_manager
+        else:
+            raise PropertiesExceptions.PropertyValueError(
+                f"invalid type: {new_manager} expected: {Properties}")
 
     @property
     def panels(self) -> PanelsManager:
         return self._panels
 
+    @panels.setter
+    def panels(self, new_manager: PanelsManager) -> PanelsManager:
+        if new_manager is PanelsManager:
+            self._panels = new_manager()
+        elif isinstance(new_manager, PanelsManager):
+            self._panels = new_manager
+        else:
+            raise PanelsExceptions.PanelValueError(
+                f"invalid type: {new_manager} expected: {PanelsManager}")
+
     @property
     def features(self) -> FeaturesManager:
         return self._features
 
-    def _config(self):
-        self.setTabStopDistance(QFontMetrics(
-            self.font()).horizontalAdvance(' ') * 4)
-
-        self.setWordWrapMode(QTextOption.WrapMode.NoWrap)
+    @features.setter
+    def features(self, new_manager: FeaturesManager) -> FeaturesManager:
+        if new_manager is FeaturesManager:
+            self._features = new_manager()
+        elif isinstance(new_manager, FeaturesManager):
+            self._features = new_manager
+        else:
+            raise FeaturesExceptions.FeatureValueError(
+                f"invalid type: {new_manager} expected: {FeaturesManager}")
 
     @property
-    def visible_blocks(self):
-        """
-        Returns the list of visible blocks.
-        Each element in the list is a tuple made up of the line top position,
-        the line number and the QTextBlock itself.
-        :return: A list of tuple(top_position, line_number, block)
-        :rtype: List of tuple(int, int, QtWidgets.QTextBlock)
-        """
+    def visible_blocks(self) -> list:
         return self._visible_blocks
 
-    def paintEvent(self, event):
-        """
-        Overrides paint event to update the list of visible blocks and emit
-        the painted event.
-        :param e: paint event
-        """
+    def paintEvent(self, event) -> None:
         self._update_visible_blocks(event)
         super().paintEvent(event)
         self.on_painted.emit(event)
-
-        with QPainter(self.viewport()) as painter:
-            font = self.font()
-            font_metrics = QFontMetrics(font)
-            self.font_width = font_metrics.horizontalAdvance(' ') * 4.5
-            self.font_height = font_metrics.height()
-
-            longest_line = 20
-            from_top = 0
-            painter.setPen(QColor(0, 100, 100))
-            for i in range(0, longest_line):
-                the_x = self.font_width + (i * self.font_width)
-                painter.drawLine(the_x, from_top, the_x,
-                                 from_top + self.font_height)
 
     def resizeEvent(self, event) -> None:
         super().resizeEvent(event)

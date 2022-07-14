@@ -2,11 +2,11 @@ from inspect import isclass
 from ..core.manager import Manager
 
 class FeaturesManager(Manager):
-    def __init__(self, parent):
-        self.editor = parent
+    def __init__(self, editor):
+        super().__init__(editor)
         self._features = []
     
-    def add(self, feature:object) -> object:
+    def append(self, feature:object) -> object:
         if callable(feature):
             mode = feature(self.editor)
         else:

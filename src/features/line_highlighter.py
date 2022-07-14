@@ -1,10 +1,11 @@
 from PySide6.QtWidgets import QTextEdit
 from PySide6.QtGui import QColor, QTextFormat
 from PySide6.QtCore import Qt
+from ..core import Feature
 
-class CaretLineHighLighter():
+class CaretLineHighLighter(Feature):
     def __init__(self, editor):
-        self.editor = editor
+        super().__init__(editor)
         
         self.editor.cursorPositionChanged.connect(self.highlight_current_line)
         self.highlight_current_line()

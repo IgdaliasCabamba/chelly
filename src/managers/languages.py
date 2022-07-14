@@ -1,8 +1,8 @@
 from ..core import Manager
 
 class LanguagesManager(Manager):
-    def __init__(self) -> None:
-        super().__init__()
+    def __init__(self, editor) -> None:
+        super().__init__(editor)
 
     def set(self, lexer:object) -> object:
         if callable(lexer):
