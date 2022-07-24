@@ -1,8 +1,8 @@
 from PySide6.QtGui import QFont, QTextCursor, QColor, QPainter
-from PySide6.QtWidgets import QWidget
 from PySide6.QtCore import Qt, QSize, QRect
+from ..core import Panel
 
-class LineNumberMargin(QWidget):
+class LineNumberMargin(Panel):
     """Line Number Widget for Editor based 
     on https://github.com/luchko/QCodeEditor/blob/master/QCodeEditor.py
     and https://doc.qt.io/qtforpython/examples/example_widgets__codeeditor.html
@@ -10,13 +10,19 @@ class LineNumberMargin(QWidget):
 
     def __init__(self, editor) -> None:
         super().__init__(editor)
-        
-        self.editor = editor
-        self.editor.blockCountChanged[int].connect(self.update_line_number_area_width)
-        self.editor.updateRequest[QRect, int].connect(self.update_line_number_area)
-        self.editor.on_resized.connect(self.resized)
+        self.scrollable = True
+        #self.editor.blockCountChanged[int].connect(self.update_line_number_area_width)
+        #self.editor.updateRequest[QRect, int].connect(self.update_line_number_area)
+        #self.editor.on_resized.connect(self.resized)
         
         self.number_font = QFont()
+    
+    def sizeHint(self):
+        """
+        Returns the panel size hint (as the panel is on the left, we only need
+        to compute the width
+        """
+        return QSize(self.line_number_area_width, 50)
 
     @property
     def line_number_area_width(self) -> int:
@@ -30,12 +36,15 @@ class LineNumberMargin(QWidget):
         return space
     
     def resized(self) -> None:
-        cr = self.editor.contentsRect()
-        width = self.line_number_area_width
-        rect = QRect(cr.left(), cr.top(), width, cr.height())
-        self.setGeometry(rect)
+        #cr = self.editor.contentsRect()
+        #width = self.line_number_area_width
+        #rect = QRect(cr.left(), cr.top(), width, cr.height())
+        #self.setGeometry(rect)
+        pass
                     
     def paintEvent(self, event):
+        #print(self.geometry())
+
         super().paintEvent(event)
         with QPainter(self) as painter:
             painter.fillRect(event.rect(), Qt.GlobalColor.lightGray)
@@ -68,14 +77,16 @@ class LineNumberMargin(QWidget):
                 block_number += 1
     
     def update_line_number_area_width(self, newBlockCount):
-        self.editor.setViewportMargins(self.line_number_area_width, 0, 0, 0)
+        #self.editor.setViewportMargins(self.line_number_area_width, 0, 0, 0)
+        pass
     
     def update_line_number_area(self, rect, dy):
-        if dy:
+        pass
+        """if dy:
             self.scroll(0, dy)
         else:
             width = self.width()
             self.update(0, rect.y(), width, rect.height())
 
         if rect.contains(self.editor.viewport().rect()):
-            self.update_line_number_area_width(0)
+            self.update_line_number_area_width(0)"""

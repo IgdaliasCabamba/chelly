@@ -32,7 +32,6 @@ class ChellyEditor(QPlainTextEdit):
             raise LexerExceptions.LexerValueError(
                 f"invalid type: {new_manager} expected: {LanguagesManager}")
 
-
     @property
     def properties(self) -> Properties:
         return self._properties
@@ -78,6 +77,10 @@ class ChellyEditor(QPlainTextEdit):
     @property
     def visible_blocks(self) -> list:
         return self._visible_blocks
+    
+    def showEvent(self, event):
+        super().showEvent(event)
+        self.panels.refresh()
 
     def paintEvent(self, event) -> None:
         self._update_visible_blocks(event)

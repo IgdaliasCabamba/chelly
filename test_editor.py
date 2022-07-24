@@ -4,6 +4,7 @@ from src import ChellyEditor
 from src.features import CaretLineHighLighter, IndentationGuides
 from src.components import LineNumberMargin
 from src.managers import FeaturesManager, LanguagesManager, PanelsManager
+from src.core import Panel
 from PySide6.QtWidgets import *
 from PySide6.QtCore import *
 import pytest
@@ -14,7 +15,8 @@ editor = ChellyEditor(None)
 editor.setStyleSheet("""QPlainTextEdit{font-family:'Consolas'; color: #ccc; background-color: #2b2b2b;}""")
 editor.features.append(CaretLineHighLighter)
 editor.features.append(IndentationGuides)
-editor.panels.append(LineNumberMargin)
+editor.panels.append(LineNumberMargin, Panel.Position.LEFT)
+editor.panels.append(LineNumberMargin, Panel.Position.RIGHT)
 editor.resize(300, 500)
 editor.show()
 
