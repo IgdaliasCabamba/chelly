@@ -1,3 +1,4 @@
+from typing import Any
 from PySide6.QtGui import QFontMetrics, QTextOption
 from dataclasses import dataclass
 
@@ -14,6 +15,15 @@ class Properties(object):
         self._editor = editor
         self._indent_size:int = Property.Default.INDENT_SIZE
         self._indent_type:int = False
+    
+    @property
+    def text(self) -> str:
+        return self._editor.toPlainText()
+    
+    @text.setter
+    def text(self, text:Any) -> None:
+        print(text)
+        self._editor.setPlainText(str(text))
     
     @property
     def indent_type(self) -> int:

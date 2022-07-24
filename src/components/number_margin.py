@@ -1,5 +1,6 @@
 from PySide6.QtGui import QFont, QTextCursor, QColor, QPainter
 from PySide6.QtCore import Qt, QSize, QRect
+from PySide6.QtWidgets import QGraphicsDropShadowEffect
 from ..core import Panel
 
 class LineNumberMargin(Panel):
@@ -11,18 +12,21 @@ class LineNumberMargin(Panel):
     def __init__(self, editor) -> None:
         super().__init__(editor)
         self.scrollable = True
-        #self.editor.blockCountChanged[int].connect(self.update_line_number_area_width)
-        #self.editor.updateRequest[QRect, int].connect(self.update_line_number_area)
-        #self.editor.on_resized.connect(self.resized)
-        
         self.number_font = QFont()
+        
+        #a = QGraphicsDropShadowEffect(self)
+        #a.setColor(QColor("#111111"))
+        #a.setXOffset(3)
+        #a.setYOffset(1)
+        #a.setBlurRadius(6)
+        #self.setGraphicsEffect(a)
     
     def sizeHint(self):
         """
         Returns the panel size hint (as the panel is on the left, we only need
         to compute the width
         """
-        return QSize(self.line_number_area_width, 50)
+        return QSize(self.line_number_area_width, 0)
 
     @property
     def line_number_area_width(self) -> int:
@@ -43,8 +47,6 @@ class LineNumberMargin(Panel):
         pass
                     
     def paintEvent(self, event):
-        #print(self.geometry())
-
         super().paintEvent(event)
         with QPainter(self) as painter:
             painter.fillRect(event.rect(), Qt.GlobalColor.lightGray)

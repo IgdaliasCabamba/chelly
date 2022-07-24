@@ -1,4 +1,5 @@
 from ..core import Manager, Panel, TextFunctions
+from PySide6.QtCore import QRect
 
 class PanelsManager(Manager):
     def __init__(self, editor):
@@ -14,9 +15,9 @@ class PanelsManager(Manager):
             Panel.Position.BOTTOM: {}
         }
 
-        editor.blockCountChanged.connect(self._update_viewport_margins)
-        editor.updateRequest.connect(self._update)
-        editor.on_resized.connect(self.refresh)
+        self.editor.blockCountChanged[int].connect(self._update_viewport_margins)
+        self.editor.updateRequest[QRect, int].connect(self._update)
+        self.editor.on_resized.connect(self.refresh)
     
     def append(self, panel:object, position=Panel.Position.LEFT) -> object:
         if callable(panel):
@@ -81,7 +82,6 @@ class PanelsManager(Manager):
                      force_update_margins=True)
 
     def resize(self):
-        print("AAAAAAAAAAAAAAAAAAAAAAAAAAAAA")
         """ Resizes panels """
         crect = self.editor.contentsRect()
         view_crect = self.editor.viewport().contentsRect()
