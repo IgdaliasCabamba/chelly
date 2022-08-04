@@ -3,7 +3,7 @@ sys.dont_write_bytecode = True
 
 from src import ChellyEditor
 from src.features import CaretLineHighLighter, IndentationGuides
-from src.components import LineNumberMargin
+from src.components import LineNumberMargin, MiniChellyMap
 from src.managers import FeaturesManager, LanguagesManager, PanelsManager
 from src.core import Panel
 from PySide6.QtWidgets import *
@@ -20,13 +20,27 @@ logging.basicConfig(filename=DEBUG_OUTPUT_FILE, filemode='a', format='%(name)s -
 
 app = QApplication(sys.argv)
 
-editor = ChellyEditor(None)
+div = QSplitter()
+
+editor = ChellyEditor(div)
 editor.setStyleSheet("""QPlainTextEdit{font-family:'Consolas'; color: #ccc; background-color: #2b2b2b;}""")
 editor.features.append(CaretLineHighLighter)
 #editor.features.append(IndentationGuides)
 editor.panels.append(LineNumberMargin, Panel.Position.LEFT)
-editor.resize(300, 500)
-editor.show()
+minimap = editor.panels.append(MiniChellyMap, Panel.Position.RIGHT)
+
+editor1 = ChellyEditor(div)
+editor1.setStyleSheet("""QPlainTextEdit{font-family:'Consolas'; color: #ccc; background-color: #2b2b2b;}""")
+editor1.features.append(CaretLineHighLighter)
+#editor1.chelly_document = editor.chelly_document
+editor1.panels.append(LineNumberMargin, Panel.Position.LEFT)
+minimap = editor1.panels.append(MiniChellyMap, Panel.Position.RIGHT)
+
+div.addWidget(editor)
+div.addWidget(editor1)
+div.resize(700, 500)
+div.show()
+
 
 def test_lexer_set():
 	new_lexer = LanguagesManager(editor)

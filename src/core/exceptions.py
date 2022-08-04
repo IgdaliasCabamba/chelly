@@ -13,3 +13,7 @@ class PanelsExceptions:
 class FeaturesExceptions:
     class FeatureValueError(Exception):
         pass
+
+class ChellyDocumentExceptions:
+    class ChellyDocumentValueError(Exception):
+        pass

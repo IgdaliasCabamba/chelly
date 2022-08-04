@@ -4,3 +4,4 @@ from .feature import Feature
 from .exceptions import *
 from .panel import *
 from .utils import *
+from .document import ChellyDocument

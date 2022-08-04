@@ -1,6 +1,5 @@
 from PySide6.QtGui import QFont, QTextCursor, QColor, QPainter
 from PySide6.QtCore import Qt, QSize, QRect
-from PySide6.QtWidgets import QGraphicsDropShadowEffect
 from ..core import Panel
 
 class LineNumberMargin(Panel):
@@ -13,13 +12,6 @@ class LineNumberMargin(Panel):
         super().__init__(editor)
         self.scrollable = True
         self.number_font = QFont()
-        
-        #a = QGraphicsDropShadowEffect(self)
-        #a.setColor(QColor("#111111"))
-        #a.setXOffset(3)
-        #a.setYOffset(1)
-        #a.setBlurRadius(6)
-        #self.setGraphicsEffect(a)
     
     def sizeHint(self):
         """

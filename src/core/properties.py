@@ -22,8 +22,15 @@ class Properties(object):
     
     @text.setter
     def text(self, text:Any) -> None:
-        print(text)
         self._editor.setPlainText(str(text))
+    
+    @property
+    def document(self) -> object:
+        return self._editor.document()
+    
+    @document.setter
+    def document(self, qtextdocument:Any) -> None:
+        self._editor.setDocument(qtextdocument)
     
     @property
     def indent_type(self) -> int:

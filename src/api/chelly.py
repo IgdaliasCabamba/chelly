@@ -1,33 +1,56 @@
 from PySide6.QtCore import Signal
 from PySide6.QtWidgets import QPlainTextEdit
+
+from ..core import (ChellyDocument, ChellyDocumentExceptions,
+                    FeaturesExceptions, LexerExceptions, PanelsExceptions,
+                    Properties, PropertiesExceptions)
 from ..managers import FeaturesManager, LanguagesManager, PanelsManager
-from ..core import Properties, LexerExceptions, PropertiesExceptions, PanelsExceptions, FeaturesExceptions
 
 
 class ChellyEditor(QPlainTextEdit):
 
     on_resized = Signal()
     on_painted = Signal(object)
+    on_updated = Signal()
 
     def __init__(self, parent):
         super().__init__(parent)
         self._panels = PanelsManager(self)
         self._features = FeaturesManager(self)
-        self._lexer = LanguagesManager(self)
+        self._language = LanguagesManager(self)
         self._properties = Properties(self)
+        self._chelly_document = ChellyDocument(self)
 
         self._visible_blocks = list()
+    
+    def update_state(self):
+        self.on_updated.emit()
+    
+    @property
+    def chelly_document(self) -> ChellyDocument:
+        return self._chelly_document
+
+    @chelly_document.setter
+    def chelly_document(self, new_document: ChellyDocument) -> ChellyDocument:
+        if new_document is ChellyDocument:
+            self._chelly_document = new_document()
+        elif isinstance(new_document, ChellyDocument):
+            self._chelly_document = new_document
+        else:
+            raise ChellyDocumentExceptions.ChellyDocumentValueError(
+                f"invalid type: {new_document} expected: {ChellyDocument}")
+        self._chelly_document.add_editor(self)
 
     @property
-    def lexer(self) -> LanguagesManager:
-        return self._lexer
+    def language(self) -> LanguagesManager:
+        return self._language
 
-    @lexer.setter
-    def lexer(self, new_manager: LanguagesManager) -> LanguagesManager:
+    @language.setter
+    def language(self, new_manager: LanguagesManager) -> LanguagesManager:
         if new_manager is LanguagesManager:
-            self._lexer = new_manager()
+            self._language = new_manager()
         elif isinstance(new_manager, LanguagesManager):
-            self._lexer = new_manager
+            self._language = new_manager
         else:
             raise LexerExceptions.LexerValueError(
                 f"invalid type: {new_manager} expected: {LanguagesManager}")
@@ -77,7 +100,7 @@ class ChellyEditor(QPlainTextEdit):
     @property
     def visible_blocks(self) -> list:
         return self._visible_blocks
-    
+
     def showEvent(self, event):
         super().showEvent(event)
         self.panels.refresh()
