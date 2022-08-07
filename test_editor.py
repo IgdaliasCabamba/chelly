@@ -32,9 +32,8 @@ minimap = editor.panels.append(MiniChellyMap, Panel.Position.RIGHT)
 editor1 = ChellyEditor(div)
 editor1.setStyleSheet("""QPlainTextEdit{font-family:'Consolas'; color: #ccc; background-color: #2b2b2b;}""")
 editor1.features.append(CaretLineHighLighter)
-#editor1.chelly_document = editor.chelly_document
 editor1.panels.append(LineNumberMargin, Panel.Position.LEFT)
-minimap = editor1.panels.append(MiniChellyMap, Panel.Position.RIGHT)
+minimap1 = editor1.panels.append(MiniChellyMap, Panel.Position.RIGHT)
 
 div.addWidget(editor)
 div.addWidget(editor1)
