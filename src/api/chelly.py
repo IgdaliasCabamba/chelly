@@ -25,6 +25,8 @@ class ChellyEditor(QPlainTextEdit):
         self._chelly_document = ChellyDocument(self)
 
         self._visible_blocks = list()
+        self._properties.default()
+        self.setLineWrapMode(self.NoWrap)
     
     def update_state(self):
         self.on_updated.emit()
