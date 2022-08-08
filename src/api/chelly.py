@@ -1,4 +1,5 @@
 from PySide6.QtCore import Signal
+from PySide6 import QtGui
 from PySide6.QtWidgets import QPlainTextEdit
 
 from ..core import (ChellyDocument, ChellyDocumentExceptions,
@@ -12,6 +13,8 @@ class ChellyEditor(QPlainTextEdit):
     on_resized = Signal()
     on_painted = Signal(object)
     on_updated = Signal()
+    on_key_pressed = Signal(object)
+    on_key_released = Signal(object)
 
     def __init__(self, parent):
         super().__init__(parent)
@@ -143,3 +146,11 @@ class ChellyEditor(QPlainTextEdit):
             block_nbr = block.blockNumber()
 
         # pprint.pprint(self._visible_blocks)
+    
+    def keyPressEvent(self, e: QtGui.QKeyEvent) -> None:
+        self.on_key_pressed.emit(e)
+        return super().keyPressEvent(e)
+    
+    def keyReleaseEvent(self, e: QtGui.QKeyEvent) -> None:
+        self.on_key_released.emit(e)
+        return super().keyReleaseEvent(e)

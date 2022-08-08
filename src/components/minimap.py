@@ -35,27 +35,14 @@ class MiniChellyMap(Panel):
         block = self._minimap.document().findBlockByNumber(line)
         cursor.setPosition(block.position())
     
-    def line_text(self, line_nbr):
-        """
-        Gets the text of the specified line
-        :param line_nbr: The line number of the text to get
-        :return: Entire line's text
-        :rtype: str
-        """
-
-        # Under some (apparent) race conditions, this function can be called
-        # with a None line number. This should be fixed in a better way, but
-        # for now we return an empty string to avoid crashes.
+    def line_text(self, line_nbr) -> str:
         if line_nbr is None:
             return ''
         doc = self.editor.document()
         block = doc.findBlock(line_nbr)
-        #print(line_nbr)
         return block.text()
 
     def update_minimap(self, pos, charsrem, charsadd):
-        #t = self.editor.document().toPlainText()
-        #self._minimap.document().setPlainText(t)
         self.move_cursor_to(self.editor.textCursor().blockNumber())
         editor = self._minimap
         text_cursor = editor.textCursor()
