@@ -9,6 +9,8 @@ class MiniChellyMap(Panel):
     def __init__(self, editor):
         super().__init__(editor)
 
+        self.amount_of_blocks = self.editor.blockCount()
+
         a = QGraphicsDropShadowEffect(self)
         a.setColor(QColor("#111111"))
         a.setXOffset(-3)
@@ -32,14 +34,16 @@ class MiniChellyMap(Panel):
     
     def move_cursor_to(self, line):
         cursor = self._minimap.textCursor()
-        block = self._minimap.document().findBlockByNumber(line)
+        block = self._minimap.document().findBlockByLineNumber(line)
         cursor.setPosition(block.position())
+        #print(block.position())
+        #print(self.editor.document().findBlockByLineNumber(line).position())
     
     def line_text(self, line_nbr) -> str:
         if line_nbr is None:
             return ''
         doc = self.editor.document()
-        block = doc.findBlock(line_nbr)
+        block = doc.findBlockByLineNumber(line_nbr)
         return block.text()
 
     def update_minimap(self, pos, charsrem, charsadd):
@@ -49,14 +53,22 @@ class MiniChellyMap(Panel):
         
         for x in range(charsrem):
             text_cursor.deletePreviousChar()
-        
+
         if charsadd:
-            text = self.line_text(pos)
-            if charsadd > 1:
-                pass
+            if self.amount_of_blocks == self.editor.blockCount():
+                text = self.line_text(self.editor.textCursor().blockNumber())
+                cur_pos = self.editor.textCursor().columnNumber()
+                if charsadd > 1:
+                    value = text[cur_pos-charsadd:cur_pos]
+                    print(value)
+                    text_cursor.insertText(value)
+                else:
+                    text_cursor.insertText(text[cur_pos-charsadd])
             else:
-                text_cursor.insertText(text[-1])
-        
+                t = self.editor.document().toPlainText()
+                self._minimap.document().setPlainText(t)
+
+        self.amount_of_blocks = self.editor.blockCount()
         editor.setTextCursor(text_cursor)
 
     def sizeHint(self):
