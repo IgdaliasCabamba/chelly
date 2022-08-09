@@ -55,3 +55,7 @@ class Panel(QWidget):
         super().setVisible(visible)
         if self.editor:
             self.editor.panels.refresh()
+    
+    @property
+    def fixed_size_hint(self):
+        return 0

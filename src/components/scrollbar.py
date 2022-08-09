@@ -1,6 +1,6 @@
 from PySide6.QtWidgets import QScrollBar, QFrame
 from PySide6.QtCore import Qt, QSize
-from ..core import TextFunctions
+from ..core import TextEngine
 
 class iconsts:
     MINIMAP_MINIMUM_ZOOM: int = -10
@@ -53,10 +53,10 @@ class SliderArea(QFrame):
         super().mousePressEvent(event)
         self.pressed = True
         self.setCursor(Qt.ClosedHandCursor)
-        first_visible_line = self.minimap.editor.firstVisibleBlock().firstLineNumber()
+        first_visible_line = TextEngine(self.minimap.editor).first_visible_line
 
         pos_parent = self.mapToParent(event.pos())
-        line = TextFunctions(self.minimap).get_line_nbr_from_position(pos_parent.x(), pos_parent.y())
+        line = TextEngine(self.minimap).line_number_from_position(pos_parent.x(), pos_parent.y())
         self.line_on_visible_area = (line - first_visible_line) + 1
 
     def mouseReleaseEvent(self, event):

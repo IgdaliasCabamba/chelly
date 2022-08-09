@@ -8,19 +8,20 @@ from .code_editor import CodeEditor
 from .scrollbar import SliderArea
 
 from ..core import (FeaturesExceptions, LexerExceptions, Panel, Properties,
-                    PropertiesExceptions, TextFunctions)
+                    PropertiesExceptions, TextEngine)
 from ..managers import FeaturesManager, LanguagesManager
+
 
 class MiniMap(CodeEditor):
     def __init__(self, parent):
         super().__init__(parent)
 
         self.editor = parent.editor
-        self._amount_of_blocks = TextFunctions(self.editor).line_count
+        self._amount_of_blocks = TextEngine(self.editor).line_count
         self.current_scroll_value = self.editor.verticalScrollBar().value()
 
         self.setTextInteractionFlags(Qt.NoTextInteraction)
-        
+
         self.slider = SliderArea(self)
         self.slider.show()
 
@@ -34,108 +35,102 @@ class MiniMap(CodeEditor):
             Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
         self.setHorizontalScrollBarPolicy(
             Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
-        
+
         self.editor.document().contentsChange.connect(self.update_contents)
         self.editor.on_painted.connect(self.update_ui)
-    
-    def update_ui(self):
-        self.scroll_map()
-    
-    def update_contents(self, pos, charsrem, charsadd):
-        line_number = TextFunctions(self.editor).current_line_nbr
-        TextFunctions(self).move_cursor_to_line(line_number)
-        text = TextFunctions(self.editor).text_at_line(line_number)
 
-        if self._amount_of_blocks == TextFunctions(self.editor).line_count:
-            TextFunctions(self).set_text_at_line(
+    def scroll_slide(self, y_point: int):
+        self.slider.move(0, y_point)
+
+    def update_ui(self):
+        self._scroll_slide()
+
+    def update_contents(self, pos, charsrem, charsadd):
+        line_number = TextEngine(self.editor).current_line_nbr
+        TextEngine(self).move_cursor_to_line(line_number)
+        text = TextEngine(self.editor).text_at_line(line_number)
+
+        if self._amount_of_blocks == TextEngine(self.editor).line_count:
+            TextEngine(self).set_text_at_line(
                 self.textCursor().blockNumber(), text)
-            TextFunctions(self).move_cursor_to_line(line_number)
+            TextEngine(self).move_cursor_to_line(line_number)
         else:
             self.document().setPlainText(
                 self.editor.document().toPlainText()
             )
-            TextFunctions(self).move_cursor_to_line(
-                TextFunctions(self.editor).current_line_nbr
+            TextEngine(self).move_cursor_to_line(
+                TextEngine(self.editor).current_line_nbr
             )
 
-        self._amount_of_blocks = TextFunctions(self.editor).line_count
-    
-    def scroll_map(self):
-        first_visible_line = self.editor.firstVisibleBlock().firstLineNumber()
-        
-        num_doc_lines = self.editor.document().lineCount()
+        self._amount_of_blocks = TextEngine(self.editor).line_count
 
-        #num_visible_lines = self.editor.SendScintilla(
-        #    QsciScintilla.SCI_DOCLINEFROMVISIBLE, num_doc_lines
-        #)
-        num_visible_lines = num_doc_lines
+    def _scroll_slide(self):
+        num_editor_visible_lines = TextEngine(
+            self.editor).visible_lines_from_line_count
+        lines_on_editor_screen = TextEngine(self.editor).visible_lines
 
-        lines_on_screen = TextFunctions(self.editor).visible_lines
+        if num_editor_visible_lines > lines_on_editor_screen:
 
-        if num_visible_lines > lines_on_screen:
-            last_top_visible_line = num_visible_lines - lines_on_screen
+            self._move_scroll(num_editor_visible_lines, lines_on_editor_screen)
 
-            #num_map_visible_lines = self.SendScintilla(
-            #    QsciScintilla.SCI_DOCLINEFROMVISIBLE, num_doc_lines
-            #)
-            num_map_visible_lines = self.document().lineCount()
+            editor_line_nr = TextEngine(
+                self.editor).line_number_from_position(0, 0)
+            delta_y = TextEngine(self).point_y_from_line_number(editor_line_nr)
 
-            lines_on_screenm = TextFunctions(self).visible_lines
+            # or:
+            #   higher_pos = TextEngine(self.editor).position_from_point(0,0)
+            #   delta_y = TextEngine(self).point_y_from_position(higher_pos)
 
-            last_top_visible_linem = num_map_visible_lines - lines_on_screenm
-
-            portion = first_visible_line / last_top_visible_line
-
-            first_visible_linem = round(last_top_visible_linem * portion)
-
-            self.verticalScrollBar().setValue(first_visible_linem)
-
-            line_nr = TextFunctions(self.editor).get_line_nbr_from_position(0, 0)
-            # OK: Till here
-            print(line_nr)
-
-            # TODO: a function that returns the point
-            higher_pos = TextFunctions(self).get_point_from_line_number(line_nr)
-            print(higher_pos)
-
-            y = higher_pos   
-            #y = self.SendScintilla(QsciScintilla.SCI_POINTYFROMPOSITION, 0, higher_pos)
-
-            self.slider.move(0, y)
+            self.slider.move(0, delta_y)
 
         self.current_scroll_value = self.editor.verticalScrollBar().value()
 
-    def scroll_area(self, pos_parent, line_area):
-        line = TextFunctions(self).get_line_nbr_from_position(pos_parent.x(), pos_parent.y())
+    def _move_scroll(self, num_editor_visible_lines, lines_on_editor_screen):
+        editor_first_visible_line = TextEngine(self.editor).first_visible_line
+        editor_last_top_visible_line = num_editor_visible_lines - lines_on_editor_screen
+
+        num_visible_lines = TextEngine(self).visible_lines_from_line_count
+        lines_on_screen = TextEngine(self).visible_lines
+
+        last_top_visible_line = num_visible_lines - lines_on_screen
+
+        portion = editor_first_visible_line / editor_last_top_visible_line
+        first_visible_line = round(last_top_visible_line * portion)
+
+        self.verticalScrollBar().setValue(first_visible_line)
+
+    def scroll_area(self, pos_parent, line_area) -> None:
+        line = TextEngine(self).line_number_from_position(
+            pos_parent.x(), pos_parent.y())
         self.editor.verticalScrollBar().setValue(line - line_area)
-    
-    def mousePressEvent(self, event):
+
+    def mousePressEvent(self, event) -> None:
         super().mousePressEvent(event)
-        line = TextFunctions(self).get_line_nbr_from_position(event.pos().x(), event.pos().y())
-        TextFunctions(self.editor).move_cursor_to_line(line)
+        TextEngine(self.editor).move_cursor_to_line(
+            TextEngine(self).line_number_from_position(
+                event.pos().x(), event.pos().y()
+            )
+        )
 
-        los = TextFunctions(self.editor).visible_lines // 2
-        scroll_value = self.editor.verticalScrollBar().value()
-
-        if self.current_scroll_value < scroll_value:
-            self.editor.verticalScrollBar().setValue(scroll_value + los)
-        else:
-            self.editor.verticalScrollBar().setValue(scroll_value - los)
-    
-    def wheelEvent(self, event):
+    def wheelEvent(self, event) -> None:
         super().wheelEvent(event)
         self.editor.wheelEvent(event)
+
 
 class MiniChellyMap(Panel):
     def __init__(self, editor):
         super().__init__(editor)
+        self.__properties = {
+            "max-width": 140,
+            "min-width": 40
+        }
 
-        drop_shadow = QGraphicsDropShadowEffect(self)
-        drop_shadow.setColor(QColor("#111111"))
-        drop_shadow.setXOffset(-3)
-        drop_shadow.setYOffset(1)
-        drop_shadow.setBlurRadius(6)
-        self.setGraphicsEffect(drop_shadow)
+        self.__drop_shadow = QGraphicsDropShadowEffect(self)
+        self.__drop_shadow.setColor(QColor("#111111"))
+        self.__drop_shadow.setXOffset(-3)
+        self.__drop_shadow.setYOffset(1)
+        self.__drop_shadow.setBlurRadius(6)
+        self.setGraphicsEffect(self.__drop_shadow)
 
         self.box = QHBoxLayout(self)
         self.box.setContentsMargins(0, 0, 0, 0)
@@ -144,10 +139,36 @@ class MiniChellyMap(Panel):
 
         self.box.addWidget(self._minimap)
         self.setLayout(self.box)
+    
+    def activate_shadow(self):
+        self.minimap.setGraphicsEffect(self.__drop_shadow)
+
+    def disable_shadow(self):
+        self.minimap.setGraphicsEffect(None)
+    
+    @property
+    def shadow(self) -> QGraphicsDropShadowEffect:
+        return self.__drop_shadow
+    
+    @property
+    def max_width(self) -> int:
+        return self.__properties["max-width"]
+    
+    @max_width.setter
+    def max_width(self, width:int) -> None:
+        self.__properties["max-width"] = width
+    
+    @property
+    def min_width(self):
+        return self.__properties["min-width"]
+    
+    @min_width.setter
+    def min_width(self, width:int):
+        self.__properties["min-width"] = width
 
     def sizeHint(self):
         """
         Returns the panel size hint (as the panel is on the right, we only need
         to compute the width
         """
-        return QSize(140, 0)
+        return QSize(self.max_width, self.fixed_size_hint)

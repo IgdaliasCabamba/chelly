@@ -1,8 +1,17 @@
 from PySide6.QtGui import QTextCursor
 
-class TextFunctions:
+class TextEngine:
     def __init__(self, editor):
         self._editor = editor
+    
+    @property
+    def first_visible_line(self) -> int:
+        return self._editor.firstVisibleBlock().firstLineNumber()
+    
+    @property
+    def visible_lines(self) -> int:
+        editor = self._editor
+        return(len(editor.visible_blocks))
     
     @property
     def selected_text(self):
@@ -23,33 +32,51 @@ class TextFunctions:
 
     @property
     def line_count(self):
+        return self._editor.document().lineCount()
+    
+    @property
+    def block_count(self):
         return self._editor.document().blockCount()
-
-    def get_point_from_line_number(self, line_number):
-        editor = self._editor
-        print(line_number)
-        block = editor.document().findBlockByNumber(line_number)
+    
+    # TODO : compute this
+    @property
+    def visible_lines_from_line_count(self):
+        count = self.line_count
+        return count
+    
+    def position_from_point(self, x_pos:int, y_pos:int) -> int:
+        height = self._editor.fontMetrics().height()
+        for top, line, block in self._editor.visible_blocks:
+            if top <= y_pos <= top + height:
+                return block.position()
+        return 0
+    
+    def point_y_from_block(self, block) -> int:
         if block.isValid():
-            return int(editor.blockBoundingGeometry(block).translated(
-                editor.contentOffset()).top())
+            return int(self._editor.blockBoundingGeometry(block).translated(
+                self._editor.contentOffset()).top())
+        else:
+            return int(self._editor.blockBoundingGeometry(
+                block.previous()).translated(self._editor.contentOffset()).bottom())
+    
+    def point_y_from_position(self, pos:int) -> int:
+        block = self._editor.document().findBlock(pos)
+        return self.point_y_from_block(block)
+
+    def point_y_from_line_number(self, line_number:int) -> int:
+        block = self._editor.document().findBlockByNumber(line_number)
         if line_number <= 0:
             return 0
         else:
-            return int(editor.blockBoundingGeometry(
-                block.previous()).translated(editor.contentOffset()).bottom())
+            return self.point_y_from_block(block)
 
-    def get_line_nbr_from_position(self, x_pos, y_pos) -> int:
+    def line_number_from_position(self, x_pos:int, y_pos:int) -> int:
         editor = self._editor
         height = editor.fontMetrics().height()
         for top, line, block in editor.visible_blocks:
             if top <= y_pos <= top + height:
                 return line
         return -1
-    
-    @property
-    def visible_lines(self) -> int:
-        editor = self._editor
-        return(len(editor.visible_blocks))
     
     def move_cursor_to_block(self, block) -> QTextCursor:
         text_cursor = self._editor.textCursor()
