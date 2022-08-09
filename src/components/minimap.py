@@ -18,6 +18,8 @@ class MiniMap(CodeEditor):
         self.editor = parent.editor
         self._amount_of_blocks = TextFunctions(self.editor).line_count
         self.current_scroll_value = self.editor.verticalScrollBar().value()
+
+        self.setTextInteractionFlags(Qt.NoTextInteraction)
         
         self.slider = SliderArea(self)
         self.slider.show()
@@ -37,7 +39,6 @@ class MiniMap(CodeEditor):
         self.editor.on_painted.connect(self.update_ui)
     
     def update_ui(self):
-        print("AAAA")
         self.scroll_map()
     
     def update_contents(self, pos, charsrem, charsadd):
@@ -67,7 +68,7 @@ class MiniMap(CodeEditor):
         #num_visible_lines = self.editor.SendScintilla(
         #    QsciScintilla.SCI_DOCLINEFROMVISIBLE, num_doc_lines
         #)
-        num_visible_lines = TextFunctions(self.editor).visible_lines
+        num_visible_lines = num_doc_lines
 
         lines_on_screen = TextFunctions(self.editor).visible_lines
 
@@ -77,7 +78,7 @@ class MiniMap(CodeEditor):
             #num_map_visible_lines = self.SendScintilla(
             #    QsciScintilla.SCI_DOCLINEFROMVISIBLE, num_doc_lines
             #)
-            num_map_visible_lines = TextFunctions(self).visible_lines
+            num_map_visible_lines = self.document().lineCount()
 
             lines_on_screenm = TextFunctions(self).visible_lines
 
@@ -89,8 +90,13 @@ class MiniMap(CodeEditor):
 
             self.verticalScrollBar().setValue(first_visible_linem)
 
-            line_nr = TextFunctions(self.editor).get_line_nbr_from_position(0,0)
-            higher_pos = TextFunctions(self.editor).get_line_pos_from_number(line_nr)
+            line_nr = TextFunctions(self.editor).get_line_nbr_from_position(0, 0)
+            # OK: Till here
+            print(line_nr)
+
+            # TODO: a function that returns the point
+            higher_pos = TextFunctions(self).get_point_from_line_number(line_nr)
+            print(higher_pos)
 
             y = higher_pos   
             #y = self.SendScintilla(QsciScintilla.SCI_POINTYFROMPOSITION, 0, higher_pos)
@@ -108,7 +114,7 @@ class MiniMap(CodeEditor):
         line = TextFunctions(self).get_line_nbr_from_position(event.pos().x(), event.pos().y())
         TextFunctions(self.editor).move_cursor_to_line(line)
 
-        los = TextFunctions(self.editor).visible_lines / 2
+        los = TextFunctions(self.editor).visible_lines // 2
         scroll_value = self.editor.verticalScrollBar().value()
 
         if self.current_scroll_value < scroll_value:

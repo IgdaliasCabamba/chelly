@@ -25,8 +25,9 @@ class TextFunctions:
     def line_count(self):
         return self._editor.document().blockCount()
 
-    def get_line_pos_from_number(self, line_number):
+    def get_point_from_line_number(self, line_number):
         editor = self._editor
+        print(line_number)
         block = editor.document().findBlockByNumber(line_number)
         if block.isValid():
             return int(editor.blockBoundingGeometry(block).translated(
