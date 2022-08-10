@@ -118,19 +118,65 @@ class MiniMap(CodeEditor):
 
 
 class MiniChellyMap(Panel):
-    def __init__(self, editor):
-        super().__init__(editor)
-        self.__properties = {
-            "max-width": 140,
-            "min-width": 40
-        }
+    
+    class Properties:
+        def __init__(self, minimap_container) -> None:
+            self.__minimap_container = minimap_container
+            self.__max_width:int = 140
+            self.__min_width:int = 40
+            self.__resizable:bool = True
+            self.__drop_shadow = None
+            self.default()
+        
+        def default(self):
+            drop_shadow = QGraphicsDropShadowEffect(self.__minimap_container)
+            drop_shadow.setColor(QColor("#111111"))
+            drop_shadow.setXOffset(-3)
+            drop_shadow.setYOffset(1)
+            drop_shadow.setBlurRadius(6)
+            self.shadow = drop_shadow
+        
+        @property
+        def shadow(self) -> QGraphicsDropShadowEffect:
+            return self.__drop_shadow
+        
+        @shadow.setter
+        def shadow(self, new_shadow: QGraphicsDropShadowEffect) -> None:
+            if isinstance(new_shadow, QGraphicsDropShadowEffect):
+                self.__drop_shadow = new_shadow
+                self.__minimap_container.setGraphicsEffect(self.__drop_shadow)
+        
+        @property
+        def max_width(self) -> int:
+            return self.__max_width
+        
+        @max_width.setter
+        def max_width(self, width:int) -> None:
+            if isinstance(width, int):
+                self.__max_width = width
+        
+        @property
+        def min_width(self) -> int:
+            return self.__min_width
+        
+        @min_width.setter
+        def min_width(self, width:int) -> None:
+            if isinstance(width, int):
+                self.__min_width = width
+        
+        @property
+        def resizable(self) -> int:
+            return self.__resizable
+        
+        @resizable.setter
+        def resizable(self, value:bool) -> None:
+            if isinstance(value, bool):
+                self.__resizable = value
 
-        self.__drop_shadow = QGraphicsDropShadowEffect(self)
-        self.__drop_shadow.setColor(QColor("#111111"))
-        self.__drop_shadow.setXOffset(-3)
-        self.__drop_shadow.setYOffset(1)
-        self.__drop_shadow.setBlurRadius(6)
-        self.setGraphicsEffect(self.__drop_shadow)
+
+    def __init__(self, editor, properties= None):
+        super().__init__(editor)
+        self.__properties = MiniChellyMap.Properties(self)
 
         self.box = QHBoxLayout(self)
         self.box.setContentsMargins(0, 0, 0, 0)
@@ -140,35 +186,24 @@ class MiniChellyMap(Panel):
         self.box.addWidget(self._minimap)
         self.setLayout(self.box)
     
+    @property
+    def properties(self) -> Properties:
+        return self.__properties
+    
+    @properties.setter
+    def properties(self, new_properties:Properties) -> None:
+        if isinstance(new_properties, Properties):
+            self.__properties = new_properties
+    
     def activate_shadow(self):
         self.minimap.setGraphicsEffect(self.__drop_shadow)
 
     def disable_shadow(self):
         self.minimap.setGraphicsEffect(None)
     
-    @property
-    def shadow(self) -> QGraphicsDropShadowEffect:
-        return self.__drop_shadow
-    
-    @property
-    def max_width(self) -> int:
-        return self.__properties["max-width"]
-    
-    @max_width.setter
-    def max_width(self, width:int) -> None:
-        self.__properties["max-width"] = width
-    
-    @property
-    def min_width(self):
-        return self.__properties["min-width"]
-    
-    @min_width.setter
-    def min_width(self, width:int):
-        self.__properties["min-width"] = width
-
     def sizeHint(self):
         """
         Returns the panel size hint (as the panel is on the right, we only need
         to compute the width
         """
-        return QSize(self.max_width, self.fixed_size_hint)
+        return QSize(self.properties.max_width, self.fixed_size_hint)

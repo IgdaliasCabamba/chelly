@@ -1,4 +1,4 @@
-from typing import Union
+from typing import Iterator, Union
 from dataclasses import dataclass
 from ..core import Manager, Panel, TextEngine
 from PySide6.QtCore import QRect
@@ -13,19 +13,22 @@ class PanelsManager(Manager):
         right: int
         bottom: int
 
-    def __init__(self, editor):
+    def __init__(self, editor) -> None:
         super().__init__(editor)
 
-        self._cached_cursor_pos = (-1, -1)
-        self._margin_sizes = (0, 0, 0, 0)
-        self._top = self._left = self._right = self._bottom = -1
-        self._widgets = {
+        self._cached_cursor_pos:tuple = (-1, -1)
+        self._margin_sizes:tuple = (0, 0, 0, 0)
+        self._top:int = -1
+        self._left:int = -1
+        self._right:int = -1
+        self._bottom:int = -1
+        self._widgets:dict = {
             Panel.Position.TOP: {},
             Panel.Position.LEFT: {},
             Panel.Position.RIGHT: {},
             Panel.Position.BOTTOM: {}
         }
-        self._zones = self._widgets.keys()
+        self._zones:list = self._widgets.keys()
 
         self.editor.blockCountChanged[int].connect(
             self._update_viewport_margins)
@@ -40,6 +43,9 @@ class PanelsManager(Manager):
 
         self._widgets[position][panel.__class__.__name__] = widget
         return widget
+    
+    def remove(self, panel: Panel) -> None:
+        pass
 
     def get(self, widget):
         """
@@ -54,7 +60,7 @@ class PanelsManager(Manager):
             except KeyError:
                 return None
 
-    def keys(self):
+    def keys(self) -> list:
         """
         Returns the list of installed panel names.
         """
@@ -66,21 +72,21 @@ class PanelsManager(Manager):
         """
         return self._widgets.values()
 
-    def __iter__(self):
+    def __iter__(self) -> Iterator:
         lst = []
         for zone, zone_dict in self._widgets.items():
             for name, panel in zone_dict.items():
                 lst.append(panel)
         return iter(lst)
 
-    def __len__(self):
+    def __len__(self) -> int:
         lst = []
         for zone, zone_dict in self._widgets.items():
             for name, panel in zone_dict.items():
                 lst.append(panel)
         return len(lst)
 
-    def panels_for_zone(self, zone: Panel.Position):
+    def panels_for_zone(self, zone: Panel.Position) -> list:
         """
         Gets the list of panels attached to the specified zone.
         :param zone: Panel position.
@@ -88,7 +94,7 @@ class PanelsManager(Manager):
         """
         return list(self._widgets[zone].values())
 
-    def panel_zone(self, widget: Union[Panel, str]) -> Panel.Position:
+    def panel_zone(self, widget: Union[Panel, str]) -> Union[Panel.Position, None]:
         if not isinstance(widget, str):
             widget = widget.__name__
 
@@ -167,7 +173,7 @@ class PanelsManager(Manager):
                 size_hint.height())
             bottom += size_hint.height()
 
-    def _update(self, rect, delta_y, force_update_margins=False) -> None:
+    def _update(self, rect:object, delta_y:int, force_update_margins:bool=False) -> None:
         """ Updates panels """
         helper = TextEngine(self.editor)
 
@@ -191,20 +197,16 @@ class PanelsManager(Manager):
         if (rect.contains(self.editor.viewport().rect()) or
                 force_update_margins):
             self._update_viewport_margins()
-    
-    def _viewport_margin(self, zone:Panel.Position) -> int:
-        res:int = 0
-        if zone == Panel.Position.LEFT or zone == Panel.Position.RIGHT:
-            for panel in self.panels_for_zone(zone):
-                if panel.isVisible():
-                    width = panel.sizeHint().width()
-                    res += width
-        
-        elif zone == Panel.Position.TOP or zone == Panel.Position.BOTTOM:
-            for panel in self.panels_for_zone(zone):
-                if panel.isVisible():
-                    height = panel.sizeHint().height()
-                    res += height
+
+    def _viewport_margin(self, zone: Panel.Position) -> int:
+        res: int = 0
+        for panel in self.panels_for_zone(zone):
+            if panel.isVisible():
+                if zone == Panel.Position.LEFT or zone == Panel.Position.RIGHT:
+                    res += panel.sizeHint().width()
+
+                elif zone == Panel.Position.TOP or zone == Panel.Position.BOTTOM:
+                    res += panel.sizeHint().height()
         return res
 
     def _update_viewport_margins(self) -> None:
@@ -212,10 +214,10 @@ class PanelsManager(Manager):
         top = self._viewport_margin(Panel.Position.TOP)
         left = self._viewport_margin(Panel.Position.LEFT)
         right = self._viewport_margin(Panel.Position.RIGHT)
-        bottom = self._viewport_margin(Panel.Position.BOTTOM)    
-                
+        bottom = self._viewport_margin(Panel.Position.BOTTOM)
+
         self._margin_sizes = (top, left, right, bottom)
-        self.editor.setViewportMargins(left, top, right, bottom) #pattern
+        self.editor.setViewportMargins(left, top, right, bottom)  # pattern
 
     def margin_size(self, zone=Panel.Position.LEFT) -> float:
         return self._margin_sizes[zone]
