@@ -5,6 +5,7 @@ from src import ChellyEditor
 from src.features import CaretLineHighLighter, IndentationGuides
 from src.components import LineNumberMargin, MiniChellyMap
 from src.managers import FeaturesManager, LanguagesManager, PanelsManager
+from src.languages import PythonLexer
 from src.core import Panel
 from PySide6.QtWidgets import *
 from PySide6.QtCore import *
@@ -28,12 +29,16 @@ editor.features.append(CaretLineHighLighter)
 #editor.features.append(IndentationGuides)
 editor.panels.append(LineNumberMargin, Panel.Position.LEFT)
 minimap = editor.panels.append(MiniChellyMap, Panel.Position.RIGHT)
+editor.language.lexer = PythonLexer
+minimap.code_viewer.language.lexer = PythonLexer
 
 editor1 = ChellyEditor(div)
 editor1.setStyleSheet("""QPlainTextEdit{font-family:'Consolas'; color: #ccc; background-color: #2b2b2b;}""")
 editor1.features.append(CaretLineHighLighter)
 editor1.panels.append(LineNumberMargin, Panel.Position.LEFT)
 minimap1 = editor1.panels.append(MiniChellyMap, Panel.Position.RIGHT)
+editor1.language.lexer = PythonLexer
+minimap1.code_viewer.language.lexer = PythonLexer
 
 div.addWidget(editor)
 div.addWidget(editor1)

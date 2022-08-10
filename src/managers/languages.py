@@ -12,7 +12,7 @@ class LanguagesManager(Manager):
     @lexer.setter
     def lexer(self, new_lexer:object) -> None:
         if callable(new_lexer):
-            self._lexer = new_lexer(self.editor)
+            self._lexer = new_lexer(self.editor.document())
         else:
             self._lexer = new_lexer
         self.on_state_changed.emit(self._lexer)

@@ -7,7 +7,7 @@ class Highlighter(QSyntaxHighlighter):
         pattern = QRegularExpression()
         format = QTextCharFormat()
 
-    highlightingRules = []
+    highlighting_rules = []
     commentStartExpression = QRegularExpression()
     commentEndExpression = QRegularExpression()
     keywordFormat = QTextCharFormat()
@@ -40,33 +40,33 @@ class Highlighter(QSyntaxHighlighter):
             rule = Highlighter.HighlightingRule()
             rule.pattern = QRegularExpression(pattern)
             rule.format = self.keywordFormat
-            self.highlightingRules.append(rule)
+            self.highlighting_rules.append(rule)
         
         self.classFormat.setFontWeight(QFont.Weight.Bold)
         self.classFormat.setForeground(Qt.GlobalColor.darkMagenta)
         rule.pattern = QRegularExpression("\\bQ[A-Za-z]+\\b")
         rule.format = self.classFormat
-        self.highlightingRules.append(rule)
+        self.highlighting_rules.append(rule)
         self.quotationFormat.setForeground(Qt.GlobalColor.darkGreen)
         rule.pattern = QRegularExpression("\".*\"")
         rule.format = self.quotationFormat
-        self.highlightingRules.append(rule)
+        self.highlighting_rules.append(rule)
         self.functionFormat.setFontItalic(True)
         self.functionFormat.setForeground(Qt.GlobalColor.blue)
         rule.pattern = QRegularExpression("\\b[A-Za-z0-9_]+(?=\\()")
         rule.format = self.functionFormat
-        self.highlightingRules.append(rule)
+        self.highlighting_rules.append(rule)
 
         self.singleLineCommentFormat.setForeground(Qt.GlobalColor.red)
         rule.pattern = QRegularExpression("//[^\n]*")
         rule.format = self.singleLineCommentFormat
-        self.highlightingRules.append(rule)
+        self.highlighting_rules.append(rule)
         self.multiLineCommentFormat.setForeground(Qt.GlobalColor.red)
         self.commentStartExpression = QRegularExpression("/\\*")
         self.commentEndExpression = QRegularExpression("\\*/")
 
     def highlightBlock(self, text):
-        for rule in self.highlightingRules:
+        for rule in self.highlighting_rules:
             matchIterator = rule.pattern.globalMatch(text)
             while matchIterator.hasNext():
                 match = matchIterator.next()

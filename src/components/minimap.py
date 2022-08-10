@@ -187,6 +187,10 @@ class MiniChellyMap(Panel):
         self.setLayout(self.box)
     
     @property
+    def code_viewer(self) -> MiniMap:
+        return self._minimap
+    
+    @property
     def properties(self) -> Properties:
         return self.__properties
     
