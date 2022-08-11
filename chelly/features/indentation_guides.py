@@ -1,3 +1,6 @@
+"""
+"""
+
 from PySide6.QtGui import QPainter, QColor, QFontMetrics
 from ..core import Feature
 

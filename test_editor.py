@@ -1,12 +1,12 @@
 import sys
 sys.dont_write_bytecode = True
 
-from src import ChellyEditor
-from src.features import CaretLineHighLighter, IndentationGuides
-from src.components import LineNumberMargin, MiniChellyMap
-from src.managers import FeaturesManager, LanguagesManager, PanelsManager
-from src.languages import PythonLexer
-from src.core import Panel
+from chelly.api import ChellyEditor
+from chelly.features import CaretLineHighLighter, IndentationGuides
+from chelly.components import LineNumberMargin, MiniChellyMap
+from chelly.managers import FeaturesManager, LanguagesManager, PanelsManager
+from chelly.languages import PythonLexer
+from chelly.core import Panel
 from PySide6.QtWidgets import *
 from PySide6.QtCore import *
 import pytest
@@ -67,6 +67,3 @@ if __name__ == "__main__":
 	test_load_file()
 
 app.exec()
-
-#import src.languages.python_highlighter as python_lexer
-#highlight = python_lexer.Highlighter(editor.editorview.get_editor("main").document())

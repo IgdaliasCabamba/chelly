@@ -1,28 +1,27 @@
-from PySide6.QtGui import QSyntaxHighlighter, QTextCharFormat, QFont, QColor
-from PySide6.QtCore import QRegularExpression, Qt
+from PySide6.QtGui import QFont, QColor
+from PySide6.QtCore import Qt
+from ..core import Highlighter
 
-class Highlighter(QSyntaxHighlighter):
-
-    class HighlightingRule():
-        pattern = QRegularExpression()
-        format = QTextCharFormat()
-
-    highlighting_rules = []
-    commentStartExpression = QRegularExpression()
-    commentEndExpression = QRegularExpression()
-    keywordFormat = QTextCharFormat()
-    classFormat = QTextCharFormat()
-    singleLineCommentFormat = QTextCharFormat()
-    multiLineCommentFormat = QTextCharFormat()
-    quotationFormat = QTextCharFormat()
-    functionFormat = QTextCharFormat()
+class PythonHighlighter(Highlighter):
     
     def __init__(self, parent):
         super().__init__(parent)
+        self.comment_start_expression = Highlighter.Expression()
+        self.comment_end_expression = Highlighter.Expression()
+
+        self.keyword_format = Highlighter.Format()
+        self.class_format = Highlighter.Format()
+        self.single_line_comment_format = Highlighter.Format()
+        self.multi_line_comment_format = Highlighter.Format()
+        self.quotation_format = Highlighter.Format()
+        self.function_format = Highlighter.Format()
 
         rule = Highlighter.HighlightingRule()
-        self.keywordFormat.setForeground(Qt.GlobalColor.darkBlue)
-        self.keywordFormat.setFontWeight(QFont.Weight.Bold)
+        self.keyword_format = Highlighter.Format()
+        
+        self.keyword_format.setForeground(Qt.GlobalColor.darkBlue)
+        self.keyword_format.setFontWeight(QFont.Weight.Bold)
+
         keywordPatterns = {
             "\\bchar\\b", "\\bclass\\b", "\\bconst\\b",
             "\\bdouble\\b", "\\benum\\b", "\\bexplicit\\b",
@@ -38,32 +37,32 @@ class Highlighter(QSyntaxHighlighter):
 
         for pattern in keywordPatterns:
             rule = Highlighter.HighlightingRule()
-            rule.pattern = QRegularExpression(pattern)
-            rule.format = self.keywordFormat
+            rule.pattern = Highlighter.Expression(pattern)
+            rule.format = self.keyword_format
             self.highlighting_rules.append(rule)
         
-        self.classFormat.setFontWeight(QFont.Weight.Bold)
-        self.classFormat.setForeground(Qt.GlobalColor.darkMagenta)
-        rule.pattern = QRegularExpression("\\bQ[A-Za-z]+\\b")
-        rule.format = self.classFormat
+        self.class_format.setFontWeight(QFont.Weight.Bold)
+        self.class_format.setForeground(Qt.GlobalColor.darkMagenta)
+        rule.pattern = Highlighter.Expression("\\bQ[A-Za-z]+\\b")
+        rule.format = self.class_format
         self.highlighting_rules.append(rule)
-        self.quotationFormat.setForeground(Qt.GlobalColor.darkGreen)
-        rule.pattern = QRegularExpression("\".*\"")
-        rule.format = self.quotationFormat
+        self.quotation_format.setForeground(Qt.GlobalColor.darkGreen)
+        rule.pattern = Highlighter.Expression("\".*\"")
+        rule.format = self.quotation_format
         self.highlighting_rules.append(rule)
-        self.functionFormat.setFontItalic(True)
-        self.functionFormat.setForeground(Qt.GlobalColor.blue)
-        rule.pattern = QRegularExpression("\\b[A-Za-z0-9_]+(?=\\()")
-        rule.format = self.functionFormat
+        self.function_format.setFontItalic(True)
+        self.function_format.setForeground(Qt.GlobalColor.blue)
+        rule.pattern = Highlighter.Expression("\\b[A-Za-z0-9_]+(?=\\()")
+        rule.format = self.function_format
         self.highlighting_rules.append(rule)
 
-        self.singleLineCommentFormat.setForeground(Qt.GlobalColor.red)
-        rule.pattern = QRegularExpression("//[^\n]*")
-        rule.format = self.singleLineCommentFormat
+        self.single_line_comment_format.setForeground(Qt.GlobalColor.red)
+        rule.pattern = Highlighter.Expression("//[^\n]*")
+        rule.format = self.single_line_comment_format
         self.highlighting_rules.append(rule)
-        self.multiLineCommentFormat.setForeground(Qt.GlobalColor.red)
-        self.commentStartExpression = QRegularExpression("/\\*")
-        self.commentEndExpression = QRegularExpression("\\*/")
+        self.multi_line_comment_format.setForeground(Qt.GlobalColor.red)
+        self.commentStartExpression = Highlighter.Expression("/\\*")
+        self.commentEndExpression = Highlighter.Expression("\\*/")
 
     def highlightBlock(self, text):
         for rule in self.highlighting_rules:
@@ -89,6 +88,6 @@ class Highlighter(QSyntaxHighlighter):
             else:
                 commentLength = endIndex - startIndex + match.capturedLength()
 
-            self.setFormat(startIndex, commentLength, self.multiLineCommentFormat)
+            self.setFormat(startIndex, commentLength, self.multi_line_comment_format)
             match = self.commentStartExpression.match(text, startIndex + commentLength)
             startIndex = match.capturedStart()

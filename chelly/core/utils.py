@@ -1,3 +1,6 @@
+"""
+"""
+
 from PySide6.QtGui import QTextCursor
 
 class TextEngine:

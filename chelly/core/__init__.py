@@ -5,3 +5,4 @@ from .exceptions import *
 from .panel import *
 from .utils import *
 from .document import ChellyDocument
+from .lexer import Highlighter
