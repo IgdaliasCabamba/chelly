@@ -23,5 +23,7 @@ else
     git push
     key=$(<~/Ideas/.private/gh-mkdocs-key)
     export GH_TOKEN=$(echo "$key")
-    mike deploy "$2"
+    #mike deploy --push --update-aliases "$2" latest
+    mike deploy --push "$2"
+
 fi
