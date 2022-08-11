@@ -33,7 +33,7 @@ editor.language.lexer = PythonLexer
 minimap.code_viewer.language.lexer = PythonLexer
 
 editor1 = ChellyEditor(div)
-editor1.setStyleSheet("""QPlainTextEdit{font-family:'Consolas'; color: #ccc; background-color: #2b2b2b;}""")
+#editor1.setStyleSheet("""QPlainTextEdit{font-family:'Consolas'; color: #ccc; background-color: #2b2b2b;}""")
 editor1.features.append(CaretLineHighLighter)
 editor1.panels.append(LineNumberMargin, Panel.Position.LEFT)
 minimap1 = editor1.panels.append(MiniChellyMap, Panel.Position.RIGHT)

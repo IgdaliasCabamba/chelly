@@ -1,2 +1,2 @@
-:::src.core.utils
-:::src.features.indentation_guides
+:::chelly.core.utils
+:::chelly.features.indentation_guides
