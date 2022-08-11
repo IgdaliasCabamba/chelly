@@ -11,10 +11,17 @@ if [ -z "$1" ]
     echo "No commit message supplied"
     exit 1
 
+elif [ -z "$2" ]
+  then
+    echo "No version supplied"
+    exit 1
+
 else
     pip freeze > requirements.txt
     git add .
     git commit -m "$1"
     git push
-
+    key=$(<~/Ideas/.private/gh-mkdocs-key)
+    export GH_TOKEN=$(echo "$key")
+    mike deploy "$2"
 fi
