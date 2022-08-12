@@ -3,3 +3,4 @@ cenv/
 dev/
 *.pyi
 *.pyc
+site/

@@ -1,6 +1,7 @@
 site_name: Chelly Docs
 repo_url: https://github.com/IgdaliasCabamba/chelly
-edit_uri: edit/main/docs/
+edit_uri: edit/gh-pages/docs/
+docs_dir: docs
 
 theme:
   
