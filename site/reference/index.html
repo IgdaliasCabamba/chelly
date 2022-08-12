@@ -66,7 +66,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#chelly.core.utils" class="md-skip">
+        <a href="#chelly.managers" class="md-skip">
           Skip to content
         </a>
       
@@ -393,16 +393,36 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#chelly.core.utils" class="md-nav__link">
-    chelly.core.utils
+  <a href="#chelly.managers" class="md-nav__link">
+    chelly.managers
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#chelly.features.indentation_guides" class="md-nav__link">
-    chelly.features.indentation_guides
+  <a href="#chelly.managers.features" class="md-nav__link">
+    chelly.managers.features
   </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#chelly.managers.features.FeaturesManager" class="md-nav__link">
+    FeaturesManager
+  </a>
+  
+    <nav class="md-nav" aria-label="FeaturesManager">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#chelly.managers.features.FeaturesManager.append" class="md-nav__link">
+    append()
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
   
 </li>
       
@@ -441,7 +461,7 @@
             <article class="md-content__inner md-typeset">
               
                 
-  <a href="https://github.com/IgdaliasCabamba/chelly/edit/main/docs/reference.md" title="Edit this page" class="md-content__button md-icon">
+  <a href="https://github.com/IgdaliasCabamba/chelly/edit/gh-pages/docs/reference.md" title="Edit this page" class="md-content__button md-icon">
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20.71 7.04c.39-.39.39-1.04 0-1.41l-2.34-2.34c-.37-.39-1.02-.39-1.41 0l-1.84 1.83 3.75 3.75M3 17.25V21h3.75L17.81 9.93l-3.75-3.75L3 17.25Z"/></svg>
   </a>
 
@@ -452,10 +472,17 @@
 <div class="doc doc-object doc-module">
 
 
-<a id="chelly.core.utils"></a>
+<a id="chelly.managers"></a>
   <div class="doc doc-contents first">
   
-      
+      <p>Implement a set of classes to help the ChellyEditor to handle the components and features.</p>
+<p>This module allows the ChellyEditor to manage features, lexers, and panels.</p>
+<p>Modules exported by this package:</p>
+<ul>
+<li><code>features</code>: Provide the functionalities to extend and manage the editor functionalities.</li>
+<li><code>langauges</code>: Provide the functionalities to manage the editor lexer.</li>
+<li><code>widgets</code>: Provide the functionalities to manage the editor panels.</li>
+</ul>
 
   
 
@@ -480,10 +507,21 @@
 <div class="doc doc-object doc-module">
 
 
-<a id="chelly.features.indentation_guides"></a>
+<a id="chelly.managers.features"></a>
   <div class="doc doc-contents first">
   
-      
+      <p>This module allows the ChellyEditor to manage features(functionalities).</p>
+
+<p><strong>Examples:</strong></p>
+    <div class="highlight"><pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">chelly.managers</span> <span class="kn">import</span> <span class="n">FeaturesManager</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">chelly.features</span> <span class="kn">import</span> <span class="n">IndentationGuides</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">editor</span> <span class="o">=</span> <span class="n">ChellyEditor</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">editor</span><span class="o">.</span><span class="n">features</span> <span class="o">=</span> <span class="n">FeaturesManager</span>
+</code></pre></div>
+      <p>The module contains the following classes:</p>
+<ul>
+<li><code>FeaturesManager(editor)</code> - Create a new FeaturesManager instance with given editor</li>
+</ul>
 
   
 
@@ -495,6 +533,162 @@
 
 
 
+
+<div class="doc doc-object doc-class">
+
+
+
+<h2 id="chelly.managers.features.FeaturesManager" class="doc doc-heading">
+        <code>FeaturesManager</code>
+
+
+</h2>
+
+
+  <div class="doc doc-contents ">
+      <p class="doc doc-class-bases">
+        Bases: <code><span title="chelly.core.manager.Manager">Manager</span></code></p>
+
+
+
+        <details class="quote">
+          <summary>Source code in <code>chelly/managers/features.py</code></summary>
+          <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">17</span>
+<span class="normal">18</span>
+<span class="normal">19</span>
+<span class="normal">20</span>
+<span class="normal">21</span>
+<span class="normal">22</span>
+<span class="normal">23</span>
+<span class="normal">24</span>
+<span class="normal">25</span>
+<span class="normal">26</span>
+<span class="normal">27</span>
+<span class="normal">28</span>
+<span class="normal">29</span>
+<span class="normal">30</span>
+<span class="normal">31</span>
+<span class="normal">32</span>
+<span class="normal">33</span>
+<span class="normal">34</span>
+<span class="normal">35</span>
+<span class="normal">36</span>
+<span class="normal">37</span>
+<span class="normal">38</span>
+<span class="normal">39</span>
+<span class="normal">40</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span> <span class="nc">FeaturesManager</span><span class="p">(</span><span class="n">Manager</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">editor</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">editor</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_features</span> <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="k">def</span> <span class="nf">append</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">feature</span><span class="p">:</span><span class="nb">object</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">object</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Add the given feature to editor</span>
+
+<span class="sd">        Examples:</span>
+<span class="sd">            &gt;&gt;&gt; editor.features.append(CaretLineHighLighter)</span>
+
+<span class="sd">        :param feature: the mode to be added to editor.</span>
+<span class="sd">        :type feature: object</span>
+
+<span class="sd">        :returns: the given mode</span>
+<span class="sd">        :rtype: object</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="n">callable</span><span class="p">(</span><span class="n">feature</span><span class="p">):</span>
+            <span class="n">mode</span> <span class="o">=</span> <span class="n">feature</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">editor</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">mode</span> <span class="o">=</span> <span class="n">feature</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_features</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">mode</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">mode</span>
+</code></pre></div></td></tr></table></div>
+        </details>
+
+  
+
+  <div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+<div class="doc doc-object doc-function">
+
+
+
+<h3 id="chelly.managers.features.FeaturesManager.append" class="doc doc-heading">
+<code class="highlight language-python"><span class="n">append</span><span class="p">(</span><span class="n">feature</span><span class="p">)</span></code>
+
+</h3>
+
+
+  <div class="doc doc-contents ">
+  
+      <p>Add the given feature to editor</p>
+
+<p><strong>Examples:</strong></p>
+    <div class="highlight"><pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="n">editor</span><span class="o">.</span><span class="n">features</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">CaretLineHighLighter</span><span class="p">)</span>
+</code></pre></div>
+      <p>:param feature: the mode to be added to editor.
+:type feature: object</p>
+<p>:returns: the given mode
+:rtype: object</p>
+
+      <details class="quote">
+        <summary>Source code in <code>chelly/managers/features.py</code></summary>
+        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">22</span>
+<span class="normal">23</span>
+<span class="normal">24</span>
+<span class="normal">25</span>
+<span class="normal">26</span>
+<span class="normal">27</span>
+<span class="normal">28</span>
+<span class="normal">29</span>
+<span class="normal">30</span>
+<span class="normal">31</span>
+<span class="normal">32</span>
+<span class="normal">33</span>
+<span class="normal">34</span>
+<span class="normal">35</span>
+<span class="normal">36</span>
+<span class="normal">37</span>
+<span class="normal">38</span>
+<span class="normal">39</span>
+<span class="normal">40</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">append</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">feature</span><span class="p">:</span><span class="nb">object</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">object</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Add the given feature to editor</span>
+
+<span class="sd">    Examples:</span>
+<span class="sd">        &gt;&gt;&gt; editor.features.append(CaretLineHighLighter)</span>
+
+<span class="sd">    :param feature: the mode to be added to editor.</span>
+<span class="sd">    :type feature: object</span>
+
+<span class="sd">    :returns: the given mode</span>
+<span class="sd">    :rtype: object</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">if</span> <span class="n">callable</span><span class="p">(</span><span class="n">feature</span><span class="p">):</span>
+        <span class="n">mode</span> <span class="o">=</span> <span class="n">feature</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">editor</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">mode</span> <span class="o">=</span> <span class="n">feature</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">_features</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">mode</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">mode</span>
+</code></pre></div></td></tr></table></div>
+      </details>
+  </div>
+
+</div>
+
+
+
+  </div>
+
+  </div>
+
+</div>
 
 
 
@@ -510,7 +704,7 @@
   <small>
     
       Last update:
-      <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date">August 11, 2022</span>
+      <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date">August 12, 2022</span>
       
         <br>
         Created:
