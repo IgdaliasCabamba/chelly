@@ -1,2 +1,2 @@
-:::chelly.core.utils
-:::chelly.features.indentation_guides
+:::chelly.managers
+:::chelly.managers.features

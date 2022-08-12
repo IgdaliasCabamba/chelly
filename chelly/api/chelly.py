@@ -57,7 +57,7 @@ class ChellyEditor(QPlainTextEdit):
     @language.setter
     def language(self, new_manager: LanguagesManager) -> LanguagesManager:
         if new_manager is LanguagesManager:
-            self._language = new_manager()
+            self._language = new_manager(self)
         elif isinstance(new_manager, LanguagesManager):
             self._language = new_manager
         else:
@@ -71,7 +71,7 @@ class ChellyEditor(QPlainTextEdit):
     @properties.setter
     def properties(self, new_manager: Properties) -> Properties:
         if new_manager is Properties:
-            self._properties = new_manager()
+            self._properties = new_manager(self)
         elif isinstance(new_manager, Properties):
             self._properties = new_manager
         else:
@@ -85,7 +85,7 @@ class ChellyEditor(QPlainTextEdit):
     @panels.setter
     def panels(self, new_manager: PanelsManager) -> PanelsManager:
         if new_manager is PanelsManager:
-            self._panels = new_manager()
+            self._panels = new_manager(self)
         elif isinstance(new_manager, PanelsManager):
             self._panels = new_manager
         else:
@@ -99,7 +99,7 @@ class ChellyEditor(QPlainTextEdit):
     @features.setter
     def features(self, new_manager: FeaturesManager) -> FeaturesManager:
         if new_manager is FeaturesManager:
-            self._features = new_manager()
+            self._features = new_manager(self)
         elif isinstance(new_manager, FeaturesManager):
             self._features = new_manager
         else:
