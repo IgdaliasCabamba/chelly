@@ -50,6 +50,6 @@ class Properties(object):
 
     def default(self):
         self._editor.setTabStopDistance(QFontMetrics(
-            self._editor.font()).horizontalAdvance(' ') * 4)
+            self._editor.font()).horizontalAdvance(' ') * self.indent_size)
 
         self._editor.setWordWrapMode(QTextOption.WrapMode.NoWrap)
