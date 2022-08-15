@@ -2,7 +2,7 @@
 """
 
 from PySide6.QtGui import QPainter, QColor, QFontMetrics
-from ..core import Feature
+from ..core import Feature, TextEngine
 from dataclasses import dataclass
 import re
 
@@ -39,8 +39,8 @@ class IndentationGuides(Feature):
             visible_text.append((i[2].text(), i[2].blockNumber()))
         
         for text, line_num in visible_text:
-            if text.count("\t"):
-                splited_text = text.split("\t")
+            if text.count(" "*4):
+                splited_text = text.split(" "*4)
                 
                 indent_count = 0
 
@@ -55,16 +55,16 @@ class IndentationGuides(Feature):
         
         with QPainter(self.editor.viewport()) as painter:
             
-            font = self.editor.font()
-            font_metrics = QFontMetrics(font)
-            self.font_width = font_metrics.horizontalAdvance('    ')
+            font_metrics = QFontMetrics(self.editor.font())
+            self.font_width = font_metrics.horizontalAdvance('W') * self.editor.properties.indent_size
             self.font_height = font_metrics.height()
             
             painter.setPen(QColor(0, 100, 100))
 
             for i in indentations_cords:
-                the_x = self.font_width + (i.level * self.font_width)
-                painter.drawLine(the_x, i.line, the_x,
-                                 i.line + self.font_height)
+                for x in range(0, i.level-1):
+                    the_x = self.font_width + (x * self.font_width)
+                    painter.drawLine(the_x, TextEngine(self.editor).point_y_from_line_number(i.line), the_x,
+                                    TextEngine(self.editor).point_y_from_line_number(i.line) + self.font_height)
 
 

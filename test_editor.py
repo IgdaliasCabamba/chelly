@@ -24,7 +24,7 @@ app = QApplication(sys.argv)
 div = QSplitter()
 
 editor = ChellyEditor(div)
-editor.setStyleSheet("""QPlainTextEdit{font-family:'Consolas'; color: #ccc; background-color: #2b2b2b;}""")
+#editor.setStyleSheet("""QPlainTextEdit{font-family:'Consolas'; color: #ccc; background-color: #2b2b2b;}""")
 editor.features.append(CaretLineHighLighter)
 editor.features.append(IndentationGuides)
 editor.panels.append(LineNumberMargin, Panel.Position.LEFT)
@@ -33,7 +33,7 @@ editor.language.lexer = PythonLexer
 minimap.code_viewer.language.lexer = PythonLexer
 
 editor1 = ChellyEditor(div)
-#editor1.setStyleSheet("""QPlainTextEdit{font-family:'Consolas'; color: #ccc; background-color: #2b2b2b;}""")
+#editor1.setStyleSheet(\t"""QPlainTextEdit{font-family:'Consolas'; color: #ccc; background-color: #2b2b2b;}""")
 editor1.features.append(CaretLineHighLighter)
 editor1.features.append(IndentationGuides)
 editor1.panels.append(LineNumberMargin, Panel.Position.LEFT)

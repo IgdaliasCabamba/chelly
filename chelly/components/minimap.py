@@ -27,7 +27,7 @@ class MiniMap(CodeEditor):
 
         self.setMouseTracking(True)
         self.setTabStopDistance(QFontMetrics(
-            self.font()).horizontalAdvance(' ') * 2)
+            self.font()).horizontalAdvance('W') * 2)
 
         self.zoomOut(8)
         self.setReadOnly(True)
