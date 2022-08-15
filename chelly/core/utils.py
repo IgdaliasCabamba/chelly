@@ -1,7 +1,9 @@
 """
 """
+from enum import Enum
 
-from PySide6.QtGui import QTextCursor
+from typing import Any, Union
+from PySide6.QtGui import QTextCursor, QTextBlock
 
 class TextEngine:
     def __init__(self, editor):
@@ -115,3 +117,28 @@ class TextEngine:
         doc = self._editor.document()
         block = doc.findBlockByLineNumber(line_nbr)
         return block.text()
+    
+    def line_indent(self, line_number:Union[QTextBlock, None]=None, indent_char:str="\t") -> int:
+        """
+        Returns the indent level of the specified line
+        :param line_number: Number of the line to get indentation (1 base).
+            Pass None to use the current line number. Note that you can also
+            pass a QTextBlock instance instead of an int.
+        :return: Number of spaces that makes the indentation level of the
+                 current line
+        """
+        if line_number is None:
+            line_number = self.current_line_nbr
+
+        elif isinstance(line_number, QTextBlock):
+            line_number = line_number.blockNumber()
+
+        line = self.text_at_line(line_number)
+        indentation_level = len(line) - len(line.lstrip(indent_char))
+        return indentation_level
+
+class Character(Enum):
+    SPACE:str = " "
+    TAB:str = "\t"
+    EMPTY:str = str()
+    LARGEST = "W"

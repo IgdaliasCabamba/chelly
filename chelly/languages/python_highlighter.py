@@ -23,9 +23,9 @@ class PythonHighlighter(Highlighter):
         self.keyword_format.setFontWeight(QFont.Weight.Bold)
 
         keywordPatterns = {
-            "\\bchar\\b", "\\bclass\\b", "\\bconst\\b",
-            "\\bdouble\\b", "\\benum\\b", "\\bexplicit\\b",
-            "\\bfriend\\b", "\\binline\\b", "\\bint\\b",
+            "\\bstr\\b", "\\bclass\\b", "\\bdef\\b",
+            "\\bfloat\\b", "\\bwhile\\b", "\\bint\\b",
+            "\\bTrue\\b", "\\bNone\\b", "\\bFalse\\b",
             "\\blong\\b", "\\bnamespace\\b", "\\boperator\\b",
             "\\bprivate\\b", "\\bprotected\\b", "\\bpublic\\b",
             "\\bshort\\b", "\\bsignals\\b", "\\bsigned\\b",
