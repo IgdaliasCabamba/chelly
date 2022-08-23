@@ -1,10 +1,9 @@
 """
 """
-from ast import Return
-from PySide6.QtGui import QPainter, QColor, QFontMetrics
-from ..core import Feature, TextEngine
-from dataclasses import dataclass
 import re
+from PySide6.QtGui import QPainter, QColor, QFontMetrics
+from ..core import Feature, TextEngine, Character
+from dataclasses import dataclass
 
 
 class IndentationGuides(Feature):
@@ -51,8 +50,8 @@ class IndentationGuides(Feature):
                 visible_text.append((i[2].text(), i[2].blockNumber()))
         
             for text, line_num in visible_text:
-                if text.count("\t"):
-                    splited_text = text.split("\t")
+                if text.count(Character.TAB.value):
+                    splited_text = text.split(Character.TAB.value)
                 
                     indent_count = 0
 
@@ -67,7 +66,7 @@ class IndentationGuides(Feature):
         
             with QPainter(self.editor.viewport()) as painter:
                 font_metrics = QFontMetrics(self.editor.font())
-                self.font_width = font_metrics.horizontalAdvance('W') * self.editor.properties.indent_size
+                self.font_width = font_metrics.horizontalAdvance(Character.LARGEST.value) * self.editor.properties.indent_size
                 self.font_height = font_metrics.height()
             
                 painter.setPen(QColor(0, 100, 100))
@@ -92,13 +91,13 @@ class IndentationGuides(Feature):
                 visible_text.append((i[2].text(), i[2].blockNumber()))
         
             for text, line_num in visible_text:
-                if text.count(" "*self.editor.properties.indent_size):
-                    splited_text = text.split(" "*self.editor.properties.indent_size)
+                if text.count(Character.SPACE.value * self.editor.properties.indent_size):
+                    splited_text = text.split(Character.SPACE.value * self.editor.properties.indent_size)
                 
                     indent_count = 0
 
                     for item in splited_text:
-                        if item=='':
+                        if item==Character.EMPTY.value:
                             indent_count += 1
                         else:
                             indentations_cords.append(
@@ -108,7 +107,7 @@ class IndentationGuides(Feature):
         
             with QPainter(self.editor.viewport()) as painter:
                 font_metrics = QFontMetrics(self.editor.font())
-                self.font_width = font_metrics.horizontalAdvance(' ') * self.editor.properties.indent_size
+                self.font_width = font_metrics.horizontalAdvance(Character.SPACE.value) * self.editor.properties.indent_size
                 self.font_height = font_metrics.height()
             
                 painter.setPen(QColor(0, 100, 100))

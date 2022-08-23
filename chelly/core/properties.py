@@ -15,6 +15,7 @@ class Properties(object):
         self._editor = editor
         self._indent_size:int = Property.Default.INDENT_SIZE
         self._indent_type:int = Property.Indentation.tabs
+        self.show_whitespaces = False
     
     @property
     def text(self) -> str:

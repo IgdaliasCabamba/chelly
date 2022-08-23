@@ -17,7 +17,7 @@ from ..core.manager import Manager
 class FeaturesManager(Manager):
     def __init__(self, editor):
         super().__init__(editor)
-        self._features = []
+        self._features = {}
     
     def append(self, feature:object) -> object:
         """Add the given feature to editor
@@ -36,5 +36,18 @@ class FeaturesManager(Manager):
             mode = feature(self.editor)
         else:
             mode = feature
-        self._features.append(mode)
+
+        self._features[mode.__class__.__name__]= mode
         return mode
+    
+    def get(self, mode):
+        """
+        Gets a specific feature instance.
+        """
+        if not isinstance(mode, str):
+            mode = mode.__name__
+        
+        if mode in self._features:
+            return self._features[mode]
+        
+        return None

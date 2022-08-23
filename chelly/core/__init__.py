@@ -3,6 +3,6 @@ from .properties import Properties
 from .feature import Feature
 from .exceptions import *
 from .panel import *
-from .utils import TextEngine, Character
+from .utils import TextEngine, Character, drift_color
 from .document import ChellyDocument
-from .lexer import Highlighter
+from .lexer import SyntaxHighlighter, Highlighter, ColorScheme, TextBlockUserData
