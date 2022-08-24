@@ -4,6 +4,8 @@ from PySide6.QtGui import (QColor, QFont, QFontMetrics, QPainter, QTextBlock,
                            QTextCursor, QTextOption)
 from PySide6.QtWidgets import (QGraphicsDropShadowEffect, QHBoxLayout,
                                QPlainTextEdit, QScrollBar, QFrame)
+
+#from ..api.chelly import ChellyEditor as CodeEditor
 from .code_editor import CodeEditor
 
 from ..core import (FeaturesExceptions, LexerExceptions, Panel, Properties,

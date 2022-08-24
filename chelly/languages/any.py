@@ -1,94 +1,18 @@
-import logging
 import mimetypes
-import sys
 
 from pygments.formatters.html import HtmlFormatter
-from pygments.lexer import Error, RegexLexer, Text, _TokenType
+from pygments.lexer import RegexLexer
 from pygments.lexers import get_lexer_for_filename, get_lexer_for_mimetype
 from pygments.lexers.agile import PythonLexer
 from pygments.lexers.compiled import CLexer, CppLexer
+from pygments.lexers.javascript import DartLexer
 from pygments.lexers.dotnet import CSharpLexer
 from pygments.lexers.special import TextLexer
 from pygments.styles import get_style_by_name, get_all_styles
 from pygments.token import Whitespace, Comment, Token
 from pygments.util import ClassNotFound
-from PySide6.QtGui import QSyntaxHighlighter, QTextCharFormat, QFont, QTextBlockUserData, QCursor, QColor, QBrush
-from PySide6.QtCore import QRegularExpression, Qt, Signal
 
 from ..core import (SyntaxHighlighter, ColorScheme, TextBlockUserData)
-
-
-def _logger():
-    """ Returns the module's logger """
-    return logging.getLogger(__name__)
-
-
-#: A sorted list of available pygments styles, for convenience
-PYGMENTS_STYLES = sorted(list(get_all_styles()))
-
-if hasattr(sys, 'frozen'):
-    PYGMENTS_STYLES += ['darcula', 'qt']
-
-
-def get_tokens_unprocessed(self, text, stack=('root',)):
-    """ Split ``text`` into (tokentype, text) pairs.
-        Monkeypatched to store the final stack on the object itself.
-    """
-    pos = 0
-    tokendefs = self._tokens
-    if hasattr(self, '_saved_state_stack'):
-        statestack = list(self._saved_state_stack)
-    else:
-        statestack = list(stack)
-    statetokens = tokendefs[statestack[-1]]
-    while 1:
-        for rexmatch, action, new_state in statetokens:
-            m = rexmatch(text, pos)
-            if m:
-                if action is not None:
-                    if type(action) is _TokenType:
-                        yield pos, action, m.group()
-                    else:
-                        for item in action(self, m):
-                            yield item
-                pos = m.end()
-                if new_state is not None:
-                    # state transition
-                    if isinstance(new_state, tuple):
-                        for state in new_state:
-                            if state == '#pop':
-                                statestack.pop()
-                            elif state == '#push':
-                                statestack.append(statestack[-1])
-                            else:
-                                statestack.append(state)
-                    elif isinstance(new_state, int):
-                        # pop
-                        del statestack[new_state:]
-                    elif new_state == '#push':
-                        statestack.append(statestack[-1])
-                    else:
-                        assert False, "wrong state def: %r" % new_state
-                    statetokens = tokendefs[statestack[-1]]
-                break
-        else:
-            try:
-                if text[pos] == '\n':
-                    # at EOL, reset state to "root"
-                    pos += 1
-                    statestack = ['root']
-                    statetokens = tokendefs['root']
-                    yield pos, Text, '\n'
-                    continue
-                yield pos, Error, text[pos]
-                pos += 1
-            except IndexError:
-                break
-    self._saved_state_stack = list(statestack)
-
-# Monkeypatch!
-RegexLexer.get_tokens_unprocessed = get_tokens_unprocessed
-
 
 # Even with the above monkey patch to store state, multiline comments do not
 # work since they are stateless (Pygments uses a single multiline regex for
@@ -151,25 +75,14 @@ class PygmentsSH(SyntaxHighlighter):
         super().__init__(document, color_scheme=color_scheme)
         self._pygments_style = self.color_scheme.name
         self._style = None
-        self._formatter = HtmlFormatter(nowrap=True)
         self._lexer = lexer if lexer else PythonLexer()
 
-        self._brushes = {}
-        self._formats = {}
         self._init_style()
         self._prev_block = None
 
     def _init_style(self):
         """ Init pygments style """
-        self._update_style()
-
-    def clone_settings(self, original):
-
-        # The lexer can be shared between clones.
-        self._lexer = original._lexer
-        self._clear_caches()
-        self._update_style()
-        
+        self._update_style()        
 
     def set_mime_type(self, mime_type):
         """
@@ -184,14 +97,11 @@ class PygmentsSH(SyntaxHighlighter):
         try:
             self.set_lexer_from_mime_type(mime_type)
         except ClassNotFound:
-            _logger().exception('failed to get lexer from mimetype')
             self._lexer = TextLexer()
             return False
         except ImportError:
             # import error while loading some pygments plugins, the editor
             # should not crash
-            _logger().warning('failed to get lexer from mimetype (%s)' %
-                              mime_type)
             self._lexer = TextLexer()
             return False
         else:
@@ -204,20 +114,15 @@ class PygmentsSH(SyntaxHighlighter):
         :param filename: Filename or extension
         """
         self._lexer = None
-        if filename.endswith("~"):
-            filename = filename[0:len(filename) - 1]
         try:
             self._lexer = get_lexer_for_filename(filename)
         except (ClassNotFound, ImportError):
-            print('class not found for url', filename)
             try:
                 m = mimetypes.guess_type(filename)
                 self._lexer = get_lexer_for_mimetype(m[0])
             except (ClassNotFound, IndexError, ImportError):
                 self._lexer = get_lexer_for_mimetype('text/plain')
         if self._lexer is None:
-            _logger().warning('failed to get lexer from filename: %s, using '
-                              'plain text instead...', filename)
             self._lexer = TextLexer()
 
     def set_lexer_from_mime_type(self, mime, **options):
@@ -230,10 +135,7 @@ class PygmentsSH(SyntaxHighlighter):
         try:
             self._lexer = get_lexer_for_mimetype(mime, **options)
         except (ClassNotFound, ImportError):
-            print('class not found for mime', mime)
             self._lexer = get_lexer_for_mimetype('text/plain')
-        else:
-            _logger().debug('lexer for mimetype (%s): %r', mime, self._lexer)
 
     def highlight_block(self, text, block):
         """
@@ -241,54 +143,23 @@ class PygmentsSH(SyntaxHighlighter):
         :param text: text of the block to highlith
         :param block: block to highlight
         """
-
-        if self.color_scheme.name != self._pygments_style:
-            self._pygments_style = self.color_scheme.name
-            
-            self._update_style()
-
-        original_text = text
         if self.editor and self._lexer:
-            if block.blockNumber():
-                prev_data = self._prev_block.userData()
-                if prev_data:
-                    if hasattr(prev_data, "syntax_stack"):
-                        self._lexer._saved_state_stack = prev_data.syntax_stack
-                    elif hasattr(self._lexer, '_saved_state_stack'):
-                        del self._lexer._saved_state_stack
 
             # Lex the text using Pygments
             index = 0
-            usd = block.userData()
-            if usd is None:
-                usd = TextBlockUserData()
-                block.setUserData(usd)
+            if block.userData() is None:
+                block.setUserData(TextBlockUserData())
+
             tokens = list(self._lexer.get_tokens(text))
+            
             for token, text in tokens:
                 length = len(text)
-                fmt = self._get_format(token)
+                format = self._get_format(token)
                 if token in [Token.Literal.String, Token.Literal.String.Doc,
                              Token.Comment]:
-                    fmt.setObjectType(fmt.UserObject)
-                self.setFormat(index, length, fmt)
+                    format.setObjectType(format.UserObject)
+                self.setFormat(index, length, format)
                 index += length
-
-            if hasattr(self._lexer, '_saved_state_stack'):
-                setattr(usd, "syntax_stack", self._lexer._saved_state_stack)
-                # Clean up for the next go-round.
-                del self._lexer._saved_state_stack
-
-            # spaces
-            text = original_text
-            expression = QRegularExpression(r'\s+')
-            match = expression.match(text)
-            index = match.capturedStart()
-            while index >= 0:
-                match = expression.match(text, index)
-                index = match.capturedStart()
-                length = match.capturedLength()
-                self.setFormat(index, length, self.formats['whitespace'])
-                index = match.capturedStart(index + length)
 
             self._prev_block = block
 
@@ -297,10 +168,7 @@ class PygmentsSH(SyntaxHighlighter):
         """
         try:
             self._style = get_style_by_name(self._pygments_style)
-        except ClassNotFound:
-            # unknown style, also happen with plugins style when used from a
-            # frozen app.
-            
+        except ClassNotFound:            
             self._style = get_style_by_name('dracula')
             self._pygments_style = 'dracula'
         self._clear_caches()
@@ -308,70 +176,16 @@ class PygmentsSH(SyntaxHighlighter):
     def _clear_caches(self):
         """ Clear caches for brushes and formats.
         """
-        self._brushes.clear()
-        self._formats.clear()
+        self.color_scheme.brushes.clear()
+        self.color_scheme.formats.clear()
 
     def _get_format(self, token):
         """ Returns a QTextCharFormat for token or None.
         """
-        if token == Whitespace:
-            return self.editor.whitespaces_foreground
+        if token in self.color_scheme.formats:
+            return self.color_scheme.formats[token]
 
-        if token in self._formats:
-            return self._formats[token]
+        result = self.color_scheme.get_format_from_style(token, self._style)
 
-        result = self._get_format_from_style(token, self._style)
-
-        self._formats[token] = result
+        self.color_scheme.formats[token] = result
         return result
-
-    def _get_format_from_style(self, token, style):
-        """ Returns a QTextCharFormat for token by reading a Pygments style.
-        """
-        result = QTextCharFormat()
-        try:
-            style = style.style_for_token(token)
-        except KeyError:
-            # fallback to plain text
-            style = style.style_for_token(Text)
-        for key, value in list(style.items()):
-            if value:
-                if key == 'color':
-                    result.setForeground(self._get_brush(value))
-                elif key == 'bgcolor':
-                    result.setBackground(self._get_brush(value))
-                elif key == 'bold':
-                    result.setFontWeight(QFont.Bold)
-                elif key == 'italic':
-                    result.setFontItalic(True)
-                elif key == 'underline':
-                    result.setUnderlineStyle(
-                        QTextCharFormat.SingleUnderline)
-                elif key == 'sans':
-                    result.setFontStyleHint(QFont.SansSerif)
-                elif key == 'roman':
-                    result.setFontStyleHint(QFont.Times)
-                elif key == 'mono':
-                    result.setFontStyleHint(QFont.TypeWriter)
-        return result
-
-    def _get_brush(self, color):
-        """ Returns a brush for the color.
-        """
-        result = self._brushes.get(color)
-        if result is None:
-            qcolor = self._get_color(color)
-            result = QBrush(qcolor)
-            self._brushes[color] = result
-        return result
-
-    @staticmethod
-    def _get_color(color):
-        """ Returns a QColor built from a Pygments color string.
-        """
-        color = str(color).replace("#", "")
-        qcolor = QColor()
-        qcolor.setRgb(int(color[:2], base=16),
-                      int(color[2:4], base=16),
-                      int(color[4:6], base=16))
-        return qcolor

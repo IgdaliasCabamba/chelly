@@ -7,7 +7,6 @@ from ..core import (ChellyDocument, ChellyDocumentExceptions,
                     Properties, PropertiesExceptions)
 from ..managers import FeaturesManager, LanguagesManager, PanelsManager
 
-
 class CodeEditor(QPlainTextEdit):
 
     on_resized = Signal()

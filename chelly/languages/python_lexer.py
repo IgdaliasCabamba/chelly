@@ -1,5 +1,5 @@
-from .python_highlighter import PythonHighlighter, SyntaxHighlighter
+from .python_highlighter import SyntaxHighlighter
 
-class PythonLexer(PythonHighlighter):
+class PythonLexer():
     def __init__(self, editor) -> None:
         super().__init__(editor)

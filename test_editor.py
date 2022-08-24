@@ -5,7 +5,7 @@ from chelly.api import ChellyEditor
 from chelly.features import CaretLineHighLighter, IndentationGuides, AutoIndentMode
 from chelly.components import LineNumberMargin, MiniChellyMap, HorizontalScrollBar, VerticalScrollBar
 from chelly.managers import FeaturesManager, LanguagesManager, PanelsManager
-from chelly.languages import PythonLexer, PygmentsSH
+from chelly.languages import PygmentsSH
 from chelly.core import Panel, SyntaxHighlighter
 from PySide6.QtWidgets import *
 from PySide6.QtCore import *
@@ -24,6 +24,7 @@ app = QApplication(sys.argv)
 div = QSplitter()
 
 editor = ChellyEditor(div)
+#editor.setStyleSheet("""QPlainTextEdit{font-family:Monaco; color: #ccc; background-color: #2b2b2b;}""")
 editor.setStyleSheet("""QPlainTextEdit{color: #ccc; background-color: #2b2b2b;}""")
 editor.features.append(CaretLineHighLighter)
 editor.features.append(IndentationGuides)
@@ -38,13 +39,15 @@ editor.panels.append(h_scrollbar1, Panel.Position.BOTTOM)
 editor.panels.append(v_scrollbar1, Panel.Position.RIGHT)
 
 minimap = editor.panels.append(MiniChellyMap, Panel.Position.RIGHT)
-editor.language.lexer = PythonLexer
-minimap.code_viewer.language.lexer = PythonLexer
+#editor.language.lexer = PythonLexer
+#minimap.code_viewer.language.lexer = PythonLexer
 
 editor1 = ChellyEditor(div)
-#editor1.setStyleSheet(\t"""QPlainTextEdit{font-family:'Consolas'; color: #ccc; background-color: #2b2b2b;}""")
+#editor1.setStyleSheet("""QPlainTextEdit{font-family:Monaco; color: #ccc; background-color: #2b2b2b;}""")
+editor1.setStyleSheet("""QPlainTextEdit{color: #ccc; background-color: #2b2b2b;}""")
 editor1.features.append(CaretLineHighLighter)
 editor1.features.append(IndentationGuides)
+editor1.features.append(AutoIndentMode)
 editor1.panels.append(LineNumberMargin, Panel.Position.LEFT)
 
 h_scrollbar1 = HorizontalScrollBar(editor1)
@@ -57,8 +60,9 @@ editor1.panels.append(v_scrollbar1, Panel.Position.RIGHT)
 minimap1 = editor1.panels.append(MiniChellyMap, Panel.Position.RIGHT)
 a = PygmentsSH(editor)
 b = PygmentsSH(minimap.code_viewer)
-a1 = PygmentsSH(editor1)
-b1 = PygmentsSH(minimap1.code_viewer)
+a1 = PygmentsSH(document=editor1, color_scheme="one-dark")
+b1 = PygmentsSH(document=minimap1.code_viewer, color_scheme="one-dark")
+
 #editor1.language.lexer = SyntaxHighlighter
 #minimap1.code_viewer.language.lexer = SyntaxHighlighter
 

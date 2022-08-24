@@ -1,3 +1,4 @@
+from cmath import e
 from PySide6.QtGui import QSyntaxHighlighter, QTextCharFormat, QFont, QTextBlockUserData, QCursor, QColor, QBrush
 from PySide6.QtCore import QRegularExpression, Qt, Signal
 from PySide6.QtWidgets import QApplication
@@ -22,16 +23,10 @@ class Highlighter(QSyntaxHighlighter):
 """
 This module contains the syntax highlighter API.
 """
-import time
-import weakref
 from pygments.styles import get_style_by_name, get_all_styles
 from pygments.token import Token, Punctuation
 from pygments.util import ClassNotFound
-from ..core import Feature
 from ..core import drift_color
-
-#: A sorted list of available pygments styles, for convenience
-PYGMENTS_STYLES = sorted(set(list(get_all_styles())))
 
 #: The list of color schemes keys (and their associated pygments token)
 COLOR_SCHEME_KEYS = {
@@ -48,7 +43,31 @@ COLOR_SCHEME_KEYS = {
     # type keywords
     "type": Token.Keyword.Type,
     # reserved keyword
+
     "keyword_reserved": Token.Keyword.Reserved,
+    "keyword_constant": Token.Keyword.Constant,
+    "keyword_declaration": Token.Keyword.Declaration,
+    "keyword_namespace": Token.Keyword.Namespace,
+    "keyword_pseudo": Token.Keyword.Pseudo,
+    "keyword_reserved": Token.Keyword.Reserved,
+    "keyword_type": Token.Keyword.Type,
+    "name": Token.Name,
+    "name_attribute": Token.Name.Attribute,
+    "name_builtin_pseudo": Token.Name.Builtin.Pseudo,
+    "name_entity": Token.Name.Entity,
+    "name_exception": Token.Name.Exception,
+    "name_function_magic": Token.Name.Function.Magic,
+    "name_label": Token.Name.Label,
+    "name_namespace": Token.Name.Namespace,
+    "name_other": Token.Name.Other,
+    "name_property": Token.Name.Property,
+    "name_variable_class": Token.Name.Variable.Class,
+    "name_variable_global": Token.Name.Variable.Global,
+    "name_variable_instance": Token.Name.Variable.Instance,
+    "name_variable_magic": Token.Name.Variable.Magic,
+    
+    #"": Token.,
+
     # any builtin name
     "builtin": Token.Name.Builtin,
     # any definition (class or function)
@@ -113,6 +132,10 @@ class ColorScheme(object):
         :return:
         """
         return self.formats['highlight'].background().color()
+    
+    @property
+    def brushes(self) -> dict:
+        return self._brushes
 
     def __init__(self, style):
         """
@@ -124,49 +147,52 @@ class ColorScheme(object):
         #: :attr:`pyqode.core.api.COLOR_SCHEME_KEYS`
         self.formats = {}
         try:
-            style = get_style_by_name(style)
-            self._load_formats_from_style(style)
+            style = get_style_by_name(style)()
+            #print(style())
+            #self._load_formats_from_style(style)
         except ClassNotFound:
             pass
 
     def _load_formats_from_style(self, style):
         # background
-        self.formats['background'] = self._get_format_from_color(
+        self.formats['background'] = self.get_format_from_color(
             style.background_color)
         # highlight
-        self.formats['highlight'] = self._get_format_from_color(
+        self.formats['highlight'] = self.get_format_from_color(
             style.highlight_color)
+        
         for key, token in COLOR_SCHEME_KEYS.items():
-            if token and key:
-                self.formats[key] = self._get_format_from_style(token, style)
+            self.formats[key] = self.get_format_from_style(token, style)
 
-    def _get_format_from_color(self, color):
-        fmt = QTextCharFormat()
-        fmt.setBackground(self._get_brush(color))
-        return fmt
+    def get_format_from_color(self, color) -> Highlighter.Format:
+        format = Highlighter.Format()
+        format.setBackground(self.get_brush(color))
+        return format
 
-    def _get_format_from_style(self, token, style):
+    def get_format_from_style(self, token, style) -> Highlighter.Format:
         """ Returns a QTextCharFormat for token by reading a Pygments style.
         """
-        result = QTextCharFormat()
+        result = Highlighter.Format()
+
         items = list(style.style_for_token(token).items())
+
         for key, value in items:
             if value is None and key == 'color':
                 # make sure to use a default visible color for the foreground
                 # brush
                 value = drift_color(self.background, 1000).name()
+            
             if value:
                 if key == 'color':
-                    result.setForeground(self._get_brush(value))
+                    result.setForeground(self.get_brush(value))
                 elif key == 'bgcolor':
-                    result.setBackground(self._get_brush(value))
+                    result.setBackground(self.get_brush(value))
                 elif key == 'bold':
                     result.setFontWeight(QFont.Bold)
                 elif key == 'italic':
                     result.setFontItalic(value)
                 elif key == 'underline':
-                    result.setUnderlineStyle(
-                        QTextCharFormat.SingleUnderline)
+                    result.setUnderlineStyle(QTextCharFormat.SingleUnderline)
                 elif key == 'sans':
                     result.setFontStyleHint(QFont.SansSerif)
                 elif key == 'roman':
@@ -179,22 +205,22 @@ class ColorScheme(object):
             result.setObjectType(result.UserObject)
         return result
 
-    def _get_brush(self, color):
+    def get_brush(self, color):
         """ Returns a brush for the color.
         """
         result = self._brushes.get(color)
         if result is None:
-            qcolor = self._get_color(color)
+            qcolor = self.get_color(color)
             result = QBrush(qcolor)
             self._brushes[color] = result
         return result
 
     @staticmethod
-    def _get_color(color):
+    def get_color(color):
         """ Returns a QColor built from a Pygments color string. """
         color = str(color).replace("#", "")
         qcolor = QColor()
-        qcolor.setRgb(int(color[:2], base=16),
+        qcolor.setRgb(int(color[0:2], base=16),
                       int(color[2:4], base=16),
                       int(color[4:6], base=16))
         return qcolor
@@ -242,12 +268,10 @@ class SyntaxHighlighter(QSyntaxHighlighter):
     def color_scheme(self, color_scheme):
         if isinstance(color_scheme, str):
             color_scheme = ColorScheme(color_scheme)
+
         if color_scheme.name != self._color_scheme.name:
             self._color_scheme = color_scheme
-            self.refresh_editor(color_scheme)
             self.rehighlight()
-
-    def refresh_editor(self, color_scheme):pass
         
     def __init__(self, editor, color_scheme=None):
         """
@@ -255,38 +279,16 @@ class SyntaxHighlighter(QSyntaxHighlighter):
         :param color_scheme: color scheme to use.
         """
         super().__init__(editor.document())
-        self.editor = editor
-
+        self.__editor = editor
+        
         if not color_scheme:
-            color_scheme = ColorScheme('dracula')
+            color_scheme = "dracula"
 
-        self._color_scheme = color_scheme
-        self.refresh_editor(self.color_scheme)
-
-        self._spaces_ptrn = QRegularExpression(r'[ \t]+')
-        #: Fold detector. Set it to a valid FoldDetector to get code folding
-        #: to work. Default is None
-        self.fold_detector = None
-        self.WHITESPACES = QRegularExpression(r'\s+')
-
-    def _highlight_whitespaces(self, text):
-        match = self.WHITESPACES.match(text)
-        index = match.capturedStart()
-        while index >= 0:
-            index = self.WHITESPACES.match(text, index)
-            length = match.capturedLength()
-            self.setFormat(index, length, self.formats['whitespace'])
-            index = match.capturedStart(text, index + length)
-
-    @staticmethod
-    def _find_prev_non_blank_block(current_block):
-        previous_block = (current_block.previous()
-                          if current_block.blockNumber() else None)
-        # find the previous non-blank block
-        while (previous_block and previous_block.blockNumber() and
-               previous_block.text().strip() == ''):
-            previous_block = previous_block.previous()
-        return previous_block
+        self._color_scheme = ColorScheme(color_scheme)
+    
+    @property
+    def editor(self):
+        return self.__editor
 
     def highlightBlock(self, text):
         """
@@ -296,13 +298,7 @@ class SyntaxHighlighter(QSyntaxHighlighter):
         :param text: text to highlight.
         """
         current_block = self.currentBlock()
-        previous_block = self._find_prev_non_blank_block(current_block)
-        
-        if self.editor:
-            self.highlight_block(text, current_block)
-            
-            if self.editor.properties.show_whitespaces:
-                self._highlight_whitespaces(text)
+        self.highlight_block(text, current_block)
 
     def highlight_block(self, text, block):
         """
@@ -316,20 +312,14 @@ class SyntaxHighlighter(QSyntaxHighlighter):
         """
         Rehighlight the entire document, may be slow.
         """
-        start = time.time()
         QApplication.setOverrideCursor(
             QCursor(Qt.WaitCursor))
         try:
-            super(SyntaxHighlighter, self).rehighlight()
+            super().rehighlight()
         except RuntimeError:
             # cloned widget, no need to rehighlight the same document twice ;)
             pass
         QApplication.restoreOverrideCursor()
-        end = time.time()
-
-    def clone_settings(self, original):
-        self._color_scheme = original.color_scheme
-
 
 class TextBlockUserData(QTextBlockUserData):
     """
@@ -337,7 +327,7 @@ class TextBlockUserData(QTextBlockUserData):
     markers.
     """
     def __init__(self):
-        super(TextBlockUserData, self).__init__()
+        super().__init__()
         #: List of checker messages associated with the block.
         self.messages = []
         #: List of markers draw by a marker panel.

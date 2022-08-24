@@ -1,4 +1,5 @@
-from PySide6.QtCore import Signal
+from typing import Union
+from PySide6.QtCore import Signal, Qt
 from PySide6 import QtGui
 from PySide6.QtWidgets import QPlainTextEdit
 
@@ -153,9 +154,16 @@ class ChellyEditor(QPlainTextEdit):
 
         # pprint.pprint(self._visible_blocks)
     
-    def keyPressEvent(self, e: QtGui.QKeyEvent) -> None:
-        self.on_key_pressed.emit(e)
-        return super().keyPressEvent(e)
+    def keyPressEvent(self, event: QtGui.QKeyEvent) -> Union[None, object]:
+        self.on_key_pressed.emit(event)
+        if event.key() == Qt.Key_Tab:
+            cursor = self.textCursor()
+            if self.properties.indent_with_spaces:
+                cursor.insertText(self.properties.indent_char.value * self.properties.indent_size)
+            else:
+                cursor.insertText(self.properties.indent_char.value)
+            return None
+        return super().keyPressEvent(event)
     
     def keyReleaseEvent(self, e: QtGui.QKeyEvent) -> None:
         self.on_key_released.emit(e)

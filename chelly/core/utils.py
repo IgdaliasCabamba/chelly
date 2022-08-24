@@ -67,6 +67,18 @@ class TextEngine:
         count = self.line_count
         return count
     
+    @staticmethod
+    def previous_non_blank_block(current_block:QTextBlock) -> Union[QTextBlock, None]:
+        if current_block.blockNumber():
+            previous_block = current_block.previous()
+        else:
+            previous_block = None
+
+        # find the previous non-blank block
+        while (previous_block and previous_block.blockNumber() and previous_block.text().strip() == ''):
+            previous_block = previous_block.previous()
+        return previous_block
+    
     def position_from_point(self, x_pos:int, y_pos:int) -> int:
         height = self._editor.fontMetrics().height()
         for top, line, block in self._editor.visible_blocks:
