@@ -167,6 +167,151 @@ class TextEngine:
         indentation_level = len(line) - len(line.lstrip(indent_char))
         return indentation_level
 
+class TextBlockHelper(object):
+    """
+    Helps retrieving the various part of the user state bitmask.
+    This helper should be used to replace calls to
+    ``QTextBlock.setUserState``/``QTextBlock.getUserState`` as well as
+    ``QSyntaxHighlighter.setCurrentBlockState``/
+    ``QSyntaxHighlighter.currentBlockState`` and
+    ``QSyntaxHighlighter.previousBlockState``.
+    The bitmask is made up of the following fields:
+        - bit0 -> bit26: User state (for syntax highlighting)
+        - bit26: fold trigger state
+        - bit27-bit29: fold level (8 level max)
+        - bit30: fold trigger flag
+        - bit0 -> bit15: 16 bits for syntax highlighter user state (
+          for syntax highlighting)
+        - bit16-bit25: 10 bits for the fold level (1024 levels)
+        - bit26: 1 bit for the fold trigger flag (trigger or not trigger)
+        - bit27: 1 bit for the fold trigger state (expanded/collapsed)
+    """
+    @staticmethod
+    def get_state(block):
+        """
+        Gets the user state, generally used for syntax highlighting.
+        :param block: block to access
+        :return: The block state
+        """
+        if block is None:
+            return -1
+        state = block.userState()
+        if state == -1:
+            return state
+        return state & 0x0000FFFF
+
+    @staticmethod
+    def set_state(block, state):
+        """
+        Sets the user state, generally used for syntax highlighting.
+        :param block: block to modify
+        :param state: new state value.
+        :return:
+        """
+        if block is None:
+            return
+        user_state = block.userState()
+        if user_state == -1:
+            user_state = 0
+        higher_part = user_state & 0x7FFF0000
+        state &= 0x0000FFFF
+        state |= higher_part
+        block.setUserState(state)
+
+    @staticmethod
+    def get_fold_lvl(block):
+        """
+        Gets the block fold level
+        :param block: block to access.
+        :returns: The block fold level
+        """
+        if block is None:
+            return 0
+        state = block.userState()
+        if state == -1:
+            state = 0
+        return (state & 0x03FF0000) >> 16
+
+    @staticmethod
+    def set_fold_lvl(block, val):
+        """
+        Sets the block fold level.
+        :param block: block to modify
+        :param val: The new fold level [0-7]
+        """
+        if block is None:
+            return
+        state = block.userState()
+        if state == -1:
+            state = 0
+        if val >= 0x3FF:
+            val = 0x3FF
+        state &= 0x7C00FFFF
+        state |= val << 16
+        block.setUserState(state)
+
+    @staticmethod
+    def is_fold_trigger(block):
+        """
+        Checks if the block is a fold trigger.
+        :param block: block to check
+        :return: True if the block is a fold trigger (represented as a node in
+            the fold panel)
+        """
+        if block is None:
+            return False
+        state = block.userState()
+        if state == -1:
+            state = 0
+        return bool(state & 0x04000000)
+
+    @staticmethod
+    def set_fold_trigger(block, val):
+        """
+        Set the block fold trigger flag (True means the block is a fold
+        trigger).
+        :param block: block to set
+        :param val: value to set
+        """
+        if block is None:
+            return
+        state = block.userState()
+        if state == -1:
+            state = 0
+        state &= 0x7BFFFFFF
+        state |= int(val) << 26
+        block.setUserState(state)
+
+    @staticmethod
+    def is_collapsed(block):
+        """
+        Checks if the block is expanded or collased.
+        :param block: QTextBlock
+        :return: False for an open trigger, True for for closed trigger
+        """
+        if block is None:
+            return False
+        state = block.userState()
+        if state == -1:
+            state = 0
+        return bool(state & 0x08000000)
+
+    @staticmethod
+    def set_collapsed(block, val):
+        """
+        Sets the fold trigger state (collapsed or expanded).
+        :param block: The block to modify
+        :param val: The new trigger state (True=collapsed, False=expanded)
+        """
+        if block is None:
+            return
+        state = block.userState()
+        if state == -1:
+            state = 0
+        state &= 0x77FFFFFF
+        state |= int(val) << 27
+        block.setUserState(state)
+
 class Character(Enum):
     SPACE:str = " "
     TAB:str = "\t"

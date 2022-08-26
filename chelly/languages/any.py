@@ -1,46 +1,12 @@
+"""
+This module contains Syntax Highlighting mode and the QSyntaxHighlighter based
+on pygments.
+.. note: This code is taken and adapted from the pyqode project. (LOL)
+"""
 import mimetypes
 
-from pygments.formatters.html import HtmlFormatter
-from pygments.lexer import RegexLexer
-from pygments.lexers import get_lexer_for_filename, get_lexer_for_mimetype
-from pygments.lexers.agile import PythonLexer
-from pygments.lexers.compiled import CLexer, CppLexer
-from pygments.lexers.javascript import DartLexer
-from pygments.lexers.dotnet import CSharpLexer
-from pygments.lexers.special import TextLexer
-from pygments.styles import get_style_by_name, get_all_styles
-from pygments.token import Whitespace, Comment, Token
-from pygments.util import ClassNotFound
-
 from ..core import (SyntaxHighlighter, ColorScheme, TextBlockUserData)
-
-# Even with the above monkey patch to store state, multiline comments do not
-# work since they are stateless (Pygments uses a single multiline regex for
-# these comments, but Qt lexes by line). So we need to append a state for
-# comments # to the C and C++ lexers. This means that nested multiline
-# comments will appear to be valid C/C++, but this is better than the
-# alternative for now.
-def replace_pattern(tokens, new_pattern):
-    """ Given a RegexLexer token dictionary 'tokens', replace all patterns that
-        match the token specified in 'new_pattern' with 'new_pattern'.
-    """
-    for state in tokens.values():
-        for index, pattern in enumerate(state):
-            if isinstance(pattern, tuple) and pattern[1] == new_pattern[1]:
-                state[index] = new_pattern
-
-# More monkeypatching!
-COMMENT_START = (r'/\*', Comment.Multiline, 'comment')
-COMMENT_STATE = [(r'[^*/]', Comment.Multiline),
-                 (r'/\*', Comment.Multiline, '#push'),
-                 (r'\*/', Comment.Multiline, '#pop'),
-                 (r'[*/]', Comment.Multiline)]
-replace_pattern(CLexer.tokens, COMMENT_START)
-replace_pattern(CppLexer.tokens, COMMENT_START)
-CLexer.tokens['comment'] = COMMENT_STATE
-CppLexer.tokens['comment'] = COMMENT_STATE
-CSharpLexer.tokens['comment'] = COMMENT_STATE
-
+from .pygments_utils import *
 
 class PygmentsSH(SyntaxHighlighter):
     """ Highlights code using the pygments parser.
@@ -54,8 +20,6 @@ class PygmentsSH(SyntaxHighlighter):
                  properly highlighted until a full re-highlight is triggered.
                  The text is automatically re-highlighted on save.
     """
-    #: Mode description
-    DESCRIPTION = "Apply syntax highlighting to the editor using pygments"
 
     @property
     def pygments_style(self):
@@ -82,7 +46,7 @@ class PygmentsSH(SyntaxHighlighter):
 
     def _init_style(self):
         """ Init pygments style """
-        self._update_style()        
+        self._update_style()
 
     def set_mime_type(self, mime_type):
         """
@@ -91,7 +55,6 @@ class PygmentsSH(SyntaxHighlighter):
         """
 
         if not mime_type:
-            # Fall back to TextLexer
             self._lexer = TextLexer()
             return False
         try:
@@ -131,7 +94,6 @@ class PygmentsSH(SyntaxHighlighter):
         :param mime: mime type
         :param options: optional addtional options.
         """
-
         try:
             self._lexer = get_lexer_for_mimetype(mime, **options)
         except (ClassNotFound, ImportError):
@@ -143,25 +105,51 @@ class PygmentsSH(SyntaxHighlighter):
         :param text: text of the block to highlith
         :param block: block to highlight
         """
+
         if self.editor and self._lexer:
+            if block.blockNumber():
+                prev_data = self._prev_block.userData()
+                if prev_data:
+                    if hasattr(prev_data, "syntax_stack"):
+                        self._lexer._saved_state_stack = prev_data.syntax_stack
+                    elif hasattr(self._lexer, '_saved_state_stack'):
+                        del self._lexer._saved_state_stack
 
             # Lex the text using Pygments
             index = 0
-            if block.userData() is None:
-                block.setUserData(TextBlockUserData())
-
+            usd = block.userData()
+            if usd is None:
+                usd = TextBlockUserData()
+                block.setUserData(usd)
             tokens = list(self._lexer.get_tokens(text))
-            
             for token, text in tokens:
                 length = len(text)
-                format = self._get_format(token)
+                fmt = self._get_format(token)
                 if token in [Token.Literal.String, Token.Literal.String.Doc,
                              Token.Comment]:
-                    format.setObjectType(format.UserObject)
-                self.setFormat(index, length, format)
+                    fmt.setObjectType(fmt.UserObject)
+                self.setFormat(index, length, fmt)
                 index += length
 
-            self._prev_block = block
+            if hasattr(self._lexer, '_saved_state_stack'):
+                setattr(usd, "syntax_stack", self._lexer._saved_state_stack)
+                # Clean up for the next go-round.
+                del self._lexer._saved_state_stack
+
+        self._prev_block = block
+
+    def _update_style(self):
+        """ Sets the style to the specified Pygments style.
+        """
+        try:
+            self._style = get_style_by_name(self._pygments_style)
+        except ClassNotFound:
+            # unknown style, also happen with plugins style when used from a
+            # frozen app.
+            
+            self._style = get_style_by_name('default')
+            self._pygments_style = 'default'
+        self._clear_caches()
 
     def _update_style(self):
         """ Sets the style to the specified Pygments style.

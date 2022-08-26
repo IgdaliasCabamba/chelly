@@ -1,2 +1,2 @@
-from .python_lexer import PythonLexer
 from .any import PygmentsSH
+from .python import PythonSH

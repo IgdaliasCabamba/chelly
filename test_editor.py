@@ -5,7 +5,7 @@ from chelly.api import ChellyEditor
 from chelly.features import CaretLineHighLighter, IndentationGuides, AutoIndentMode
 from chelly.components import LineNumberMargin, MiniChellyMap, HorizontalScrollBar, VerticalScrollBar
 from chelly.managers import FeaturesManager, LanguagesManager, PanelsManager
-from chelly.languages import PygmentsSH
+from chelly.languages import PythonSH, PygmentsSH
 from chelly.core import Panel, SyntaxHighlighter
 from PySide6.QtWidgets import *
 from PySide6.QtCore import *
@@ -59,9 +59,9 @@ editor1.panels.append(v_scrollbar1, Panel.Position.RIGHT)
 
 minimap1 = editor1.panels.append(MiniChellyMap, Panel.Position.RIGHT)
 a = PygmentsSH(editor)
-b = PygmentsSH(minimap.code_viewer)
-a1 = PygmentsSH(document=editor1, color_scheme="one-dark")
-b1 = PygmentsSH(document=minimap1.code_viewer, color_scheme="one-dark")
+b = PythonSH(minimap.code_viewer)
+a1 = PythonSH(editor1, color_scheme="monokai")
+b1 = PythonSH(minimap1.code_viewer, color_scheme="monokai")
 
 #editor1.language.lexer = SyntaxHighlighter
 #minimap1.code_viewer.language.lexer = SyntaxHighlighter
