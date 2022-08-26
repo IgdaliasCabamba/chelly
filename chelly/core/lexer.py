@@ -1,7 +1,7 @@
 from typing import Union
 
 from pygments.styles import get_style_by_name
-from pygments.style import Style
+from pygments.style import Style, StyleMeta
 from pygments.token import Punctuation, Token
 from pygments.util import ClassNotFound
 from PySide6.QtCore import QRegularExpression, Qt, Signal
@@ -25,11 +25,11 @@ class Highlighter(QSyntaxHighlighter):
             super().__init__(*args, **kvargs)
 
     @staticmethod
-    def get_style(style: Union[str, Style, dict]) -> Style:
+    def get_style(style: Union[str, StyleMeta, Style, dict]) -> Style:
         class CustomStyle(Style):
             pass
 
-        if isinstance(style, Style):
+        if isinstance(style, Style) or isinstance(style, StyleMeta):
             return style
 
         elif isinstance(style, str):
@@ -313,10 +313,8 @@ class SyntaxHighlighter(Highlighter):
             pass
         QApplication.restoreOverrideCursor()
 
-
 class Language(SyntaxHighlighter):
     pass
-
 
 class TextBlockUserData(QTextBlockUserData):
     """

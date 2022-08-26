@@ -6,7 +6,7 @@ except ImportError:
     builtins = __import__('__builtin__')
 
 import re
-from ..core import SyntaxHighlighter as BaseSH
+from ..core import Language
 from ..core import TextBlockHelper
 
 
@@ -90,7 +90,7 @@ def make_python_patterns(additional_keywords=[], additional_builtins=[]):
 #
 # Pygments Syntax highlighter
 #
-class PythonSH(BaseSH):
+class PythonSH(Language):
     """
     Highlights python syntax in the editor.
     """
@@ -107,8 +107,8 @@ class PythonSH(BaseSH):
     # Comments suitable for Outline Explorer
     OECOMMENT = re.compile('^(# ?--[-]+|##[#]+ )[ -]*[^- ]+')
 
-    def __init__(self, parent, color_scheme=None):
-        super(PythonSH, self).__init__(parent, color_scheme)
+    def __init__(self, editor, color_scheme=None):
+        super(PythonSH, self).__init__(editor, color_scheme)
         self.import_statements = []
         self.global_import_statements = []
         self.docstrings = []
@@ -230,3 +230,6 @@ class PythonSH(BaseSH):
         self.global_import_statements[:] = []
         self.docstrings[:] = []
         super(PythonSH, self).rehighlight()
+
+class PythonLanguage(PythonSH):
+    pass

@@ -51,7 +51,7 @@ class SliderArea(QFrame):
         first_visible_line = TextEngine(self.minimap.editor).first_visible_line
 
         pos_parent = self.mapToParent(event.pos())
-        line = TextEngine(self.minimap).line_number_from_position(pos_parent.x(), pos_parent.y())
+        line = TextEngine(self.minimap).line_number_from_position(y_pos = pos_parent.y(), x_pos = pos_parent.x())
         self.line_on_visible_area = (line - first_visible_line) + 1
 
     def mouseReleaseEvent(self, event):
@@ -163,14 +163,17 @@ class MiniMap(CodeEditor):
 
     def scroll_area(self, pos_parent, line_area) -> None:
         line = TextEngine(self).line_number_from_position(
-            pos_parent.x(), pos_parent.y())
+            y_pos = pos_parent.y(),
+            x_pos = pos_parent.x()
+        )
         self.editor.verticalScrollBar().setValue(line - line_area)
 
     def mousePressEvent(self, event) -> None:
         super().mousePressEvent(event)
         TextEngine(self.editor).move_cursor_to_line(
             TextEngine(self).line_number_from_position(
-                event.pos().x(), event.pos().y()
+                y_pos = event.pos().y(),
+                x_pos = event.pos().x()
             )
         )
 
@@ -273,3 +276,9 @@ class MiniChellyMap(Panel):
         to compute the width
         """
         return QSize(self.properties.max_width, self.fixed_size_hint)
+    
+    def __enter__(self):
+        return self.code_viewer
+    
+    def __exit__(self, *args, **kvargs) -> None:
+        return None

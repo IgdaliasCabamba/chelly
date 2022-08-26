@@ -17,3 +17,7 @@ class FeaturesExceptions:
 class ChellyDocumentExceptions:
     class ChellyDocumentValueError(Exception):
         pass
+
+class StyleExceptions:
+    class StyleValueError(Exception):
+        pass

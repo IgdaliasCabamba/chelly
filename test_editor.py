@@ -1,18 +1,27 @@
+#editor.setStyleSheet("""QPlainTextEdit{color: #ccc; background-color: #2b2b2b;}""")
+#editor1.setStyleSheet("""QPlainTextEdit{color: #ccc; background-color: #2b2b2b;}""")
+
 import sys
+
 sys.dont_write_bytecode = True
 
-from chelly.api import ChellyEditor
-from chelly.features import CaretLineHighLighter, IndentationGuides, AutoIndentMode
-from chelly.components import LineNumberMargin, MiniChellyMap, HorizontalScrollBar, VerticalScrollBar
-from chelly.managers import FeaturesManager, LanguagesManager, PanelsManager
-from chelly.languages import PythonSH, PygmentsSH
-from chelly.core import Panel, SyntaxHighlighter
-from PySide6.QtWidgets import *
-from PySide6.QtCore import *
-import pytest
 import logging
 import os
 import pathlib
+
+import pytest
+from PySide6.QtCore import *
+from PySide6.QtWidgets import *
+from PySide6.QtGui import *
+
+from chelly.api import ChellyEditor
+from chelly.components import (HorizontalScrollBar, LineNumberMargin, Marker,
+                               MarkerMargin, MiniChellyMap, VerticalScrollBar)
+from chelly.core import Panel
+from chelly.features import (AutoIndentMode, CaretLineHighLighter,
+                             IndentationGuides)
+from chelly.languages import PygmentsSH, PythonLanguage
+from chelly.managers import FeaturesManager, LanguagesManager, PanelsManager
 
 DEBUG_OUTPUT_FILE = os.path.join("dev","chelly.log")
 pathlib.Path(DEBUG_OUTPUT_FILE).touch(exist_ok=True)
@@ -24,12 +33,20 @@ app = QApplication(sys.argv)
 div = QSplitter()
 
 editor = ChellyEditor(div)
-#editor.setStyleSheet("""QPlainTextEdit{font-family:Monaco; color: #ccc; background-color: #2b2b2b;}""")
-editor.setStyleSheet("""QPlainTextEdit{color: #ccc; background-color: #2b2b2b;}""")
+editor.setStyleSheet("""QPlainTextEdit{font-family:Monaco; color: #ccc; background-color: #2b2b2b;}""")
 editor.features.append(CaretLineHighLighter)
 editor.features.append(IndentationGuides)
 editor.features.append(AutoIndentMode)
+symbol_margin = editor.panels.append(MarkerMargin, Panel.Position.LEFT)
 editor.panels.append(LineNumberMargin, Panel.Position.LEFT)
+
+# dont:
+#	editor.panels.append(LineNumberMargin, Panel.Position.LEFT)
+
+# do:
+#	class LNM(LineNumberMargin):
+#		pass
+#	editor.panels.append(LNM, Panel.Position.LEFT)
 
 h_scrollbar1 = HorizontalScrollBar(editor)
 v_scrollbar1 = VerticalScrollBar(editor)
@@ -39,12 +56,10 @@ editor.panels.append(h_scrollbar1, Panel.Position.BOTTOM)
 editor.panels.append(v_scrollbar1, Panel.Position.RIGHT)
 
 minimap = editor.panels.append(MiniChellyMap, Panel.Position.RIGHT)
-#editor.language.lexer = PythonLexer
-#minimap.code_viewer.language.lexer = PythonLexer
+editor.panels.append(MiniChellyMap, Panel.Position.RIGHT)
 
 editor1 = ChellyEditor(div)
-#editor1.setStyleSheet("""QPlainTextEdit{font-family:Monaco; color: #ccc; background-color: #2b2b2b;}""")
-editor1.setStyleSheet("""QPlainTextEdit{color: #ccc; background-color: #2b2b2b;}""")
+editor1.setStyleSheet("""QPlainTextEdit{font-family:Monaco; color: #ccc; background-color: #2b2b2b;}""")
 editor1.features.append(CaretLineHighLighter)
 editor1.features.append(IndentationGuides)
 editor1.features.append(AutoIndentMode)
@@ -58,13 +73,14 @@ editor1.panels.append(h_scrollbar1, Panel.Position.BOTTOM)
 editor1.panels.append(v_scrollbar1, Panel.Position.RIGHT)
 
 minimap1 = editor1.panels.append(MiniChellyMap, Panel.Position.RIGHT)
-a = PygmentsSH(editor)
-b = PythonSH(minimap.code_viewer)
-a1 = PythonSH(editor1, color_scheme="monokai")
-b1 = PythonSH(minimap1.code_viewer, color_scheme="monokai")
 
-#editor1.language.lexer = SyntaxHighlighter
-#minimap1.code_viewer.language.lexer = SyntaxHighlighter
+editor.language.lexer = {"language":PythonLanguage, "style":"one-dark"}
+
+with minimap as m:
+	m.language.lexer = [PythonLanguage, "one-dark"]
+
+editor1.language.lexer = (PythonLanguage, "one-dark")
+PygmentsSH(minimap1.code_viewer, color_scheme="one-dark")
 
 div.addWidget(editor)
 div.addWidget(editor1)
@@ -87,6 +103,10 @@ def test_lexer_set(benchmark):
 	editor.lexer = new_lexer
 	assert editor.lexer == new_lexer
 
+def test_singleton_panel(benchmark):
+	minimap = benchmark(editor.panels.get, MiniChellyMap)
+	assert minimap == editor.panels.append(MiniChellyMap, Panel.Position.RIGHT)
+
 def test_feature_set(benchmark):
 	new_features = benchmark(FeaturesManager, editor)
 	editor.features = new_features
@@ -98,6 +118,23 @@ def test_load_file(benchmark):
 
 	editor.properties.text = content
 	assert editor.properties.text == content
+
+def add_mark_at_line(line:int):
+	symbol_margin.add_marker(
+		Marker(
+			line,
+			QIcon(
+				pathlib.Path.cwd()
+				.joinpath("dev")
+				.joinpath("local_resources")
+				.joinpath("mark-test.png")
+				.as_uri()
+			),
+			"An example mark"
+		)
+	)
+
+symbol_margin.on_add_marker.connect(add_mark_at_line)
 
 if __name__ == "__main__":
 	def fake_benchmark(any):

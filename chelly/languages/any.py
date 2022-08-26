@@ -3,12 +3,10 @@ This module contains Syntax Highlighting mode and the QSyntaxHighlighter based
 on pygments.
 .. note: This code is taken and adapted from the pyqode project. (LOL)
 """
-import mimetypes
+from ..core import (Language, ColorScheme, TextBlockUserData)
+from .utils.pygments_utils import *
 
-from ..core import (SyntaxHighlighter, ColorScheme, TextBlockUserData)
-from .pygments_utils import *
-
-class PygmentsSH(SyntaxHighlighter):
+class PygmentsSH(Language):
     """ Highlights code using the pygments parser.
     This mode enable syntax highlighting using the pygments library. This is a
     generic syntax highlighter, it is slower than a native highlighter and
@@ -20,6 +18,13 @@ class PygmentsSH(SyntaxHighlighter):
                  properly highlighted until a full re-highlight is triggered.
                  The text is automatically re-highlighted on save.
     """
+    @property
+    def lexer(self):
+        return self._lexer
+    
+    @lexer.setter
+    def lexer(self, new_lexer):
+        self._lexer = new_lexer()
 
     @property
     def pygments_style(self):
@@ -35,8 +40,8 @@ class PygmentsSH(SyntaxHighlighter):
         # triggers a rehighlight
         self.color_scheme = ColorScheme(value)
 
-    def __init__(self, document, lexer=None, color_scheme=None):
-        super().__init__(document, color_scheme=color_scheme)
+    def __init__(self, editor, lexer=None, color_scheme=None):
+        super().__init__(editor, color_scheme=color_scheme)
         self._pygments_style = self.color_scheme.name
         self._style = None
         self._lexer = lexer if lexer else PythonLexer()
@@ -48,95 +53,47 @@ class PygmentsSH(SyntaxHighlighter):
         """ Init pygments style """
         self._update_style()
 
-    def set_mime_type(self, mime_type):
-        """
-        Update the highlighter lexer based on a mime type.
-        :param mime_type: mime type of the new lexer to setup.
-        """
-
-        if not mime_type:
-            self._lexer = TextLexer()
-            return False
-        try:
-            self.set_lexer_from_mime_type(mime_type)
-        except ClassNotFound:
-            self._lexer = TextLexer()
-            return False
-        except ImportError:
-            # import error while loading some pygments plugins, the editor
-            # should not crash
-            self._lexer = TextLexer()
-            return False
-        else:
-            return True
-
-    def set_lexer_from_filename(self, filename):
-        """
-        Change the lexer based on the filename (actually only the extension is
-        needed)
-        :param filename: Filename or extension
-        """
-        self._lexer = None
-        try:
-            self._lexer = get_lexer_for_filename(filename)
-        except (ClassNotFound, ImportError):
-            try:
-                m = mimetypes.guess_type(filename)
-                self._lexer = get_lexer_for_mimetype(m[0])
-            except (ClassNotFound, IndexError, ImportError):
-                self._lexer = get_lexer_for_mimetype('text/plain')
-        if self._lexer is None:
-            self._lexer = TextLexer()
-
-    def set_lexer_from_mime_type(self, mime, **options):
-        """
-        Sets the pygments lexer from mime type.
-        :param mime: mime type
-        :param options: optional addtional options.
-        """
-        try:
-            self._lexer = get_lexer_for_mimetype(mime, **options)
-        except (ClassNotFound, ImportError):
-            self._lexer = get_lexer_for_mimetype('text/plain')
-
     def highlight_block(self, text, block):
         """
         Highlights the block using a pygments lexer.
         :param text: text of the block to highlith
         :param block: block to highlight
         """
+        try:
+            if self.editor and self._lexer:
+                if block.blockNumber():
+                    prev_data = self._prev_block.userData()
+                    if prev_data:
+                        if hasattr(prev_data, "syntax_stack"):
+                            self._lexer._saved_state_stack = prev_data.syntax_stack
+                        elif hasattr(self._lexer, '_saved_state_stack'):
+                            del self._lexer._saved_state_stack
 
-        if self.editor and self._lexer:
-            if block.blockNumber():
-                prev_data = self._prev_block.userData()
-                if prev_data:
-                    if hasattr(prev_data, "syntax_stack"):
-                        self._lexer._saved_state_stack = prev_data.syntax_stack
-                    elif hasattr(self._lexer, '_saved_state_stack'):
-                        del self._lexer._saved_state_stack
+                # Lex the text using Pygments
+                index = 0
+                usd = block.userData()
+                if usd is None:
+                    usd = TextBlockUserData()
+                    block.setUserData(usd)
+                tokens = list(self._lexer.get_tokens(text))
+                for token, text in tokens:
+                    length = len(text)
+                    fmt = self._get_format(token)
+                    if token in [Token.Literal.String, Token.Literal.String.Doc,
+                                Token.Comment]:
+                        fmt.setObjectType(fmt.UserObject)
+                    self.setFormat(index, length, fmt)
+                    index += length
 
-            # Lex the text using Pygments
-            index = 0
-            usd = block.userData()
-            if usd is None:
-                usd = TextBlockUserData()
-                block.setUserData(usd)
-            tokens = list(self._lexer.get_tokens(text))
-            for token, text in tokens:
-                length = len(text)
-                fmt = self._get_format(token)
-                if token in [Token.Literal.String, Token.Literal.String.Doc,
-                             Token.Comment]:
-                    fmt.setObjectType(fmt.UserObject)
-                self.setFormat(index, length, fmt)
-                index += length
+                if hasattr(self._lexer, '_saved_state_stack'):
+                    setattr(usd, "syntax_stack", self._lexer._saved_state_stack)
+                    # Clean up for the next go-round.
+                    del self._lexer._saved_state_stack
 
-            if hasattr(self._lexer, '_saved_state_stack'):
-                setattr(usd, "syntax_stack", self._lexer._saved_state_stack)
-                # Clean up for the next go-round.
-                del self._lexer._saved_state_stack
-
-        self._prev_block = block
+            self._prev_block = block
+        
+        except:
+            pass
 
     def _update_style(self):
         """ Sets the style to the specified Pygments style.
@@ -144,8 +101,6 @@ class PygmentsSH(SyntaxHighlighter):
         try:
             self._style = get_style_by_name(self._pygments_style)
         except ClassNotFound:
-            # unknown style, also happen with plugins style when used from a
-            # frozen app.
             
             self._style = get_style_by_name('default')
             self._pygments_style = 'default'

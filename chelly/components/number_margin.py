@@ -1,6 +1,6 @@
 from PySide6.QtGui import QFont, QTextCursor, QColor, QPainter
 from PySide6.QtCore import Qt, QSize, QRect
-from ..core import Panel
+from ..core import Panel, FontEngine
 
 class LineNumberMargin(Panel):
     """Line Number Widget for Editor based 
@@ -28,7 +28,7 @@ class LineNumberMargin(Panel):
             max_num *= 0.1
             digits += 1
 
-        space = 3 + self.fontMetrics().horizontalAdvance('9') * digits
+        space = (FontEngine(self.font()).real_horizontal_advance('9', True) * digits) + 2
         return space
     
     def resized(self) -> None:

@@ -1,7 +1,6 @@
 from typing import Any
-from xml.dom.minidom import CharacterData
 from PySide6.QtGui import QFontMetrics, QTextOption
-from ..core.utils import Character
+from ..core.utils import Character, FontEngine
 
 class Property:
     class Default:
@@ -18,6 +17,11 @@ class Properties(object):
         self._indent_type:int = Property.Indentation.tabs
         self._indent_char:Character = Character.TAB
         self._show_whitespaces:bool = False
+        self.__decorations:list = []
+    
+    @property
+    def decorations(self):
+        return self.__decorations
     
     @property
     def show_whitespaces(self) -> bool:
@@ -88,18 +92,8 @@ class Properties(object):
         self._indent_size = size
         self.__set_tab_distance(Character.SPACE.value, size)
     
-    def __set_tab_distance(self, char:str, indent_size:int):
-        #print(f"margin-left: {QFontMetrics(self._editor.font()).leftBearing(char)} on Spaces:{self.indent_with_spaces}")
-        #print(f"margin-right: {QFontMetrics(self._editor.font()).rightBearing(char)} on Spaces:{self.indent_with_spaces}")
-        
-        metrics = QFontMetrics(self._editor.font())
-
-        margin_left:int = metrics.leftBearing(char)
-        margin_right:int = metrics.rightBearing(char)
-        bearing_left:int = 0 if margin_left < 0 else margin_left
-        bearing_right:int = 0 if margin_right < 0 else margin_right
-
-        char_width:float = (metrics.horizontalAdvance(char) + bearing_left + bearing_right)
+    def __set_tab_distance(self, char:str, indent_size:int):        
+        char_width:float = FontEngine(self._editor.font()).real_horizontal_advance(char, min_zero=True)
         self._editor.setTabStopDistance(char_width * indent_size)
 
     def default(self):

@@ -34,15 +34,31 @@ class PanelsManager(Manager):
             self._update_viewport_margins)
         self.editor.updateRequest[QRect, int].connect(self._update)
         self.editor.on_resized.connect(self.refresh)
-
-    def append(self, panel: Panel, position=Panel.Position.LEFT) -> Panel:
+    
+    def __call_panel(self, panel: Panel) -> Union[None, Panel]:
         if callable(panel):
+            # avoid appending more than one of the same panel type
+            if self.get(panel.__name__):
+                return None
             widget = panel(self.editor)
         else:
+            # avoid appending more than one of the same panel type
+            if self.get(panel.__class__.__name__):
+                return None
             widget = panel
-
-        self._widgets[position][panel.__class__.__name__] = widget
         return widget
+
+    def append(self, panel: Panel, position=Panel.Position.LEFT) -> Panel:
+        widget = self.__call_panel(panel)
+        if widget is not None:
+            self._widgets[position][widget.__class__.__name__] = widget
+            return widget
+        
+        #make it like a singleton
+        if callable(panel):
+            return self.get(panel.__name__)
+        
+        return self.get(panel.__class__.__name__)
     
     def remove(self, panel: Panel) -> None:
         pass
@@ -54,11 +70,12 @@ class PanelsManager(Manager):
         if not isinstance(widget, str):
             widget = widget.__name__
 
-        for zone in range(4):
+        for zone in Panel.Position.iterable():
             try:
                 return self._widgets[zone][widget]
             except KeyError:
-                return None
+                pass
+        return None
 
     def keys(self) -> list:
         """

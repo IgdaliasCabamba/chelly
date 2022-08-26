@@ -1,6 +1,7 @@
 **/__pycache__
 cenv/
-dev/
+dev/*
+!dev/local_resources
 *.pyi
 *.pyc
 site/
