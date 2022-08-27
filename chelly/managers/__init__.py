@@ -10,5 +10,7 @@ Modules exported by this package:
 """
 
 from .features import FeaturesManager
-from .languages import LanguagesManager
+from .language import LanguagesManager
 from .widgets import PanelsManager
+from .decorations import TextDecorationsManager
+from .style import ChellyStyleManager

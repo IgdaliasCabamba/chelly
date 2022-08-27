@@ -57,6 +57,9 @@ class TextEngine:
             previous_block = previous_block.previous()
         return previous_block
     
+    def block_from_line_number(self, line_number:int) -> QTextBlock:
+        return self._editor.document().findBlockByLineNumber(line_number)
+    
     def position_from_point(self, x_pos:int, y_pos:int) -> int:
         height = self._editor.fontMetrics().height()
         for top, line, block in self._editor.visible_blocks:

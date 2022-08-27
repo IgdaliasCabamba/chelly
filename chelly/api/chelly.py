@@ -1,12 +1,15 @@
 from typing import Union
-from PySide6.QtCore import Signal, Qt
+
 from PySide6 import QtGui
+from PySide6.QtCore import Qt, Signal
 from PySide6.QtWidgets import QPlainTextEdit
 
 from ..core import (ChellyDocument, ChellyDocumentExceptions,
                     FeaturesExceptions, LexerExceptions, PanelsExceptions,
-                    Properties, PropertiesExceptions)
-from ..managers import FeaturesManager, LanguagesManager, PanelsManager
+                    Properties, PropertiesExceptions, StyleExceptions,
+                    TextExceptions)
+from ..managers import (ChellyStyleManager, FeaturesManager, LanguagesManager,
+                        PanelsManager, TextDecorationsManager)
 
 
 class ChellyEditor(QPlainTextEdit):
@@ -17,6 +20,10 @@ class ChellyEditor(QPlainTextEdit):
     on_key_pressed = Signal(object)
     on_key_released = Signal(object)
 
+    @property
+    def visible_blocks(self) -> list:
+        return self._visible_blocks
+
     def __init__(self, parent):
         super().__init__(parent)
         self._panels = PanelsManager(self)
@@ -24,18 +31,20 @@ class ChellyEditor(QPlainTextEdit):
         self._language = LanguagesManager(self)
         self._properties = Properties(self)
         self._chelly_document = ChellyDocument(self)
+        self._style = ChellyStyleManager(self)
+        self._decorations = TextDecorationsManager(self)
 
         self._visible_blocks = list()
         self.__build()
-    
+
     def __build(self):
         self._properties.default()
         self.setLineWrapMode(self.NoWrap)
         self._update_visible_blocks(None)
-    
+
     def update_state(self):
         self.on_updated.emit()
-    
+
     @property
     def chelly_document(self) -> ChellyDocument:
         return self._chelly_document
@@ -108,8 +117,32 @@ class ChellyEditor(QPlainTextEdit):
                 f"invalid type: {new_manager} expected: {FeaturesManager}")
 
     @property
-    def visible_blocks(self) -> list:
-        return self._visible_blocks
+    def style(self) -> ChellyStyleManager:
+        return self._style
+
+    @style.setter
+    def style(self, new_style: ChellyStyleManager) -> None:
+        if new_style is ChellyStyleManager:
+            self._style = new_style(self)
+        elif isinstance(new_style, ChellyStyleManager):
+            self._style = new_style
+        else:
+            raise StyleExceptions.StyleValueError(
+                f"invalid type: {new_style} expected: {ChellyStyleManager}")
+
+    @property
+    def decorations(self) -> TextDecorationsManager:
+        return self._decorations
+
+    @decorations.setter
+    def decorations(self, new_decorations: TextDecorationsManager) -> None:
+        if new_decorations is TextDecorationsManager:
+            self._decorations = new_decorations()
+        elif isinstance(new_decorations, TextDecorationsManager):
+            self._decorations = new_decorations
+        else:
+            raise TextExceptions.TextDecorationValueError(
+                f"invalid type: {new_decorations} expected: {TextDecorationsManager}")
 
     def showEvent(self, event):
         super().showEvent(event)
@@ -153,18 +186,19 @@ class ChellyEditor(QPlainTextEdit):
             block_nbr = block.blockNumber()
 
         # pprint.pprint(self._visible_blocks)
-    
+
     def keyPressEvent(self, event: QtGui.QKeyEvent) -> Union[None, object]:
         self.on_key_pressed.emit(event)
         if event.key() == Qt.Key_Tab:
             cursor = self.textCursor()
             if self.properties.indent_with_spaces:
-                cursor.insertText(self.properties.indent_char.value * self.properties.indent_size)
+                cursor.insertText(
+                    self.properties.indent_char.value * self.properties.indent_size)
             else:
                 cursor.insertText(self.properties.indent_char.value)
             return None
         return super().keyPressEvent(event)
-    
+
     def keyReleaseEvent(self, e: QtGui.QKeyEvent) -> None:
         self.on_key_released.emit(e)
         return super().keyReleaseEvent(e)

@@ -44,7 +44,7 @@ class TextDecoration(QtWidgets.QTextEdit.ExtraSelection):
         :param full_width: True to select the full line width.
         .. note:: Use the cursor selection if startPos and endPos are none.
         """
-        super(TextDecoration, self).__init__()
+        super().__init__()
         self.signals = self.Signals()
         self.draw_order = draw_order
         self.tooltip = tooltip
@@ -79,6 +79,7 @@ class TextDecoration(QtWidgets.QTextEdit.ExtraSelection):
     def set_as_bold(self):
         """ Uses bold text """
         self.format.setFontWeight(QtGui.QFont.Bold)
+        return self
 
     def set_foreground(self, color):
         """ Sets the foreground color.
@@ -86,6 +87,7 @@ class TextDecoration(QtWidgets.QTextEdit.ExtraSelection):
         :type color: QtGui.QColor
         """
         self.format.setForeground(color)
+        return self
 
     def set_background(self, brush):
         """
@@ -94,6 +96,7 @@ class TextDecoration(QtWidgets.QTextEdit.ExtraSelection):
         :type brush: QtGui.QBrush
         """
         self.format.setBackground(brush)
+        return self
 
     def set_outline(self, color):
         """
@@ -103,6 +106,7 @@ class TextDecoration(QtWidgets.QTextEdit.ExtraSelection):
         """
         self.format.setProperty(QtGui.QTextFormat.OutlinePen,
                                 QtGui.QPen(color))
+        return self
 
     def select_line(self):
         """
@@ -116,6 +120,7 @@ class TextDecoration(QtWidgets.QTextEdit.ExtraSelection):
         self.cursor.setPosition(self.cursor.block().position() + lindent)
         self.cursor.movePosition(self.cursor.EndOfBlock,
                                  self.cursor.KeepAnchor)
+        return self
 
     def set_full_width(self, flag=True, clear=True):
         """
@@ -129,6 +134,7 @@ class TextDecoration(QtWidgets.QTextEdit.ExtraSelection):
         if clear:
             self.cursor.clearSelection()
         self.format.setProperty(QtGui.QTextFormat.FullWidthSelection, flag)
+        return self
 
     def set_as_underlined(self, color=QtCore.Qt.blue):
         """
@@ -138,6 +144,7 @@ class TextDecoration(QtWidgets.QTextEdit.ExtraSelection):
         self.format.setUnderlineStyle(
             QtGui.QTextCharFormat.SingleUnderline)
         self.format.setUnderlineColor(color)
+        return self
 
     def set_as_spell_check(self, color=QtCore.Qt.blue):
         """ Underlines text as a spellcheck error.
@@ -147,6 +154,7 @@ class TextDecoration(QtWidgets.QTextEdit.ExtraSelection):
         self.format.setUnderlineStyle(
             QtGui.QTextCharFormat.SpellCheckUnderline)
         self.format.setUnderlineColor(color)
+        return self
 
     def set_as_error(self, color=QtCore.Qt.red):
         """ Highlights text as a syntax error.
@@ -156,6 +164,7 @@ class TextDecoration(QtWidgets.QTextEdit.ExtraSelection):
         self.format.setUnderlineStyle(
             QtGui.QTextCharFormat.WaveUnderline)
         self.format.setUnderlineColor(color)
+        return self
 
     def set_as_warning(self, color=QtGui.QColor("orange")):
         """
@@ -166,3 +175,4 @@ class TextDecoration(QtWidgets.QTextEdit.ExtraSelection):
         self.format.setUnderlineStyle(
             QtGui.QTextCharFormat.WaveUnderline)
         self.format.setUnderlineColor(color)
+        return self

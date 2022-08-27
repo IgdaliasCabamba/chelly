@@ -21,3 +21,7 @@ class ChellyDocumentExceptions:
 class StyleExceptions:
     class StyleValueError(Exception):
         pass
+
+class TextExceptions:
+    class TextDecorationValueError(Exception):
+        pass

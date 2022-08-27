@@ -1,7 +1,9 @@
+from typing import Union
 from PySide6.QtGui import QBrush, QIcon, QColor, QPainter, QTextDocument, QFontMetricsF
 from PySide6.QtCore import Qt, QSize, QRect, QObject, Signal, QPoint
 from PySide6.QtWidgets import QToolTip
 from ..core import Panel, FontEngine, DelayJobRunner, TextEngine, TextDecoration
+
 
 class Marker(QObject):
     """
@@ -32,7 +34,7 @@ class Marker(QObject):
                 return QIcon(self._icon)
         elif isinstance(self._icon, tuple):
             return QIcon.fromTheme(self._icon[0],
-                                         QIcon(self._icon[1]))
+                                   QIcon(self._icon[1]))
         elif isinstance(self._icon, QIcon):
             return self._icon
         return QIcon()
@@ -56,6 +58,7 @@ class Marker(QObject):
         self._position = position
         self._icon = icon
         self._description = description
+
 
 class MarkerMargin(Panel):
     """
@@ -106,35 +109,46 @@ class MarkerMargin(Panel):
         """
         return self._markers
 
-    def add_marker(self, marker):
+    def add_marker(self, marker: Marker):
         """
         Adds the marker to the panel.
         :param marker: Marker to add
         :type marker: pyqode.core.modes.Marker
         """
         self._markers.append(marker)
-        doc = self.editor.document()
-        assert isinstance(doc, QTextDocument)
-        block = doc.findBlockByLineNumber(marker._position)
+        block = TextEngine(self.editor).block_from_line_number(
+            marker._position)
+
         marker.block = block
-        d = TextDecoration(block)
-        d.set_full_width()
-        if self._background:
-            d.set_background(QBrush(self._background))
-            marker.decoration = d
-        self.editor.properties.decorations.append(d)
+
+        block_decoration = (
+            TextDecoration(block)
+            .set_full_width()
+            .set_background(QBrush(self._background))
+        )
+        marker.decoration = block_decoration
+        self.editor.decorations.append(block_decoration)
         self.repaint()
 
-    def remove_marker(self, marker):
+    def __rem_marker(self, marker: Marker):
+        self._markers.remove(marker)
+        self._to_remove.append(marker)
+
+    def remove_marker(self, markers: Union[list, Marker]):
         """
         Removes a marker from the panel
         :param marker: Marker to remove
-        :type marker: pyqode.core.Marker
+        :type marker: Union[list, Marker]
         """
-        self._markers.remove(marker)
-        self._to_remove.append(marker)
+        if isinstance(marker, list):
+            for marker in markers:
+                self.__rem_marker(marker)
+
+        elif isinstance(marker, Marker):
+            self.__rem_marker(marker)
+
         if hasattr(marker, 'decoration'):
-            self.editor.properties.decorations.remove(marker.decoration)
+            self.editor.decorations.remove(marker.decoration)
         self.repaint()
 
     def clear_markers(self):
@@ -142,13 +156,13 @@ class MarkerMargin(Panel):
         while len(self._markers):
             self.remove_marker(self._markers[0])
 
-    def marker_for_line(self, line):
+    def marker_for_line(self, line: int) -> list:
         """
         Returns the marker that is displayed at the specified line number if
         any.
         :param line: The marker line.
-        :return: Marker of None
-        :rtype: pyqode.core.Marker
+        :return: list of Markers for given line
+        :rtype: list
         """
         markers = []
         for marker in self._markers:
@@ -156,20 +170,18 @@ class MarkerMargin(Panel):
                 markers.append(marker)
         return markers
 
-    def sizeHint(self):
+    def sizeHint(self) -> QSize:
         """
         Returns the panel size hint. (fixed with of 16px)
         """
         metrics = QFontMetricsF(self.editor.font())
-        size_hint = QSize(metrics.height(), metrics.height())
-        size_hint.setWidth(32)
-        if size_hint.width() > 16:
-            size_hint.setWidth(32)
+        size_hint = (QSize(w=16, h=metrics.height()))
+        size_hint.setWidth(16)
         return size_hint
 
     def paintEvent(self, event):
         super().paintEvent(event)
-        with QPainter(self) as painter: 
+        with QPainter(self) as painter:
             for top, block_nbr, block in self.editor.visible_blocks:
                 for marker in self._markers:
                     if marker.block == block and marker.icon:
@@ -178,7 +190,6 @@ class MarkerMargin(Panel):
                         rect.setY(top)
                         rect.setWidth(self.sizeHint().width())
                         rect.setHeight(self.sizeHint().height())
-                        print(top)
                         marker.icon.paint(painter, rect)
 
     def mousePressEvent(self, event):
@@ -187,7 +198,8 @@ class MarkerMargin(Panel):
         #   cursor
         # - emit remove marker signal if there were one or more markers under
         #   the mouse cursor.
-        line = TextEngine(self.editor).line_number_from_position(event.pos().y())
+        line = TextEngine(self.editor).line_number_from_position(
+            event.pos().y())
         if self.marker_for_line(line):
             if event.button() == Qt.LeftButton:
                 self.on_remove_marker.emit(line)
@@ -198,7 +210,8 @@ class MarkerMargin(Panel):
 
     def mouseMoveEvent(self, event):
         # Requests a tooltip if the cursor is currently over a marker.
-        line = TextEngine(self.editor).line_number_from_position(event.pos().y())
+        line = TextEngine(self.editor).line_number_from_position(
+            event.pos().y())
         markers = self.marker_for_line(line)
         text = '\n'.join([marker.description for marker in markers if
                           marker.description])

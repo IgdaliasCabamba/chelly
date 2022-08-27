@@ -2,4 +2,4 @@ from .enums import Character
 from .functions import *
 from .engines import TextEngine, FontEngine
 from .helpers import TextBlockHelper, DelayJobRunner
-from .decorations import TextDecoration
+from .text_decorations import TextDecoration

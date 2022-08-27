@@ -134,7 +134,13 @@ def add_mark_at_line(line:int):
 		)
 	)
 
+def rem_mark_at_line(line:int):
+	symbol_margin.remove_marker(
+		symbol_margin.marker_for_line(line)
+	)
+
 symbol_margin.on_add_marker.connect(add_mark_at_line)
+symbol_margin.on_remove_marker.connect(rem_mark_at_line)
 
 if __name__ == "__main__":
 	def fake_benchmark(any):
