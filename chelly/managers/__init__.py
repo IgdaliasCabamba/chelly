@@ -7,6 +7,8 @@ Modules exported by this package:
 - `features`: Provide the functionalities to extend and manage the editor functionalities.
 - `langauges`: Provide the functionalities to manage the editor lexer.
 - `widgets`: Provide the functionalities to manage the editor panels.
+- `decorations`: Provide the functionalities to manage the editor decorations like selections.
+- `style`: Provide the functionalities to manage the editor styles like font and colors.
 """
 
 from .features import FeaturesManager
