@@ -1,7 +1,7 @@
 from typing import Union
 from PySide6.QtGui import QBrush, QIcon, QColor, QPainter, QTextDocument, QFontMetricsF
 from PySide6.QtCore import Qt, QSize, QRect, QObject, Signal, QPoint
-from PySide6.QtWidgets import QToolTip
+from PySide6.QtWidgets import QToolTip, QStyle
 from ..core import Panel, FontEngine, DelayJobRunner, TextEngine, TextDecoration
 
 
@@ -140,15 +140,15 @@ class MarkerMargin(Panel):
         :param marker: Marker to remove
         :type marker: Union[list, Marker]
         """
-        if isinstance(marker, list):
+        if isinstance(markers, list):
             for marker in markers:
                 self.__rem_marker(marker)
 
-        elif isinstance(marker, Marker):
-            self.__rem_marker(marker)
+        elif isinstance(markers, Marker):
+            self.__rem_marker(markers)
 
-        if hasattr(marker, 'decoration'):
-            self.editor.decorations.remove(marker.decoration)
+        if hasattr(markers, 'decoration'):
+            self.editor.decorations.remove(markers.decoration)
         self.repaint()
 
     def clear_markers(self):
@@ -182,14 +182,22 @@ class MarkerMargin(Panel):
     def paintEvent(self, event):
         super().paintEvent(event)
         with QPainter(self) as painter:
+            painter.fillRect(event.rect(), Qt.GlobalColor.lightGray)
             for top, block_nbr, block in self.editor.visible_blocks:
                 for marker in self._markers:
                     if marker.block == block and marker.icon:
                         rect = QRect()
                         rect.setX(0)
                         rect.setY(top)
-                        rect.setWidth(self.sizeHint().width())
-                        rect.setHeight(self.sizeHint().height())
+                        width = self.width()
+                        height = self.fontMetrics().height()
+                        rect.setWidth(width)
+                        rect.setHeight(height)
+                        print(rect)
+                        pixmapi = getattr(QStyle, )
+                        icon = self.style().standardIcon(pixmapi)
+                        #painter.drawText(rect, Qt.AlignmentFlag.AlignRight, "0")
+                        #painter.drawPixmap(rect, marker.icon.pixmap(16, 16))
                         marker.icon.paint(painter, rect)
 
     def mousePressEvent(self, event):

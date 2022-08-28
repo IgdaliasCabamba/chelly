@@ -30,14 +30,26 @@ class LineNumberMargin(Panel):
 
         space = (FontEngine(self.font()).real_horizontal_advance('9', True) * digits) + 2
         return space
-    
-    def resized(self) -> None:
-        #cr = self.editor.contentsRect()
-        #width = self.line_number_area_width
-        #rect = QRect(cr.left(), cr.top(), width, cr.height())
-        #self.setGeometry(rect)
-        pass
                     
+    def paintEvent(self, event):
+        super().paintEvent(event)
+        with QPainter(self) as painter:
+            for top, block_number, block in self.editor.visible_blocks:
+                number = str(block_number + 1)
+                    
+                if block_number == self.editor.textCursor().blockNumber():
+                    self.number_font.setBold(True)
+                    painter.setPen(QColor("#000000"))
+                else:
+                    self.number_font.setBold(False)
+                    painter.setPen(QColor("#717171"))
+            
+                painter.setFont(self.number_font)
+                width = self.width()
+                height = self.fontMetrics().height()
+                painter.drawText(0, top, width, height, Qt.AlignmentFlag.AlignRight, number)
+
+    '''
     def paintEvent(self, event):
         super().paintEvent(event)
         with QPainter(self) as painter:
@@ -69,18 +81,4 @@ class LineNumberMargin(Panel):
                 top = bottom
                 bottom = top + self.editor.blockBoundingRect(block).height()
                 block_number += 1
-    
-    def update_line_number_area_width(self, newBlockCount):
-        #self.editor.setViewportMargins(self.line_number_area_width, 0, 0, 0)
-        pass
-    
-    def update_line_number_area(self, rect, dy):
-        pass
-        """if dy:
-            self.scroll(0, dy)
-        else:
-            width = self.width()
-            self.update(0, rect.y(), width, rect.height())
-
-        if rect.contains(self.editor.viewport().rect()):
-            self.update_line_number_area_width(0)"""
+    '''
