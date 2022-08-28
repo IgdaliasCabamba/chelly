@@ -44,7 +44,7 @@ class TextEngine:
     def visible_lines_from_line_count(self):
         count = self.line_count
         return count
-    
+
     @staticmethod
     def previous_non_blank_block(current_block:QTextBlock) -> Union[QTextBlock, None]:
         if current_block.blockNumber():
@@ -147,6 +147,15 @@ class TextEngine:
         line = self.text_at_line(line_number)
         indentation_level = len(line) - len(line.lstrip(indent_char))
         return indentation_level
+    
+    def goto_line(self, line, column=0, move=True):
+        text_cursor = self.move_cursor_to_line(line)
+        if column:
+            text_cursor.movePosition(text_cursor.Right, text_cursor.MoveAnchor,
+                                     column)
+        if move:
+            self._editor.setTextCursor(text_cursor)
+        return text_cursor
 
 class FontEngine:
     def __init__(self, font:QFont):

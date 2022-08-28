@@ -1,3 +1,4 @@
+import weakref
 from PySide6.QtCore import QTimer
 
 class DelayJobRunner:

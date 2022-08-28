@@ -6,8 +6,17 @@ class Panel(QWidget):
         super().__init__(editor)
         self.order_in_zone = -1
         self._scrollable = False
+        self.__enabled = True
         self.__editor = editor
         self.editor.panels.refresh()
+
+    @property
+    def enabled(self) -> bool:
+        return self.__enabled
+
+    @enabled.setter
+    def enabled(self, status:bool) -> None:
+        self.__enabled = status
         
     @property
     def editor(self):

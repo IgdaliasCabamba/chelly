@@ -4,10 +4,10 @@ from PySide6 import QtGui
 from PySide6.QtCore import Qt, Signal
 from PySide6.QtWidgets import QPlainTextEdit
 
-from ..core import (ChellyDocument, ChellyDocumentExceptions,
-                    FeaturesExceptions, LexerExceptions, PanelsExceptions,
-                    Properties, PropertiesExceptions, StyleExceptions,
-                    TextExceptions)
+from ..core.document import ChellyDocument
+from ..core.exceptions import ChellyDocumentExceptions, FeaturesExceptions, LexerExceptions, PanelsExceptions, PropertiesExceptions, StyleExceptions, TextExceptions
+from ..core.properties import Properties
+                    
 from ..managers import (ChellyStyleManager, FeaturesManager, LanguagesManager,
                         PanelsManager, TextDecorationsManager)
 
@@ -19,6 +19,7 @@ class CodeEditor(QPlainTextEdit):
     on_updated = Signal()
     on_key_pressed = Signal(object)
     on_key_released = Signal(object)
+    on_text_setted = Signal(str)
 
     @property
     def visible_blocks(self) -> list:
@@ -44,6 +45,10 @@ class CodeEditor(QPlainTextEdit):
 
     def update_state(self):
         self.on_updated.emit()
+    
+    def update(self):
+        self.update_state()
+        return super().update()
 
     @property
     def chelly_document(self) -> ChellyDocument:
@@ -202,3 +207,7 @@ class CodeEditor(QPlainTextEdit):
     def keyReleaseEvent(self, e: QtGui.QKeyEvent) -> None:
         self.on_key_released.emit(e)
         return super().keyReleaseEvent(e)
+    
+    def setPlainText(self, text: str) -> None:
+        self.on_text_setted.emit(text)
+        return super().setPlainText(text)

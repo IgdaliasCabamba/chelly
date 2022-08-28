@@ -175,29 +175,22 @@ class MarkerMargin(Panel):
         Returns the panel size hint. (fixed with of 16px)
         """
         metrics = QFontMetricsF(self.editor.font())
-        size_hint = (QSize(w=16, h=metrics.height()))
+        size_hint = QSize()
         size_hint.setWidth(16)
+        size_hint.setHeight(metrics.height())
         return size_hint
 
     def paintEvent(self, event):
         super().paintEvent(event)
         with QPainter(self) as painter:
-            painter.fillRect(event.rect(), Qt.GlobalColor.lightGray)
             for top, block_nbr, block in self.editor.visible_blocks:
                 for marker in self._markers:
                     if marker.block == block and marker.icon:
                         rect = QRect()
                         rect.setX(0)
                         rect.setY(top)
-                        width = self.width()
-                        height = self.fontMetrics().height()
-                        rect.setWidth(width)
-                        rect.setHeight(height)
-                        print(rect)
-                        pixmapi = getattr(QStyle, )
-                        icon = self.style().standardIcon(pixmapi)
-                        #painter.drawText(rect, Qt.AlignmentFlag.AlignRight, "0")
-                        #painter.drawPixmap(rect, marker.icon.pixmap(16, 16))
+                        rect.setWidth(self.sizeHint().width())
+                        rect.setHeight(self.sizeHint().height())
                         marker.icon.paint(painter, rect)
 
     def mousePressEvent(self, event):

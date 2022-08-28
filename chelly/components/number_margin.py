@@ -48,37 +48,3 @@ class LineNumberMargin(Panel):
                 width = self.width()
                 height = self.fontMetrics().height()
                 painter.drawText(0, top, width, height, Qt.AlignmentFlag.AlignRight, number)
-
-    '''
-    def paintEvent(self, event):
-        super().paintEvent(event)
-        with QPainter(self) as painter:
-            painter.fillRect(event.rect(), Qt.GlobalColor.lightGray)
-            block = self.editor.firstVisibleBlock()
-            block_number = block.blockNumber()
-            offset = self.editor.contentOffset()
-            top = self.editor.blockBoundingGeometry(block).translated(offset).top()
-            bottom = top + self.editor.blockBoundingRect(block).height()
-
-            # Iterate over all visible text blocks in the document.
-            while block.isValid() and top <= event.rect().bottom():
-                if block.isVisible() and bottom >= event.rect().top():
-                    number = str(block_number + 1)
-                    
-                    if block_number == self.editor.textCursor().blockNumber():
-                        self.number_font.setBold(True)
-                        painter.setPen(QColor("#000000"))
-                    else:
-                        self.number_font.setBold(False)
-                        painter.setPen(QColor("#717171"))
-                    
-                    painter.setFont(self.number_font)
-                    width = self.width()
-                    height = self.fontMetrics().height()
-                    painter.drawText(0, top, width, height, Qt.AlignmentFlag.AlignRight, number)
-
-                block = block.next()
-                top = bottom
-                bottom = top + self.editor.blockBoundingRect(block).height()
-                block_number += 1
-    '''

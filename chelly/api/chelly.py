@@ -19,6 +19,7 @@ class ChellyEditor(QPlainTextEdit):
     on_updated = Signal()
     on_key_pressed = Signal(object)
     on_key_released = Signal(object)
+    on_text_setted = Signal(str)
 
     @property
     def visible_blocks(self) -> list:
@@ -44,6 +45,10 @@ class ChellyEditor(QPlainTextEdit):
 
     def update_state(self):
         self.on_updated.emit()
+    
+    def update(self):
+        self.update_state()
+        return super().update()
 
     @property
     def chelly_document(self) -> ChellyDocument:
@@ -202,3 +207,7 @@ class ChellyEditor(QPlainTextEdit):
     def keyReleaseEvent(self, e: QtGui.QKeyEvent) -> None:
         self.on_key_released.emit(e)
         return super().keyReleaseEvent(e)
+    
+    def setPlainText(self, text: str) -> None:
+        self.on_text_setted.emit(text)
+        return super().setPlainText(text)

@@ -18,8 +18,8 @@ from chelly.api import ChellyEditor
 from chelly.components import (HorizontalScrollBar, LineNumberMargin, Marker,
                                MarkerMargin, MiniChellyMap, VerticalScrollBar)
 from chelly.core import Panel
-from chelly.features import (AutoIndentMode, CaretLineHighLighter,
-                             IndentationGuides)
+from chelly.features import (AutoIndent, CaretLineHighLighter,
+                             IndentationGuides, SmartBackSpace, CursorHistory)
 from chelly.languages import PygmentsSH, PythonLanguage
 from chelly.managers import FeaturesManager, LanguagesManager, PanelsManager
 
@@ -36,7 +36,9 @@ editor = ChellyEditor(div)
 editor.setStyleSheet("""QPlainTextEdit{font-family:Monaco; color: #ccc; background-color: #2b2b2b;}""")
 editor.features.append(CaretLineHighLighter)
 editor.features.append(IndentationGuides)
-editor.features.append(AutoIndentMode)
+editor.features.append(AutoIndent)
+editor.features.append(CursorHistory)
+editor.features.append(SmartBackSpace)
 symbol_margin = editor.panels.append(MarkerMargin, Panel.Position.LEFT)
 editor.panels.append(LineNumberMargin, Panel.Position.LEFT)
 
@@ -62,7 +64,10 @@ editor1 = ChellyEditor(div)
 editor1.setStyleSheet("""QPlainTextEdit{font-family:Monaco; color: #ccc; background-color: #2b2b2b;}""")
 editor1.features.append(CaretLineHighLighter)
 editor1.features.append(IndentationGuides)
-editor1.features.append(AutoIndentMode)
+editor1.features.append(AutoIndent)
+editor1.features.append(CursorHistory)
+editor1.features.append(SmartBackSpace)
+editor1.panels.append(MarkerMargin, Panel.Position.LEFT)
 editor1.panels.append(LineNumberMargin, Panel.Position.LEFT)
 
 h_scrollbar1 = HorizontalScrollBar(editor1)
@@ -119,8 +124,8 @@ def test_load_file(benchmark):
 	editor.properties.text = content
 	assert editor.properties.text == content
 
-def add_mark_at_line(line:int):
-	symbol_margin.add_marker(
+def add_mark_at_line(sm, line:int):
+	sm.add_marker(
 		Marker(
 			line,
 			QIcon(
@@ -128,19 +133,22 @@ def add_mark_at_line(line:int):
 				.joinpath("dev")
 				.joinpath("local_resources")
 				.joinpath("mark-test.png")
-				.as_uri()
+				.as_posix()
 			),
 			"An example mark"
 		)
 	)
 
-def rem_mark_at_line(line:int):
-	symbol_margin.remove_marker(
-		symbol_margin.marker_for_line(line)
+def rem_mark_at_line(sm, line:int):
+	sm.remove_marker(
+		sm.marker_for_line(line)
 	)
 
-symbol_margin.on_add_marker.connect(add_mark_at_line)
-symbol_margin.on_remove_marker.connect(rem_mark_at_line)
+symbol_margin.on_add_marker.connect(lambda line: add_mark_at_line(symbol_margin, line))
+symbol_margin.on_remove_marker.connect(lambda line: rem_mark_at_line(symbol_margin, line))
+symbol_margin1 = editor1.panels.get(MarkerMargin)
+symbol_margin1.on_add_marker.connect(lambda line: add_mark_at_line(symbol_margin1, line))
+symbol_margin1.on_remove_marker.connect(lambda line: rem_mark_at_line(symbol_margin1, line))
 
 if __name__ == "__main__":
 	def fake_benchmark(any):
