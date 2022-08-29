@@ -1,15 +1,19 @@
+from typing import Any
 from PySide6.QtGui import QColor
+from PySide6.QtCore import Qt
 from typing_extensions import Self
 
 class ChellyStyle:
     
     class Selection:
-        background:QColor = None
-        foreground:QColor = None
+        background = QColor(Qt.GlobalColor.darkBlue)
+        background.setAlpha(70)
+        foreground = QColor(Qt.GlobalColor.white)
     
-    class Caret:
-        background:QColor = None
-        foreground:QColor = None
+    class CaretLine:
+        background = QColor(Qt.GlobalColor.darkBlue)
+        background.setAlpha(70)
+        foreground = QColor(Qt.GlobalColor.white)
     
     class Margin:
         background:QColor = None
@@ -23,16 +27,42 @@ class ChellyStyle:
     def __init__(self, editor) -> None:
         self._editor = editor
         self._selection = ChellyStyle.Selection()
-        self._caret_line = ChellyStyle.Caret()
+        self._caret_line = ChellyStyle.CaretLine()
         self._margin = ChellyStyle.Margin()
         self._indentation_guide = ChellyStyle.IndentationGuide()
+        self._lexer_style = None
+        self.__others = dict()
     
+    @property
+    def others(self) -> dict:
+        return self.__others
+    
+    def set(self, key:Any, value:Any) -> Self:
+        self.__others[key] = value
+        return self
+    
+    def get(self, key:Any) -> Any:
+        return self.__others[key]
+    
+    def has(self, key:Any) -> bool:
+        if key in self.__others.keys():
+            return True
+        return False
+    
+    @property
+    def lexer_style(self) -> Any:
+        return self._lexer_style
+    
+    @lexer_style.setter
+    def lexer_style(self, new_lexer_style:Any) -> None:
+        self._lexer_style = new_lexer_style
+        
     @property
     def selection(self) -> Selection:
         return self._selection
     
     @selection.setter
-    def selection(self, new_selection) -> None:
+    def selection(self, new_selection:Selection) -> None:
         self._selection = new_selection
     
     @property
@@ -52,11 +82,11 @@ class ChellyStyle:
         self._selection.background = color
     
     @property
-    def caret_line(self) -> Caret:
+    def caret_line(self) -> CaretLine:
         return self._caret_line
     
     @caret_line.setter
-    def caret_line(self, new_caret_line) -> None:
+    def caret_line(self, new_caret_line:CaretLine) -> None:
         self._caret = new_caret_line
     
     @property
@@ -74,14 +104,13 @@ class ChellyStyle:
     @caret_line_background.setter
     def caret_line_background(self, color:QColor) -> None:
         self._caret_line.background = color
-    
 
     @property
     def margin(self) -> Margin:
         return self._margin
     
     @margin.setter
-    def margin(self, new_margin) -> None:
+    def margin(self, new_margin:Margin) -> None:
         self._margin = new_margin
     
     @property
@@ -107,6 +136,30 @@ class ChellyStyle:
     @margin_highlight.setter
     def margin_highlight(self, color:QColor) -> None:
         self._margin.highlight = color
+    
+    @property
+    def indentation_guide(self) -> IndentationGuide:
+        return self._indentation_guide
+    
+    @indentation_guide.setter
+    def indentation_guide(self, new_indentation_guide) -> None:
+        self._indentation_guide = new_indentation_guide
+    
+    @property
+    def indentation_guide_foreground(self) -> QColor:
+        return self._indentation_guide.foreground
+    
+    @indentation_guide_foreground.setter
+    def indentation_guide_foreground(self, color:QColor) -> None:
+        self._indentation_guide.foreground = color
+    
+    @property
+    def indentation_guide_background(self) -> QColor:
+        return self._indentation_guide_background.background
+    
+    @indentation_guide_background.setter
+    def indentation_guide_background(self, color:QColor) -> None:
+        self._indentation_guide_background.background = color
     
     '''
     @property

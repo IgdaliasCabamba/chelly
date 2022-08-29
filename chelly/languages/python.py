@@ -108,7 +108,7 @@ class PythonSH(Language):
     OECOMMENT = re.compile('^(# ?--[-]+|##[#]+ )[ -]*[^- ]+')
 
     def __init__(self, editor, color_scheme=None):
-        super(PythonSH, self).__init__(editor, color_scheme)
+        super().__init__(editor, color_scheme)
         self.import_statements = []
         self.global_import_statements = []
         self.docstrings = []

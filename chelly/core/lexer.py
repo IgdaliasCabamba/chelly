@@ -49,7 +49,7 @@ class Highlighter(QSyntaxHighlighter):
 
     @staticmethod
     def get_style_name(style: Style) -> str:
-        return style.__class__.__name__
+        return style.__name__
 
     highlighting_rules = []
 
@@ -152,7 +152,7 @@ class ColorScheme(object):
         :param style: name of the pygments style to load
         """
         self._style = Highlighter.get_style(style)
-        self._name = Highlighter.get_style_name(style)
+        self._name = Highlighter.get_style_name(self._style)
         self._brushes = {}
         #: Dictionary of formats colors (keys are the same as for
         #: :attr:`pyqode.core.api.COLOR_SCHEME_KEYS`

@@ -4,8 +4,12 @@ from typing import Any
 from PySide6.QtGui import QPainter, QColor, QFontMetrics, QPen
 from PySide6.QtCore import Qt
 from ..core import Feature, TextEngine, Character
+import re
 
 class IndentationGuides(Feature):
+
+    SPACES_PATTERN = re.compile(r'\A[^\S\n\t]+')
+    TABS_PATTERN = re.compile(r'\A[\t]+')
 
     class Guide:
         def __init__(self, line):
@@ -78,33 +82,39 @@ class IndentationGuides(Feature):
         indentations_cords = []
         visible_text = []
 
-        for i in self.editor.visible_blocks:
+        for top, block_number, block in self.editor.visible_blocks:
             visible_text.append(
-                (i[2].text(), i[2].blockNumber())
+                (block.text(), block_number)
             )
     
         for text, line_num in visible_text:
-            if text.count(char):
-                splited_text = text.split(char)
             
-                indent_count = 0
-
-                for item in splited_text:
-                    if item==Character.EMPTY.value:
-                        indent_count += 1
-                    else:
+            if char == Character.SPACE:
+                matches = self.SPACES_PATTERN.finditer(text)
+                for match in matches:
+                    match_end = match.end()
+                    if match_end % self.editor.properties.indent_size == 0:
+                        indent_count = match_end // self.editor.properties.indent_size
                         indentations_cords.append(
                             IndentationGuides.Guide(line_num)
                             .set_max_level(indent_count)
                         )
-                        break
+            else:
+                matches = self.TABS_PATTERN.finditer(text)
+                for match in matches:
+                    indentations_cords.append(
+                        IndentationGuides.Guide(line_num)
+                        .set_max_level(match.end())
+                    )
+                        
         return indentations_cords
     
     def get_indentation_guides_for_spaces(self) -> list:
-        return self.get_indentation_cords(Character.SPACE.value * self.editor.properties.indent_size)
+        #return self.get_indentation_cords(Character.SPACE.value * self.editor.properties.indent_size)
+        return self.get_indentation_cords(Character.SPACE)
     
     def get_indentation_guides_for_tabs(self) -> list:
-        return self.get_indentation_cords(Character.TAB.value)
+        return self.get_indentation_cords(Character.TAB)
 
     def paint_lines(self, event) -> None:
         if self.editor.horizontalScrollBar().value() > 0:

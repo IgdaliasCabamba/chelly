@@ -1,11 +1,18 @@
 from ..core import Manager, ChellyStyle
 from PySide6.QtGui import QPalette, QColor
+from ..core import ChellyStyle
 
 class ChellyStyleManager(Manager):
     def __init__(self, editor) -> None:
         super().__init__(editor)
         self.__qpalette = QPalette()
-        self.__theme = None
+        self.__theme = ChellyStyle(editor)
+    
+    def __enter__(self):
+        return self.__theme
+    
+    def __exit__(self, *args, **kvargs):
+        return self
     
     @property
     def qpalette(self) -> QPalette:

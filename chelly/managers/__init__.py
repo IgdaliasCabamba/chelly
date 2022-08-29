@@ -15,4 +15,4 @@ from .features import FeaturesManager
 from .language import LanguagesManager
 from .widgets import PanelsManager
 from .decorations import TextDecorationsManager
-from .style import ChellyStyleManager
+from .theme import ChellyStyleManager

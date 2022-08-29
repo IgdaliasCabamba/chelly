@@ -50,7 +50,7 @@ class LanguagesManager(Manager):
             return LanguagesManager.LexerObject(language, style)
         
         elif isinstance(arg, tuple) or isinstance(arg, list):
-            return LanguagesManager.LexerObject(language=arg[0], style=arg[1])
+            return LanguagesManager.LexerObject(language=arg[0], style=Highlighter.get_style(arg[1]))
         
         elif isinstance(arg, Language):
             style = Highlighter.get_style("default")
