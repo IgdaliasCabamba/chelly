@@ -39,10 +39,10 @@ class LineNumberMargin(Panel):
                     
                 if block_number == self.editor.textCursor().blockNumber():
                     self.number_font.setBold(True)
-                    painter.setPen(QColor("#000000"))
+                    painter.setPen(self.editor.style.theme.margin_highlight(LineNumberMargin))
                 else:
                     self.number_font.setBold(False)
-                    painter.setPen(QColor("#717171"))
+                    painter.setPen(self.editor.style.theme.margin_foreground(LineNumberMargin))
             
                 painter.setFont(self.number_font)
                 width = self.width()

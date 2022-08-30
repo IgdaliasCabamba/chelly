@@ -121,13 +121,13 @@ class MarkerMargin(Panel):
 
         marker.block = block
 
-        block_decoration = (
-            TextDecoration(block)
-            .set_full_width()
-            .set_background(QBrush(self._background))
-        )
-        marker.decoration = block_decoration
-        self.editor.decorations.append(block_decoration)
+        #block_decoration = (
+        #    TextDecoration(block)
+        #    .set_full_width()
+        #    .set_background(QBrush(self._background))
+        #)
+        #marker.decoration = block_decoration
+        #self.editor.decorations.append(block_decoration)
         self.repaint()
 
     def __rem_marker(self, marker: Marker):
@@ -147,8 +147,8 @@ class MarkerMargin(Panel):
         elif isinstance(markers, Marker):
             self.__rem_marker(markers)
 
-        if hasattr(markers, 'decoration'):
-            self.editor.decorations.remove(markers.decoration)
+        #if hasattr(markers, 'decoration'):
+            #self.editor.decorations.remove(markers.decoration)
         self.repaint()
 
     def clear_markers(self):

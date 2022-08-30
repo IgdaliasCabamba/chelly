@@ -1,8 +1,4 @@
-#editor.setStyleSheet("""QPlainTextEdit{color: #ccc; background-color: #2b2b2b;}""")
-#editor1.setStyleSheet("""QPlainTextEdit{color: #ccc; background-color: #2b2b2b;}""")
-
 import sys
-
 sys.dont_write_bytecode = True
 
 import logging
@@ -33,8 +29,26 @@ app = QApplication(sys.argv)
 div = QSplitter()
 
 editor = ChellyEditor(div)
-editor.setStyleSheet("""QPlainTextEdit{font-family:Monaco; color: #ccc; background-color: #2b2b2b;}""")
-editor.features.append(CaretLineHighLighter)
+div.setStyleSheet(
+"""
+	ChellyEditor, MiniChellyMap MiniMap {
+		font-family:Monaco;
+		color: #ccc;
+		background-color: #2b2b2b;
+	}
+	ChellyEditor{
+		border-left:2px solid #141414;
+		border-top:2px solid #141414;
+		border-bottom:2px solid #141414;
+		border-right: none
+	}
+	MiniChellyMap{
+		border: none;
+	}
+"""
+)
+
+caret_line = editor.features.append(CaretLineHighLighter)
 editor.features.append(IndentationGuides)
 editor.features.append(AutoIndent)
 editor.features.append(CursorHistory)
@@ -62,7 +76,24 @@ minimap = editor.panels.append(MiniChellyMap, Panel.Position.RIGHT)
 editor.panels.append(MiniChellyMap, Panel.Position.RIGHT)
 
 editor1 = ChellyEditor(div)
-editor1.setStyleSheet("""QPlainTextEdit{font-family:Monaco; color: #ccc; background-color: #2b2b2b;}""")
+editor1.setStyleSheet(
+"""
+	ChellyEditor, MiniChellyMap MiniMap {
+		font-family:Monaco;
+		color: #ccc;
+		/*background-color: #2b2b2b;*/
+	}
+	ChellyEditor{
+		border-left:2px solid #141414;
+		border-top:2px solid #141414;
+		border-bottom:2px solid #141414;
+		border-right: none
+	}
+	MiniChellyMap{
+		border: none;
+	}
+"""
+)
 editor1.features.append(CaretLineHighLighter)
 editor1.features.append(IndentationGuides)
 editor1.features.append(AutoIndent)
@@ -150,6 +181,12 @@ symbol_margin.on_remove_marker.connect(lambda line: rem_mark_at_line(symbol_marg
 symbol_margin1 = editor1.panels.get(MarkerMargin)
 symbol_margin1.on_add_marker.connect(lambda line: add_mark_at_line(symbol_margin1, line))
 symbol_margin1.on_remove_marker.connect(lambda line: rem_mark_at_line(symbol_margin1, line))
+
+editor.style.theme.set_margin_style(LineNumberMargin)
+editor.style.theme.set_margin_highlight(LineNumberMargin, QColor("#72c3f0"))
+
+editor1.style.theme = editor.style.theme
+editor1.style.theme.selection_foreground = QColor("#2b2b2b")
 
 if __name__ == "__main__":
 	def fake_benchmark(any):

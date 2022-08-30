@@ -1,5 +1,7 @@
 from typing import Any
 from PySide6.QtGui import QFontMetrics, QTextOption
+from PySide6.QtWidgets import QPlainTextEdit
+
 from ..core.utils import Character, FontEngine
 
 class Property:
@@ -11,7 +13,7 @@ class Property:
         tabs = 1
 
 class Properties(object):
-    def __init__(self, editor) -> None:
+    def __init__(self, editor:QPlainTextEdit) -> None:
         self._editor = editor
         self._indent_size:int = Property.Default.INDENT_SIZE
         self._indent_type:int = Property.Indentation.tabs

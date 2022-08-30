@@ -27,6 +27,7 @@ class ChellyStyleManager(Manager):
         if callable(new_theme):
             theme = new_theme(self.editor)
         else:
+            new_theme.add_editor(self.editor)
             theme = new_theme
 
         self.__theme = theme

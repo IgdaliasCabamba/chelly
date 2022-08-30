@@ -11,7 +11,6 @@ from ..core.properties import Properties
 from ..managers import (ChellyStyleManager, FeaturesManager, LanguagesManager,
                         PanelsManager, TextDecorationsManager)
 
-
 class CodeEditor(QPlainTextEdit):
 
     on_resized = Signal()
