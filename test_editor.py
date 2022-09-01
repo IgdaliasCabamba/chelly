@@ -37,9 +37,9 @@ div.setStyleSheet(
 		background-color: #2b2b2b;
 	}
 	ChellyEditor{
-		border-left:2px solid #141414;
-		border-top:2px solid #141414;
-		border-bottom:2px solid #141414;
+		border-left:3px solid #181818;
+		border-top:3px solid #181818;
+		border-bottom:3px solid #181818;
 		border-right: none
 	}
 	MiniChellyMap{
@@ -76,7 +76,7 @@ minimap = editor.panels.append(MiniChellyMap, Panel.Position.RIGHT)
 editor.panels.append(MiniChellyMap, Panel.Position.RIGHT)
 
 editor1 = ChellyEditor(div)
-editor1.setStyleSheet(
+#editor1.setStyleSheet(
 """
 	ChellyEditor, MiniChellyMap MiniMap {
 		font-family:Monaco;
@@ -93,7 +93,7 @@ editor1.setStyleSheet(
 		border: none;
 	}
 """
-)
+#)
 editor1.features.append(CaretLineHighLighter)
 editor1.features.append(IndentationGuides)
 editor1.features.append(AutoIndent)
@@ -185,8 +185,10 @@ symbol_margin1.on_remove_marker.connect(lambda line: rem_mark_at_line(symbol_mar
 editor.style.theme.set_margin_style(LineNumberMargin)
 editor.style.theme.set_margin_highlight(LineNumberMargin, QColor("#72c3f0"))
 
+#dont: editor1.style = editor.style
+#do editor1.style.theme = editor.style.theme
 editor1.style.theme = editor.style.theme
-editor1.style.theme.selection_foreground = QColor("#2b2b2b")
+#editor1.style.theme.selection_foreground = QColor("#2b2b2b")
 
 if __name__ == "__main__":
 	def fake_benchmark(any):

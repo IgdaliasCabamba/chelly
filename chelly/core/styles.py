@@ -13,7 +13,6 @@ from PySide6.QtCore import Qt
 from PySide6.QtGui import QColor, QPalette
 from typing_extensions import Self
 
-
 class _StyleElement:
     def __init__(self, editor: ChellyEditor):
         self.__editor = editor
@@ -24,6 +23,12 @@ class _StyleElement:
 
 
 class ChellyStyle:
+
+    class DocumentMap:
+        slider_hover_color:tuple = (255, 255, 255, 30)
+        slider_color:tuple = (255, 255, 255, 15)
+        slider_no_state_color:tuple = (255, 255, 255, 0)
+        shadow_color = QColor("#111111")
 
     class TextEditor(_StyleElement):
         def __init__(self, editor: ChellyEditor):
@@ -41,11 +46,20 @@ class ChellyStyle:
 
     class Selection(_StyleElement):
 
-        def __init__(self, editor):
+        def __init__(self, editor:ChellyEditor):
             super().__init__(editor)
             self._background = QColor(Qt.GlobalColor.darkBlue)
-            self._background.setAlpha(70)
+            self._background.setAlpha(50)
             self._foreground = QColor(Qt.GlobalColor.white)
+            self.__mount()
+        
+        def __mount(self):
+            self.background = self._background
+            self.foreground = self._foreground
+        
+        def clone(self, other_selection):
+            self.background = other_selection.background
+            self.foreground = other_selection.foreground
         
         @property
         def background(self) -> QColor:
@@ -128,10 +142,11 @@ class ChellyStyle:
         color = QColor(Qt.GlobalColor.darkGray)
         active_color = QColor(Qt.GlobalColor.gray)
 
-    def __init__(self, editor) -> None:
+    def __init__(self, editor:ChellyEditor) -> None:
         self._editor = editor
         self._text_editors = [ChellyStyle.TextEditor(self._editor)]
         self._selections = [ChellyStyle.Selection(self._editor)]
+        self._minimap = ChellyStyle.DocumentMap()
         self._caret_line = ChellyStyle.CaretLine()
         self._margins = ChellyStyle.Margins()
         self._indentation_guide = ChellyStyle.IndentationGuide()
@@ -157,7 +172,7 @@ class ChellyStyle:
     def add_editor(self, editor):
         style = ChellyStyle.TextEditor(editor)
         selection = ChellyStyle.Selection(editor)
-        selection.foreground = self.selection.foreground
+        selection.clone(self.selection)
         self._text_editors.append(style)
         self._selections.append(selection)
 
@@ -168,8 +183,7 @@ class ChellyStyle:
 
     @text_editor.setter
     def text_editor(self, new_text_editor) -> None:
-        for text_editor in self._text_editors:
-            text_editor = new_text_editor
+        self._text_editors.append(new_text_editor)
 
     @property
     def lexer_style(self) -> Any:
@@ -178,6 +192,30 @@ class ChellyStyle:
     @lexer_style.setter
     def lexer_style(self, new_lexer_style: Any) -> None:
         self._lexer_style = new_lexer_style
+    
+    @property
+    def minimap(self) -> DocumentMap:
+        return self._minimap
+    
+    @minimap.setter
+    def minimap(self, new_minimap: DocumentMap) -> None:
+        self._minimap = new_minimap
+    
+    @property
+    def minimap_shadow_color(self) -> tuple:
+        return self._minimap.shadow_color
+    
+    @property
+    def minimap_slider_color(self) -> tuple:
+        return self._minimap.slider_color
+    
+    @property
+    def minimap_slider_hover_color(self) -> tuple:
+        return self._minimap.slider_hover_color
+    
+    @property
+    def minimap_slider_no_state_color(self) -> tuple:
+        return self._minimap.slider_no_state_color
 
     @property
     def selection(self) -> Selection:
@@ -185,8 +223,7 @@ class ChellyStyle:
 
     @selection.setter
     def selection(self, new_selection: Selection) -> None:
-        for selection in self._selections:
-            selection = new_selection
+        self._selections.append(new_selection)
 
     @property
     def selection_foreground(self) -> QColor:

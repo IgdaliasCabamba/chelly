@@ -1,3 +1,4 @@
+from typing_extensions import Self
 import PySide6
 from PySide6.QtCore import QRect, QSize, Qt, Signal
 from PySide6.QtGui import (QColor, QFont, QFontMetrics, QPainter, QTextBlock,
@@ -11,17 +12,10 @@ from .code_editor import CodeEditor
 from ..core import (FeaturesExceptions, LexerExceptions, Panel, Properties,
                     PropertiesExceptions, TextEngine)
 from ..managers import FeaturesManager, LanguagesManager
+import string
 
 class iconsts:
     MINIMAP_MINIMUM_ZOOM: int = -10
-    MINIMAP_CURSOR: int = 8
-    MINIMAP_EXTRA_ASCENT: int = 0
-    MINIMAP_EXTRA_DESCENT: int = 0
-    MINIMAP_FIXED_WIDTH = 140
-    MINIMAP_BOX_FIXED_WIDTH = 140
-    MINIMAP_SLIDER_OPACITY_MIN = 0
-    MINIMAP_SLIDER_OPACITY_MID = 15
-    MINIMAP_SLIDER_OPACITY_MAX = 30
     MINIMAP_SLIDER_AREA_FIXED_SIZE = QSize(140, 80)
     MINIMAP_SHADOW_MIN_TEXT_WIDTH = 50
     MINIMAP_BOX_SHADOW_BLURRADIUS = 12
@@ -31,17 +25,21 @@ class iconsts:
 class SliderArea(QFrame):
     def __init__(self, minimap):
         super().__init__(minimap)
-        self.setObjectName("minimap-slider")
         self.minimap = minimap
         self.pressed = False
         self.setMouseTracking(True)
         self.setCursor(Qt.OpenHandCursor)
-        self.change_transparency(iconsts.MINIMAP_SLIDER_OPACITY_MIN)
+        self.change_transparency(self.minimap.editor.style.theme.minimap.slider_no_state_color)
         self.setFixedSize(iconsts.MINIMAP_SLIDER_AREA_FIXED_SIZE)
 
-    def change_transparency(self, bg: int):
+    def change_transparency(self, colors:tuple):
+        style = string.Template("SliderArea{background-color:rgba($r,$g,$b,$a)}")
         self.setStyleSheet(
-            "#minimap-slider{background-color:rgba(255,255,255,%d)}" % bg
+            style.substitute(
+                r=colors[0],
+                g=colors[1],
+                b=colors[2],
+                a=colors[3])
         )
 
     def mousePressEvent(self, event):
@@ -67,11 +65,11 @@ class SliderArea(QFrame):
 
     def leaveEvent(self, event):
         super().leaveEvent(event)
-        self.change_transparency(iconsts.MINIMAP_SLIDER_OPACITY_MID)
+        self.change_transparency(self.minimap.editor.style.theme.minimap.slider_color)
 
     def enterEvent(self, event):
         super().enterEvent(event)
-        self.change_transparency(iconsts.MINIMAP_SLIDER_OPACITY_MAX)
+        self.change_transparency(self.minimap.editor.style.theme.minimap.slider_hover_color)
 
 
 class MiniMap(CodeEditor):
@@ -180,6 +178,14 @@ class MiniMap(CodeEditor):
     def wheelEvent(self, event) -> None:
         super().wheelEvent(event)
         self.editor.wheelEvent(event)
+    
+    def leaveEvent(self, event: PySide6.QtCore.QEvent) -> None:
+        self.slider.change_transparency(self.editor.style.theme.minimap.slider_no_state_color)
+        return super().leaveEvent(event)
+    
+    def enterEvent(self, event: PySide6.QtCore.QEvent) -> None:
+        self.slider.change_transparency(self.editor.style.theme.minimap.slider_color)
+        return super().enterEvent(event)
 
 
 class MiniChellyMap(Panel):
@@ -195,7 +201,7 @@ class MiniChellyMap(Panel):
         
         def default(self):
             drop_shadow = QGraphicsDropShadowEffect(self.__minimap_container)
-            drop_shadow.setColor(QColor("#111111"))
+            drop_shadow.setColor(self.__minimap_container.editor.style.theme.minimap.shadow_color)
             drop_shadow.setXOffset(-3)
             drop_shadow.setYOffset(1)
             drop_shadow.setBlurRadius(6)
@@ -239,7 +245,7 @@ class MiniChellyMap(Panel):
                 self.__resizable = value
 
 
-    def __init__(self, editor, properties= None):
+    def __init__(self, editor, properties:Properties = None):
         super().__init__(editor)
         self.__properties = MiniChellyMap.Properties(self)
 
@@ -265,10 +271,10 @@ class MiniChellyMap(Panel):
             self.__properties = new_properties
     
     def activate_shadow(self):
-        self.minimap.setGraphicsEffect(self.__drop_shadow)
+        self._minimap.setGraphicsEffect(self.properties.shadow)
 
     def disable_shadow(self):
-        self.minimap.setGraphicsEffect(None)
+        self._minimap.setGraphicsEffect(None)
     
     def sizeHint(self):
         """
