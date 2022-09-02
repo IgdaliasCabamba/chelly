@@ -48,7 +48,7 @@ class IndentationGuides(Feature):
         self.editor.on_painted.connect(self.paint_lines)
 
     def __configure_painter(self, painter: QPainter) -> None:
-        pen = QPen(self.editor.style.theme.indentation_guide_color)
+        pen = QPen(self.editor.style.theme.indentation_guide.color)
         pen.setCosmetic(True)
         pen.setJoinStyle(Qt.RoundJoin)
         pen.setCapStyle(Qt.RoundCap)

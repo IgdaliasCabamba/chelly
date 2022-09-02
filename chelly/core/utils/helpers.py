@@ -1,5 +1,31 @@
+from typing import Type
+from typing_extensions import Self
 import weakref
 from PySide6.QtCore import QTimer
+
+class ChellyEvent:
+    def __init__(self, *emit_types:Type) -> None:
+        self.__emit_types = emit_types
+        self.__event_handlers = []
+    
+    def connect(self, callable_object:object) -> Self:
+        if callable(callable_object):
+            self.__event_handlers.append(callable_object)
+        return self
+    
+    def disconnect(self, callable_object:object) -> Self:
+        if callable_object in self.__event_handlers:
+            self.__event_handlers.remove(callable_object)
+        return self
+    
+    def emit(self, callable_object:object) -> Self:
+        for _type in self.__emit_types:
+            if isinstance(callable_object, _type):
+                for handler in self.__event_handlers:
+                    handler(callable_object)
+                break
+
+        return self
 
 class DelayJobRunner:
     """

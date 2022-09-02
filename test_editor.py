@@ -12,7 +12,7 @@ from PySide6.QtGui import *
 
 from chelly.api import ChellyEditor
 from chelly.components import (HorizontalScrollBar, LineNumberMargin, Marker,
-                               MarkerMargin, MiniChellyMap, VerticalScrollBar)
+                               MarkerMargin, MiniMap, VerticalScrollBar, BreadcrumbNav)
 from chelly.core import Panel
 from chelly.features import (AutoIndent, CaretLineHighLighter,
                              IndentationGuides, SmartBackSpace, CursorHistory)
@@ -29,22 +29,61 @@ app = QApplication(sys.argv)
 div = QSplitter()
 
 editor = ChellyEditor(div)
+editor.setCornerWidget(QLabel())
 div.setStyleSheet(
 """
-	ChellyEditor, MiniChellyMap MiniMap {
+	QLabel, ChellyEditor, MiniMap MiniMapEditor {
 		font-family:Monaco;
 		color: #ccc;
 		background-color: #2b2b2b;
+		/*background-color: #dbdbdb;*/
+		border:none
 	}
 	ChellyEditor{
-		border-left:3px solid #181818;
-		border-top:3px solid #181818;
-		border-bottom:3px solid #181818;
-		border-right: none
+		font-size:10pt;
 	}
-	MiniChellyMap{
+	MiniMap{
 		border: none;
 	}
+	QSplitter::handle {background-color:#252526}
+	QSplitter::handle:horizontal {width: 2px}
+	QSplitter::handle:vertical {height: 2px}
+	QSplitter::handle:pressed {background-color:#00a2e8}
+
+	QScrollBar:vertical {
+		border: none;
+		border-left: 0.5px solid rgb(60, 60, 60);
+		border-top: 0.5px solid rgb(60, 60, 60);
+		background: transparent;
+		width: 14px;
+	}
+	QScrollBar::handle:vertical {
+		background:rgba(180, 180, 180, 70);
+		min-height: 20px;
+	}
+	QScrollBar::sub-line:vertical, QScrollBar::add-line:vertical {height: 0;}
+	QScrollBar:left-arrow:vertical, QScrollBar::right-arrow:vertical {
+		height: 0;
+		width: 0;
+	}
+	QScrollBar::add-page:vertical, QScrollBar::sub-page:vertical {background: none;}
+	QScrollBar:horizontal {
+		border: none;
+		background: transparent;
+		height: 12px;
+	}
+	QScrollBar::handle:horizontal {
+		background:rgba(180, 180, 180, 70);
+		min-width: 20px;
+	}
+	QScrollBar::sub-line:horizontal, QScrollBar::add-line:horizontal {width: 0;}
+	QScrollBar:left-arrow:horizontal, QScrollBar::right-arrow:horizontal {
+		border: none;
+		width: 0;
+		height: 0;
+	}
+	QScrollBar::add-page:horizontal, QScrollBar::sub-page:horizontal {background: none;}
+	QScrollBar::handle:hover {background:rgba(200, 200, 200, 100)}
 """
 )
 
@@ -58,42 +97,25 @@ editor.panels.append(LineNumberMargin, Panel.Position.LEFT)
 
 # dont:
 #	editor.panels.append(LineNumberMargin, Panel.Position.LEFT)
+#	editor.panels.append(LineNumberMargin, Panel.Position.LEFT)
 
 # do:
+#	editor.panels.append(LineNumberMargin, Panel.Position.LEFT)
 #	class LNM(LineNumberMargin):
 #		pass
 #	editor.panels.append(LNM, Panel.Position.LEFT)
 
-h_scrollbar1 = HorizontalScrollBar(editor)
-v_scrollbar1 = VerticalScrollBar(editor)
-editor.setHorizontalScrollBar(h_scrollbar1.scrollbar)
+h_scrollbar = editor.panels.append(HorizontalScrollBar, Panel.Position.BOTTOM)
+v_scrollbar = editor.panels.append(VerticalScrollBar, Panel.Position.BOTTOM)
+editor.setHorizontalScrollBar(h_scrollbar.scrollbar)
 editor.setCursorWidth(2)
-editor.setVerticalScrollBar(v_scrollbar1.scrollbar)
-editor.panels.append(h_scrollbar1, Panel.Position.BOTTOM)
-editor.panels.append(v_scrollbar1, Panel.Position.RIGHT)
+editor.setVerticalScrollBar(v_scrollbar.scrollbar)
 
-minimap = editor.panels.append(MiniChellyMap, Panel.Position.RIGHT)
-editor.panels.append(MiniChellyMap, Panel.Position.RIGHT)
+minimap = editor.panels.append(MiniMap, Panel.Position.RIGHT)
+editor.panels.append(MiniMap, Panel.Position.RIGHT)
+editor.panels.append(BreadcrumbNav, Panel.Position.TOP)
 
 editor1 = ChellyEditor(div)
-#editor1.setStyleSheet(
-"""
-	ChellyEditor, MiniChellyMap MiniMap {
-		font-family:Monaco;
-		color: #ccc;
-		/*background-color: #2b2b2b;*/
-	}
-	ChellyEditor{
-		border-left:2px solid #141414;
-		border-top:2px solid #141414;
-		border-bottom:2px solid #141414;
-		border-right: none
-	}
-	MiniChellyMap{
-		border: none;
-	}
-"""
-#)
 editor1.features.append(CaretLineHighLighter)
 editor1.features.append(IndentationGuides)
 editor1.features.append(AutoIndent)
@@ -104,12 +126,13 @@ editor1.panels.append(LineNumberMargin, Panel.Position.LEFT)
 
 h_scrollbar1 = HorizontalScrollBar(editor1)
 v_scrollbar1 = VerticalScrollBar(editor1)
+editor1.setCursorWidth(2)
 editor1.setHorizontalScrollBar(h_scrollbar1.scrollbar)
 editor1.setVerticalScrollBar(v_scrollbar1.scrollbar)
 editor1.panels.append(h_scrollbar1, Panel.Position.BOTTOM)
 editor1.panels.append(v_scrollbar1, Panel.Position.RIGHT)
-
-minimap1 = editor1.panels.append(MiniChellyMap, Panel.Position.RIGHT)
+minimap1 = editor1.panels.append(MiniMap, Panel.Position.RIGHT)
+editor1.panels.append(BreadcrumbNav, Panel.Position.TOP)
 
 editor.language.lexer = {"language":PythonLanguage, "style":"one-dark"}
 
@@ -141,8 +164,8 @@ def test_lexer_set(benchmark):
 	assert editor.lexer == new_lexer
 
 def test_singleton_panel(benchmark):
-	minimap = benchmark(editor.panels.get, MiniChellyMap)
-	assert minimap == editor.panels.append(MiniChellyMap, Panel.Position.RIGHT)
+	minimap = benchmark(editor.panels.get, MiniMap)
+	assert minimap == editor.panels.append(MiniMap, Panel.Position.RIGHT)
 
 def test_feature_set(benchmark):
 	new_features = benchmark(FeaturesManager, editor)
@@ -186,9 +209,9 @@ editor.style.theme.set_margin_style(LineNumberMargin)
 editor.style.theme.set_margin_highlight(LineNumberMargin, QColor("#72c3f0"))
 
 #dont: editor1.style = editor.style
-#do editor1.style.theme = editor.style.theme
+#do: editor1.style.theme = editor.style.theme
 editor1.style.theme = editor.style.theme
-#editor1.style.theme.selection_foreground = QColor("#2b2b2b")
+editor1.style.theme.selection.foreground = QColor("#2b2b2b")
 
 if __name__ == "__main__":
 	def fake_benchmark(any):

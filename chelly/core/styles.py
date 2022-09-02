@@ -1,7 +1,6 @@
 from __future__ import annotations
-import string
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Type, Union
 
 if TYPE_CHECKING:
     from ..api import ChellyEditor
@@ -12,23 +11,93 @@ from typing import Any
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QColor, QPalette
 from typing_extensions import Self
+from .utils.helpers import ChellyEvent
 
 class _StyleElement:
+    
+    class Palette:
+        def __init__(self, editor:ChellyEditor):
+            self._editor = editor
+            self._palette = editor.palette()
+        
+        def set_color(self, *args, **kargs):
+            self._palette.setColor(*args, **kargs)
+            self._editor.setPalette(self._palette)
+        
+    
+    def __new__(cls: type[Self], *args, **kvargs) -> Self:
+        obj = super().__new__(cls)
+        obj.on_changed = ChellyEvent(object)
+        return obj
+
     def __init__(self, editor: ChellyEditor):
+        self.__palette = _StyleElement.Palette(editor)
         self.__editor = editor
+    
+    @property
+    def palette(self) -> _StyleElement.Palette:
+        return self.__palette
+    
+    @palette.setter
+    def palette(self, new_palette:_StyleElement.Palette) -> _StyleElement.Palette:
+        self.__palette = new_palette
 
     @property
     def editor(self) -> ChellyEditor:
         return self.__editor
 
-
 class ChellyStyle:
 
     class DocumentMap:
-        slider_hover_color:tuple = (255, 255, 255, 30)
-        slider_color:tuple = (255, 255, 255, 15)
-        slider_no_state_color:tuple = (255, 255, 255, 0)
-        shadow_color = QColor("#111111")
+        
+        class Slider:
+            _hover_color:tuple = (255, 255, 255, 30)
+            _color:tuple = (255, 255, 255, 15)
+            _no_state_color:tuple = (255, 255, 255, 0)
+
+            @property
+            def color(self) -> tuple:
+                return self._color
+        
+            @color.setter
+            def color(self, new_color:tuple) -> None:
+                self._color = new_color
+
+            @property
+            def no_state_color(self) -> tuple:
+                return self._no_state_color
+            
+            @no_state_color.setter
+            def no_state_color(self, new_color:QColor) -> None:
+                self._no_state_color = new_color
+            
+            @property
+            def hover_color(self) -> tuple:
+                return self._hover_color
+        
+            @hover_color.setter
+            def hover_color(self, new_color:QColor) -> None:
+                self._hover_color = new_color
+
+
+        _slider = Slider()
+        _shadow_color = QColor("#111111")
+    
+        @property
+        def shadow_color(self) -> tuple:
+            return self._shadow_color
+        
+        @shadow_color.setter
+        def shadow_color(self, new_color:QColor) -> tuple:
+            self._shadow_color = new_color
+        
+        @property
+        def slider(self) -> ChellyStyle.DocumentMap.Slider:
+            return self._slider
+        
+        @slider.setter
+        def slider(self, new_slider:ChellyStyle.DocumentMap.Slider) -> None:
+            self._slider = new_slider
 
     class TextEditor(_StyleElement):
         def __init__(self, editor: ChellyEditor):
@@ -46,7 +115,7 @@ class ChellyStyle:
 
     class Selection(_StyleElement):
 
-        def __init__(self, editor:ChellyEditor):
+        def __init__(self, editor:ChellyEditor) -> None:
             super().__init__(editor)
             self._background = QColor(Qt.GlobalColor.darkBlue)
             self._background.setAlpha(50)
@@ -54,12 +123,21 @@ class ChellyStyle:
             self.__mount()
         
         def __mount(self):
-            self.background = self._background
-            self.foreground = self._foreground
+            self.__set_bg(self._background)
+            self.__set_fg(self._foreground)
         
-        def clone(self, other_selection):
-            self.background = other_selection.background
-            self.foreground = other_selection.foreground
+        def clone(self, other_selection) -> Self:
+            self.__set_bg(other_selection.background)
+            self.__set_fg(other_selection.foreground)
+            return self
+        
+        def __set_bg(self, color:QColor) -> None:
+            self._background = color
+            self.palette.set_color(QPalette.Highlight, self._background)
+        
+        def __set_fg(self, color:QColor) -> None:
+            self._foreground = color
+            self.palette.set_color(QPalette.HighlightedText, self._foreground)
         
         @property
         def background(self) -> QColor:
@@ -68,10 +146,8 @@ class ChellyStyle:
         @background.setter
         def background(self, color:QColor):
             if isinstance(color, QColor):
-                self._background = color
-                palette = self.editor.palette()
-                palette.setColor(QPalette.Highlight, self._background)
-                self.editor.setPalette(palette)
+                self.__set_bg(color)
+                self.on_changed.emit(self)
         
         @property
         def foreground(self) -> QColor:
@@ -80,15 +156,29 @@ class ChellyStyle:
         @foreground.setter
         def foreground(self, color:QColor):
             if isinstance(color, QColor):
-                self._foreground = color
-                palette = self.editor.palette()
-                palette.setColor(QPalette.HighlightedText, self._foreground)
-                self.editor.setPalette(palette)
+                self.__set_fg(color)
+                self.on_changed.emit(self)
 
     class CaretLine:
-        background = QColor(Qt.GlobalColor.darkBlue)
-        background.setAlpha(70)
-        foreground = QColor(Qt.GlobalColor.white)
+        _background = QColor(Qt.GlobalColor.darkBlue)
+        _background.setAlpha(70)
+        _foreground = QColor(Qt.GlobalColor.white)
+        
+        @property
+        def foreground(self) -> QColor:
+            return self._foreground
+
+        @foreground.setter
+        def foreground(self, new_color: QColor) -> None:
+            self._foreground = new_color
+
+        @property
+        def background(self) -> QColor:
+            return self._background
+
+        @background.setter
+        def background(self, new_color: QColor) -> None:
+            self._background = new_color
 
     class Margins:
 
@@ -139,46 +229,46 @@ class ChellyStyle:
                 setattr(margin_style, key, value)
 
     class IndentationGuide:
-        color = QColor(Qt.GlobalColor.darkGray)
-        active_color = QColor(Qt.GlobalColor.gray)
+        _color = QColor(Qt.GlobalColor.darkGray)
+        _active_color = QColor(Qt.GlobalColor.gray)
+
+        @property
+        def color(self) -> QColor:
+            return self._color
+
+        @color.setter
+        def color(self, new_color: QColor) -> None:
+            self._color = new_color
+
+        @property
+        def active_color(self) -> QColor:
+            return self._active_color
+
+        @active_color.setter
+        def active_color(self, new_color: QColor) -> None:
+            self._active_color = new_color
+
 
     def __init__(self, editor:ChellyEditor) -> None:
         self._editor = editor
-        self._text_editors = [ChellyStyle.TextEditor(self._editor)]
-        self._selections = [ChellyStyle.Selection(self._editor)]
+        
+        text_editor = ChellyStyle.TextEditor(self._editor)
+        text_editor.on_changed.connect(self._update_editor)
+        self._text_editors = [text_editor]
+
+        selection = ChellyStyle.Selection(self._editor)
+        selection.on_changed.connect(self._update_selection)
+        self._selections = [selection]
+
         self._minimap = ChellyStyle.DocumentMap()
         self._caret_line = ChellyStyle.CaretLine()
         self._margins = ChellyStyle.Margins()
         self._indentation_guide = ChellyStyle.IndentationGuide()
         self._lexer_style = None
         self.__others = dict()
-
-    @property
-    def others(self) -> dict:
-        return self.__others
-
-    def set(self, key: Any, value: Any) -> Self:
-        self.__others[key] = value
-        return self
-
-    def get(self, key: Any) -> Any:
-        return self.__others[key]
-
-    def has(self, key: Any) -> bool:
-        if key in self.__others.keys():
-            return True
-        return False
-
-    def add_editor(self, editor):
-        style = ChellyStyle.TextEditor(editor)
-        selection = ChellyStyle.Selection(editor)
-        selection.clone(self.selection)
-        self._text_editors.append(style)
-        self._selections.append(selection)
-
+    
     @property
     def text_editor(self) -> TextEditor:
-        # return the main editor
         return self._text_editors[0]
 
     @text_editor.setter
@@ -200,22 +290,6 @@ class ChellyStyle:
     @minimap.setter
     def minimap(self, new_minimap: DocumentMap) -> None:
         self._minimap = new_minimap
-    
-    @property
-    def minimap_shadow_color(self) -> tuple:
-        return self._minimap.shadow_color
-    
-    @property
-    def minimap_slider_color(self) -> tuple:
-        return self._minimap.slider_color
-    
-    @property
-    def minimap_slider_hover_color(self) -> tuple:
-        return self._minimap.slider_hover_color
-    
-    @property
-    def minimap_slider_no_state_color(self) -> tuple:
-        return self._minimap.slider_no_state_color
 
     @property
     def selection(self) -> Selection:
@@ -226,46 +300,20 @@ class ChellyStyle:
         self._selections.append(new_selection)
 
     @property
-    def selection_foreground(self) -> QColor:
-        return self.selection.foreground
-
-    @selection_foreground.setter
-    def selection_foreground(self, color: QColor) -> None:
-        for selection in self._selections:
-            selection.foreground = color
-
-    @property
-    def selection_background(self) -> QColor:
-        return self.selection.background
-
-    @selection_background.setter
-    def selection_background(self, color: QColor) -> None:
-        for selection in self._selections:
-            selection.background = color
-
-    @property
     def caret_line(self) -> CaretLine:
         return self._caret_line
 
     @caret_line.setter
     def caret_line(self, new_caret_line: CaretLine) -> None:
         self._caret = new_caret_line
-
+    
     @property
-    def caret_line_foreground(self) -> QColor:
-        return self._caret_line.foreground
+    def indentation_guide(self) -> IndentationGuide:
+        return self._indentation_guide
 
-    @caret_line_foreground.setter
-    def caret_line_foreground(self, color: QColor) -> None:
-        self._caret_line.foreground = color
-
-    @property
-    def caret_line_background(self) -> QColor:
-        return self._caret_line.background
-
-    @caret_line_background.setter
-    def caret_line_background(self, color: QColor) -> None:
-        self._caret_line.background = color
+    @indentation_guide.setter
+    def indentation_guide(self, new_indentation_guide) -> None:
+        self._indentation_guide = new_indentation_guide
 
     def set_margin_style(self, margin: Any, **kvargs) -> Self:
         self._margins.new(margin, **kvargs)
@@ -295,32 +343,42 @@ class ChellyStyle:
     def margin_background(self, margin: Any) -> QColor:
         return self._margins.get(margin, "background")
 
-    @property
-    def indentation_guide(self) -> IndentationGuide:
-        return self._indentation_guide
-
-    @indentation_guide.setter
-    def indentation_guide(self, new_indentation_guide) -> None:
-        self._indentation_guide = new_indentation_guide
-
-    @property
-    def indentation_guide_color(self) -> QColor:
-        return self._indentation_guide.color
-
-    @indentation_guide_color.setter
-    def indentation_guide_color(self, color: QColor) -> None:
-        self._indentation_guide.color = color
-
-    @property
-    def indentation_guide_active_color(self) -> QColor:
-        return self._indentation_guide.active_color
-
-    @indentation_guide_active_color.setter
-    def indentation_guide_active_color(self, color: QColor) -> None:
-        self._indentation_guide.active_color = color
-
     def apply(self) -> Self:
         return self
+    
+    def set(self, key: Any, value: Any) -> Self:
+        self.__others[key] = value
+        return self
+
+    def get(self, key: Any = None) -> Union[Any, dict]:
+        if key is None:
+            return self.__others
+
+        return self.__others[key]
+
+    def has(self, key: Any) -> bool:
+        if key in self.__others.keys():
+            return True
+        return False
+
+    def add_editor(self, editor):
+        text_editor = ChellyStyle.TextEditor(editor)
+        selection = ChellyStyle.Selection(editor)
+        selection.clone(self.selection)
+        selection.on_changed.connect(self._update_selection)
+        text_editor.on_changed.connect(self._update_editor)
+        self._text_editors.append(text_editor)
+        self._selections.append(selection)
+    
+    def _update_selection(self, changed_selection):
+        for selection in self._selections:
+            if selection is not changed_selection:
+                selection.clone(changed_selection)
+    
+    def _update_editor(self, changed_editor):
+        for editor in self._text_editors:
+            if editor is not changed_editor:
+                print("_update_editor(OK)")
 
     '''
     @property

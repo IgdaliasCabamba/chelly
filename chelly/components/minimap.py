@@ -1,27 +1,13 @@
-from typing_extensions import Self
-import PySide6
-from PySide6.QtCore import QRect, QSize, Qt, Signal
-from PySide6.QtGui import (QColor, QFont, QFontMetrics, QPainter, QTextBlock,
-                           QTextCursor, QTextOption)
-from PySide6.QtWidgets import (QGraphicsDropShadowEffect, QHBoxLayout,
-                               QPlainTextEdit, QScrollBar, QFrame)
+from PySide6.QtCore import QSize, Qt, QEvent
+from PySide6.QtGui import (QFontMetrics, QResizeEvent)
+from PySide6.QtWidgets import (QGraphicsDropShadowEffect, QHBoxLayout,QFrame)
 
 #from ..api.chelly import ChellyEditor as CodeEditor
 from .code_editor import CodeEditor
 
-from ..core import (FeaturesExceptions, LexerExceptions, Panel, Properties,
-                    PropertiesExceptions, TextEngine)
-from ..managers import FeaturesManager, LanguagesManager
+from ..core import (Panel, Properties,TextEngine, Character)
 import string
-
-class iconsts:
-    MINIMAP_MINIMUM_ZOOM: int = -10
-    MINIMAP_SLIDER_AREA_FIXED_SIZE = QSize(140, 80)
-    MINIMAP_SHADOW_MIN_TEXT_WIDTH = 50
-    MINIMAP_BOX_SHADOW_BLURRADIUS = 12
-    MINIMAP_BOX_SHADOW_Y_OFFSET = -3
-    MINIMAP_BOX_SHADOW_X_OFFSET = 0
-
+    
 class SliderArea(QFrame):
     def __init__(self, minimap):
         super().__init__(minimap)
@@ -29,8 +15,7 @@ class SliderArea(QFrame):
         self.pressed = False
         self.setMouseTracking(True)
         self.setCursor(Qt.OpenHandCursor)
-        self.change_transparency(self.minimap.editor.style.theme.minimap.slider_no_state_color)
-        self.setFixedSize(iconsts.MINIMAP_SLIDER_AREA_FIXED_SIZE)
+        self.change_transparency(self.minimap.editor.style.theme.minimap.slider.no_state_color)
 
     def change_transparency(self, colors:tuple):
         style = string.Template("SliderArea{background-color:rgba($r,$g,$b,$a)}")
@@ -65,29 +50,21 @@ class SliderArea(QFrame):
 
     def leaveEvent(self, event):
         super().leaveEvent(event)
-        self.change_transparency(self.minimap.editor.style.theme.minimap.slider_color)
+        self.change_transparency(self.minimap.editor.style.theme.minimap.slider.color)
 
     def enterEvent(self, event):
         super().enterEvent(event)
-        self.change_transparency(self.minimap.editor.style.theme.minimap.slider_hover_color)
+        self.change_transparency(self.minimap.editor.style.theme.minimap.slider.hover_color)
 
 
-class MiniMap(CodeEditor):
+class _DocumentMap(CodeEditor):
     def __init__(self, parent):
         super().__init__(parent)
-
         self.editor = parent.editor
-        self._amount_of_blocks = TextEngine(self.editor).line_count
-        self.current_scroll_value = self.editor.verticalScrollBar().value()
-
         self.setTextInteractionFlags(Qt.NoTextInteraction)
-
-        self.slider = SliderArea(self)
-        self.slider.show()
-
         self.setMouseTracking(True)
         self.setTabStopDistance(QFontMetrics(
-            self.font()).horizontalAdvance('W'))
+            self.font()).horizontalAdvance(Character.LARGEST.value))
 
         self.zoomOut(8)
         self.setReadOnly(True)
@@ -95,25 +72,37 @@ class MiniMap(CodeEditor):
             Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
         self.setHorizontalScrollBarPolicy(
             Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+    
+    def mouseMoveEvent(self, event) -> None:
+        pass
 
-        self.editor.document().contentsChange.connect(self.update_contents)
-        self.editor.on_painted.connect(self.update_ui)
+    def mouseReleaseEvent(self, event) -> None:
+        pass
 
-    def scroll_slide(self, y_point: int):
-        self.slider.move(0, y_point)
-
-    def update_ui(self):
-        self._scroll_slide()
-
-    def update_contents(self, pos, charsrem, charsadd):
+    def wheelEvent(self, event) -> None:
+        self.editor.wheelEvent(event)
+    
+    def _update_contents(self, pos, charsrem, charsadd):
         line_number = TextEngine(self.editor).current_line_nbr
         TextEngine(self).move_cursor_to_line(line_number)
-        text = TextEngine(self.editor).text_at_line(line_number)
+        line_count = TextEngine(self.editor).line_count
 
-        if self._amount_of_blocks == TextEngine(self.editor).line_count:
+        if self._amount_of_blocks == line_count:
+            text = TextEngine(self.editor).text_at_line(line_number)
             TextEngine(self).set_text_at_line(
                 self.textCursor().blockNumber(), text)
             TextEngine(self).move_cursor_to_line(line_number)
+        
+        # TODO: create new line
+        #elif self._amount_of_blocks == line_count-1:
+            #TextEngine(self).move_cursor_to_line(line_number-1)
+            #self.textCursor().insertBlock()
+            #TextEngine(self).move_cursor_to_line(line_number)
+        
+        # TODO: delete last line
+        #elif self._amount_of_blocks == line_count+1:
+            #print(f"[{charsadd}] chars added [{charsrem}] removed at: {pos}")
+
         else:
             self.document().setPlainText(
                 self.editor.document().toPlainText()
@@ -123,6 +112,28 @@ class MiniMap(CodeEditor):
             )
 
         self._amount_of_blocks = TextEngine(self.editor).line_count
+
+class MiniMapEditor(_DocumentMap):
+    def __init__(self, parent):
+        super().__init__(parent)
+
+        self._amount_of_blocks = TextEngine(self.editor).line_count
+        self.current_scroll_value = self.editor.verticalScrollBar().value()
+
+        self.slider = SliderArea(self)
+        self.slider.show()
+        
+        self.bind()
+    
+    def bind(self):
+        self.editor.document().contentsChange.connect(self._update_contents)
+        self.editor.on_painted.connect(self.update_ui)
+
+    def scroll_slide(self, y_point: int):
+        self.slider.move(0, y_point)
+
+    def update_ui(self):
+        self._scroll_slide()
 
     def _scroll_slide(self):
         num_editor_visible_lines = TextEngine(
@@ -167,45 +178,44 @@ class MiniMap(CodeEditor):
         self.editor.verticalScrollBar().setValue(line - line_area)
 
     def mousePressEvent(self, event) -> None:
-        super().mousePressEvent(event)
         TextEngine(self.editor).move_cursor_to_line(
             TextEngine(self).line_number_from_position(
                 y_pos = event.pos().y(),
                 x_pos = event.pos().x()
             )
         )
-
-    def wheelEvent(self, event) -> None:
-        super().wheelEvent(event)
-        self.editor.wheelEvent(event)
     
-    def leaveEvent(self, event: PySide6.QtCore.QEvent) -> None:
-        self.slider.change_transparency(self.editor.style.theme.minimap.slider_no_state_color)
+    def leaveEvent(self, event: QEvent) -> None:
+        self.slider.change_transparency(self.editor.style.theme.minimap.slider.no_state_color)
         return super().leaveEvent(event)
     
-    def enterEvent(self, event: PySide6.QtCore.QEvent) -> None:
-        self.slider.change_transparency(self.editor.style.theme.minimap.slider_color)
+    def enterEvent(self, event: QEvent) -> None:
+        self.slider.change_transparency(self.editor.style.theme.minimap.slider.color)
         return super().enterEvent(event)
 
 
-class MiniChellyMap(Panel):
+class MiniMap(Panel):
     
     class Properties:
         def __init__(self, minimap_container) -> None:
             self.__minimap_container = minimap_container
-            self.__max_width:int = 140
-            self.__min_width:int = 40
-            self.__resizable:bool = True
+            self.__max_width = 140
+            self.__min_width = 40
+            self.__width_percentage = 40
+            self.__resizable = True
             self.__drop_shadow = None
+            self.__slider_fixed_heigth = 80
             self.default()
         
         def default(self):
             drop_shadow = QGraphicsDropShadowEffect(self.__minimap_container)
             drop_shadow.setColor(self.__minimap_container.editor.style.theme.minimap.shadow_color)
             drop_shadow.setXOffset(-3)
-            drop_shadow.setYOffset(1)
+            drop_shadow.setYOffset(-3)
             drop_shadow.setBlurRadius(6)
             self.shadow = drop_shadow
+            self.__minimap_container.code_viewer.slider.setFixedHeight(self.__slider_fixed_heigth)
+            self.__minimap_container.code_viewer.slider.setFixedWidth(self.__minimap_container.size().width())
         
         @property
         def shadow(self) -> QGraphicsDropShadowEffect:
@@ -219,7 +229,23 @@ class MiniChellyMap(Panel):
         
         @property
         def max_width(self) -> int:
-            return self.__max_width
+            if self.resizable:
+                editor_width = self.__minimap_container.editor.size().width()
+                
+                #compute percentage size
+                max_width = editor_width * self.__width_percentage // 100
+
+                if max_width > self.__max_width:
+                    max_width = self.__max_width
+                
+                if max_width < self.__min_width:
+                    max_width = self.__min_width
+
+            else:
+                max_width = self.__max_width
+            
+            self.__minimap_container.code_viewer.slider.setFixedWidth(max_width)
+            return max_width
         
         @max_width.setter
         def max_width(self, width:int) -> None:
@@ -234,6 +260,15 @@ class MiniChellyMap(Panel):
         def min_width(self, width:int) -> None:
             if isinstance(width, int):
                 self.__min_width = width
+            
+        @property
+        def width_percentage(self) -> int:
+            return self.__width_percentage
+        
+        @width_percentage.setter
+        def width_percentage(self, width:int) -> None:
+            if isinstance(width, int):
+                self.__width_percentage = width
         
         @property
         def resizable(self) -> int:
@@ -243,22 +278,31 @@ class MiniChellyMap(Panel):
         def resizable(self, value:bool) -> None:
             if isinstance(value, bool):
                 self.__resizable = value
+            
+        @property
+        def slider_heigth(self) -> QSize:
+            return self.__slider_fixed_heigth
+        
+        @slider_heigth.setter
+        def slider_fixed_heigth(self, size:QSize) -> None:
+            self.__slider_fixed_heigth = size
+            self.__minimap_container.code_viewer.slider.setFixedHeight(self.__slider_fixed_heigth)
 
 
     def __init__(self, editor, properties:Properties = None):
         super().__init__(editor)
-        self.__properties = MiniChellyMap.Properties(self)
-
         self.box = QHBoxLayout(self)
         self.box.setContentsMargins(0, 0, 0, 0)
 
-        self._minimap = MiniMap(self)
+        self._minimap = MiniMapEditor(self)
 
         self.box.addWidget(self._minimap)
         self.setLayout(self.box)
+
+        self.__properties = MiniMap.Properties(self)
     
     @property
-    def code_viewer(self) -> MiniMap:
+    def code_viewer(self) -> MiniMapEditor:
         return self._minimap
     
     @property
@@ -269,6 +313,10 @@ class MiniChellyMap(Panel):
     def properties(self, new_properties:Properties) -> None:
         if isinstance(new_properties, Properties):
             self.__properties = new_properties
+    
+    def update(self):
+        self.properties.shadow.setColor(self.editor.style.theme.minimap.shadow_color)
+        super().update()
     
     def activate_shadow(self):
         self._minimap.setGraphicsEffect(self.properties.shadow)

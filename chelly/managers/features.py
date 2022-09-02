@@ -51,3 +51,7 @@ class FeaturesManager(Manager):
             return self._features[mode]
         
         return None
+    
+    def remove(self, mode):
+        if mode in self._features:
+            return self._features[mode]

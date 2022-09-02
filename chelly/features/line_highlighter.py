@@ -34,7 +34,7 @@ class CaretLineHighLighter(Feature):
         """
         self._clear_deco()
         if not self.editor.isReadOnly():
-            brush = QBrush(self.editor.style.theme.caret_line_background)
+            brush = QBrush(self.editor.style.theme.caret_line.background)
             self._decoration = TextDecoration(self.editor.textCursor())
             self._decoration.set_background(brush)
             self._decoration.set_full_width()
