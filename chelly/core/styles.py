@@ -99,20 +99,6 @@ class ChellyStyle:
         def slider(self, new_slider:ChellyStyle.DocumentMap.Slider) -> None:
             self._slider = new_slider
 
-    class TextEditor(_StyleElement):
-        def __init__(self, editor: ChellyEditor):
-            super().__init__(editor)
-            self.__style_sheet = Template("")
-
-        @property
-        def style_sheet(self) -> QColor:
-            return self.__style_sheet
-
-        @style_sheet.setter
-        def style_sheet(self, new_style_sheet: Template) -> None:
-            if isinstance(new_style_sheet, Template):
-                pass
-
     class Selection(_StyleElement):
 
         def __init__(self, editor:ChellyEditor) -> None:
@@ -251,10 +237,6 @@ class ChellyStyle:
 
     def __init__(self, editor:ChellyEditor) -> None:
         self._editor = editor
-        
-        text_editor = ChellyStyle.TextEditor(self._editor)
-        text_editor.on_changed.connect(self._update_editor)
-        self._text_editors = [text_editor]
 
         selection = ChellyStyle.Selection(self._editor)
         selection.on_changed.connect(self._update_selection)
@@ -266,14 +248,6 @@ class ChellyStyle:
         self._indentation_guide = ChellyStyle.IndentationGuide()
         self._lexer_style = None
         self.__others = dict()
-    
-    @property
-    def text_editor(self) -> TextEditor:
-        return self._text_editors[0]
-
-    @text_editor.setter
-    def text_editor(self, new_text_editor) -> None:
-        self._text_editors.append(new_text_editor)
 
     @property
     def lexer_style(self) -> Any:
@@ -362,46 +336,12 @@ class ChellyStyle:
         return False
 
     def add_editor(self, editor):
-        text_editor = ChellyStyle.TextEditor(editor)
         selection = ChellyStyle.Selection(editor)
         selection.clone(self.selection)
         selection.on_changed.connect(self._update_selection)
-        text_editor.on_changed.connect(self._update_editor)
-        self._text_editors.append(text_editor)
         self._selections.append(selection)
     
     def _update_selection(self, changed_selection):
         for selection in self._selections:
             if selection is not changed_selection:
                 selection.clone(changed_selection)
-    
-    def _update_editor(self, changed_editor):
-        for editor in self._text_editors:
-            if editor is not changed_editor:
-                print("_update_editor(OK)")
-
-    '''
-    @property
-    def (self) -> :
-        return self._
-    
-    @.setter
-    def (self, new_) -> None:
-        self._ = new_
-    
-    @property
-    def (self) -> QColor:
-        return self._.foreground
-    
-    @.setter
-    def (self, color:QColor) -> None:
-        self..foreground = color
-    
-    @property
-    def (self) -> QColor:
-        return self._.background
-    
-    @.setter
-    def (self, color:QColor) -> None:
-        self._.background = color
-    '''

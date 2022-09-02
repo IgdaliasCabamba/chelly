@@ -55,11 +55,9 @@ div.setStyleSheet(
 		border-left: 0.5px solid rgb(60, 60, 60);
 		border-top: 0.5px solid rgb(60, 60, 60);
 		background: transparent;
-		width: 14px;
 	}
 	QScrollBar::handle:vertical {
 		background:rgba(180, 180, 180, 70);
-		min-height: 20px;
 	}
 	QScrollBar::sub-line:vertical, QScrollBar::add-line:vertical {height: 0;}
 	QScrollBar:left-arrow:vertical, QScrollBar::right-arrow:vertical {
@@ -70,11 +68,9 @@ div.setStyleSheet(
 	QScrollBar:horizontal {
 		border: none;
 		background: transparent;
-		height: 12px;
 	}
 	QScrollBar::handle:horizontal {
 		background:rgba(180, 180, 180, 70);
-		min-width: 20px;
 	}
 	QScrollBar::sub-line:horizontal, QScrollBar::add-line:horizontal {width: 0;}
 	QScrollBar:left-arrow:horizontal, QScrollBar::right-arrow:horizontal {
@@ -106,13 +102,12 @@ editor.panels.append(LineNumberMargin, Panel.Position.LEFT)
 #	editor.panels.append(LNM, Panel.Position.LEFT)
 
 h_scrollbar = editor.panels.append(HorizontalScrollBar, Panel.Position.BOTTOM)
-v_scrollbar = editor.panels.append(VerticalScrollBar, Panel.Position.BOTTOM)
-editor.setHorizontalScrollBar(h_scrollbar.scrollbar)
+v_scrollbar = editor.panels.append(VerticalScrollBar, Panel.Position.RIGHT)
+#editor.setHorizontalScrollBar(h_scrollbar.scrollbar)
 editor.setCursorWidth(2)
-editor.setVerticalScrollBar(v_scrollbar.scrollbar)
+#editor.setVerticalScrollBar(v_scrollbar.scrollbar)
 
-minimap = editor.panels.append(MiniMap, Panel.Position.RIGHT)
-editor.panels.append(MiniMap, Panel.Position.RIGHT)
+minimap = editor.panels.append(MiniMap, Panel.Position.RIGHT, index=1)
 editor.panels.append(BreadcrumbNav, Panel.Position.TOP)
 
 editor1 = ChellyEditor(div)
@@ -149,14 +144,14 @@ div.show()
 
 editor1.properties.indent_with_spaces = True
 editor.setVerticalScrollBarPolicy(
-        Qt.ScrollBarPolicy.ScrollBarAlwaysOn)
+        Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
 editor.setHorizontalScrollBarPolicy(
-        Qt.ScrollBarPolicy.ScrollBarAsNeeded)
+        Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
 
 editor1.setVerticalScrollBarPolicy(
-        Qt.ScrollBarPolicy.ScrollBarAlwaysOn)
+        Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
 editor1.setHorizontalScrollBarPolicy(
-        Qt.ScrollBarPolicy.ScrollBarAsNeeded)
+        Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
 
 def test_lexer_set(benchmark):
 	new_lexer = benchmark(LanguagesManager, editor)
@@ -211,7 +206,7 @@ editor.style.theme.set_margin_highlight(LineNumberMargin, QColor("#72c3f0"))
 #dont: editor1.style = editor.style
 #do: editor1.style.theme = editor.style.theme
 editor1.style.theme = editor.style.theme
-editor1.style.theme.selection.foreground = QColor("#2b2b2b")
+#editor1.style.theme.selection.foreground = QColor("#2b2b2b")
 
 if __name__ == "__main__":
 	def fake_benchmark(any):

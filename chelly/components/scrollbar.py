@@ -1,5 +1,5 @@
 from PySide6.QtWidgets import QScrollBar, QHBoxLayout, QVBoxLayout
-from PySide6.QtCore import Qt
+from PySide6.QtCore import Qt, QSize
 from ..core import Panel
 
 class ScrollBar(QScrollBar):
@@ -22,6 +22,15 @@ class HorizontalScrollBar(Panel):
     @property
     def scrollbar(self):
         return self._scroll_bar
+    
+    def sizeHint(self) -> QSize:
+        """
+        Returns the panel size hint. (fixed with of 16px)
+        """
+        size_hint = QSize(w=14, h=14)
+        size_hint.setWidth(14)
+        size_hint.setHeight(14)
+        return size_hint
 
 class VerticalScrollBar(Panel):
     def __init__(self, editor) -> None:
@@ -38,3 +47,13 @@ class VerticalScrollBar(Panel):
     @property
     def scrollbar(self):
         return self._scroll_bar
+    
+    def sizeHint(self) -> QSize:
+        """
+        Returns the panel size hint. (fixed with of 16px)
+        """
+        size_hint = QSize(w=14, h=14)
+        size_hint.setWidth(14)
+        size_hint.setHeight(14)
+        return size_hint
+        

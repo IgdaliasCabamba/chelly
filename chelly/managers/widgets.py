@@ -3,7 +3,6 @@ from dataclasses import dataclass
 from ..core import Manager, Panel, TextEngine
 from PySide6.QtCore import QRect
 
-
 class PanelsManager(Manager):
 
     @dataclass(frozen=True)
@@ -16,25 +15,26 @@ class PanelsManager(Manager):
     def __init__(self, editor) -> None:
         super().__init__(editor)
 
-        self._cached_cursor_pos:tuple = (-1, -1)
-        self._margin_sizes:tuple = (0, 0, 0, 0)
-        self._top:int = -1
-        self._left:int = -1
-        self._right:int = -1
-        self._bottom:int = -1
-        self._widgets:dict = {
-            Panel.Position.TOP: {},
-            Panel.Position.LEFT: {},
-            Panel.Position.RIGHT: {},
-            Panel.Position.BOTTOM: {}
+        self._cached_cursor_pos: tuple = (-1, -1)
+        self._margin_sizes: tuple = (0, 0, 0, 0)
+        self._top: int = -1
+        self._left: int = -1
+        self._right: int = -1
+        self._bottom: int = -1
+        self._widgets: dict = {
+            Panel.Position.TOP: dict(),
+            Panel.Position.LEFT: dict(),
+            Panel.Position.RIGHT: dict(),
+            Panel.Position.BOTTOM: dict()
         }
-        self._zones:list = self._widgets.keys()
+        self._zones: list = self._widgets.keys()
+        self._indexes = dict()
 
         self.editor.blockCountChanged[int].connect(
             self._update_viewport_margins)
         self.editor.updateRequest[QRect, int].connect(self._update)
         self.editor.on_resized.connect(self.refresh)
-    
+
     def __call_panel(self, panel: Panel) -> Union[None, Panel]:
         if callable(panel):
             # avoid appending more than one of the same panel type
@@ -48,18 +48,20 @@ class PanelsManager(Manager):
             widget = panel
         return widget
 
-    def append(self, panel: Panel, position=Panel.Position.LEFT) -> Panel:
+    def append(self, panel: Panel, position=Panel.Position.LEFT, index: int = 0) -> Panel:
         widget = self.__call_panel(panel)
         if widget is not None:
-            self._widgets[position][widget.__class__.__name__] = widget
+            widget_name = widget.__class__.__name__
+            self._widgets[position][widget_name] = widget
+            self._indexes[widget_name] = index
             return widget
-        
-        #make it like a singleton
+
+        # make it like a singleton
         if callable(panel):
             return self.get(panel.__name__)
-        
+
         return self.get(panel.__class__.__name__)
-    
+
     def remove(self, panel: Panel) -> None:
         pass
 
@@ -121,6 +123,15 @@ class PanelsManager(Manager):
 
         return None
 
+    def panel_index(self, widget: Union[Panel, str]) -> int:
+        if not isinstance(widget, str):
+            widget = widget.__class__.__name__
+
+        if widget in self._indexes.keys():
+            return self._indexes[widget]
+
+        return 0
+
     def refresh(self) -> None:
         """ Refreshes the editor panels (resize and update margins) """
         self.resize()
@@ -151,46 +162,112 @@ class PanelsManager(Manager):
         w_offset = crect.width() - (view_crect.width() + tw)
         h_offset = crect.height() - (view_crect.height() + th)
 
-        left: int = 0
-        for panel in self._valid_panels_at(Panel.Position.LEFT, True):
-            panel.adjustSize()
-            size_hint = panel.sizeHint()
-            panel.setGeometry(crect.left() + left,
-                              crect.top() + size_top,
-                              size_hint.width(),
-                              crect.height() - size_bottom - size_top - h_offset)
-            left += size_hint.width()
+        def resize_left() -> int:
+            nonlocal left
+            left = 0
+            for panel in self._valid_panels_at(Panel.Position.LEFT, True):
+                panel.adjustSize()
+                size_hint = panel.sizeHint()
+                
+                x = crect.left() + left
+                y = crect.top() + size_top
+                w = size_hint.width()
+                h = crect.height() - size_bottom - size_top - h_offset
 
-        right: int = 0
-        for panel in self._valid_panels_at(Panel.Position.RIGHT, True):
-            size_hint = panel.sizeHint()
-            panel.setGeometry(
-                crect.right() - right - size_hint.width() - w_offset,
-                crect.top() + size_top,
-                size_hint.width(),
-                crect.height() - size_bottom - size_top - h_offset)
-            right += size_hint.width()
+                index = self.panel_index(panel)
+                
+                if index == 1:
+                    h = crect.height() - size_top - h_offset
+                elif index == 2:
+                    h = crect.height() - h_offset
+                
+                panel.setGeometry(x,y,w,h)
+                left += size_hint.width()
 
-        top: int = 0
-        for panel in self._valid_panels_at(Panel.Position.TOP):
-            size_hint = panel.sizeHint()
-            panel.setGeometry(crect.left(),
-                              crect.top() + top,
-                              crect.width() - w_offset,
-                              size_hint.height())
-            top += size_hint.height()
+            return left
 
-        bottom: int = 0
-        for panel in self._valid_panels_at(Panel.Position.BOTTOM):
-            size_hint = panel.sizeHint()
-            panel.setGeometry(
-                crect.left(),
-                crect.bottom() - bottom - size_hint.height() - h_offset,
-                crect.width() - w_offset,
-                size_hint.height())
-            bottom += size_hint.height()
+        left = resize_left()
 
-    def _update(self, rect:object, delta_y:int, force_update_margins:bool=False) -> None:
+        def resize_right() -> int:
+            nonlocal right
+            right = 0
+            for panel in self._valid_panels_at(Panel.Position.RIGHT, True):
+                size_hint = panel.sizeHint()
+
+                x = crect.right() - right - size_hint.width() - w_offset
+                y = crect.top() + size_top
+                w = size_hint.width()
+                h = crect.height() - size_bottom - size_top - h_offset
+
+                index = self.panel_index(panel)
+
+                if index == 1:
+                    h = crect.height() - size_top - h_offset
+
+                elif index == 2:
+                    h = crect.height() - h_offset
+                
+                panel.setGeometry(x,y,w,h)
+
+                right += size_hint.width()
+
+            return right
+
+        right = resize_right()
+
+        def resize_top() -> int:
+            nonlocal top
+            top = 0
+            for panel in self._valid_panels_at(Panel.Position.TOP):
+                size_hint = panel.sizeHint()
+
+                index = self.panel_index(panel)
+
+                x = crect.left()
+                y = crect.top() + top
+                w = crect.width() - w_offset
+                h = size_hint.height()
+
+                if index == 1:
+                    pass
+                    
+                elif index == 2:
+                    pass
+                    
+                panel.setGeometry(x,y,w,h)
+                top += size_hint.height()
+            
+            return top
+
+        top = resize_top()
+
+        def resize_bottom() -> int:
+            nonlocal bottom
+            bottom = 0
+            for panel in self._valid_panels_at(Panel.Position.BOTTOM):
+                size_hint = panel.sizeHint()
+
+                x = crect.left()
+                y = crect.bottom() - bottom - size_hint.height() - h_offset
+                w = crect.width() - w_offset - right
+                h = size_hint.height()
+
+                index = self.panel_index(panel)
+
+                if index == 1:
+                    w = crect.width() - w_offset
+
+                elif index == 2:
+                    w = crect.width()
+
+                panel.setGeometry(x, y, w, h)
+                bottom += size_hint.height()
+
+            return bottom
+
+        bottom = resize_bottom()
+
+    def _update(self, rect: object, delta_y: int, force_update_margins: bool = False) -> None:
         """ Updates panels """
         helper = TextEngine(self.editor)
 
