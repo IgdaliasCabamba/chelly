@@ -75,23 +75,37 @@ class BreadcrumbNav(Panel):
         if len(new_text) == 0:
             new_text += "&nbsp;&nbsp;"
 
-        clean_block = sanitize_html(block["content"])
+        block["content"] = sanitize_html(block["content"])
 
         if block["action"] is None:
-            new_text += f"<span style={block['style']}>{clean_block}&nbsp;>&nbsp;</span>"
+            new_text += f"<span style={block['style']}>{block['content']}&nbsp;>&nbsp;</span>"
         else:
-            new_text += f"<a href={block['action']} style='text-decoration:none; {block['style']}'>{clean_block}&nbsp;>&nbsp;</a>"
+            new_text += f"<a href={block['action']} style='text-decoration:none; {block['style']}'>{block['content']}&nbsp;>&nbsp;</a>"
 
         self._breadcrumb.setText(new_text)
         self.__blocks.append(block)
         return self
-
-    def remove_block(self, block) -> Self:
-        if block in self.__blocks:
-            self.__blocks.remove(block)
-            new_text = self._breadcrumb.text().replace(block, str())
+    
+    def update_block(self, block:Union[int, dict], new_block:dict) -> Self:
+        if isinstance(block, int):
+            new_text = self._breadcrumb.text().replace(self.__blocks[block]["content"], new_block["content"])
             self._breadcrumb.setText(new_text)
+            self.__blocks.pop(block)
 
+        elif isinstance(block, dict) and block in self.__blocks:
+            new_text = self._breadcrumb.text().replace(block["content"], new_block["content"])
+            self._breadcrumb.setText(new_text)
+            self.__blocks.remove(block)
+
+        return self
+    
+    def remove_block(self, block:Union[int, dict]) -> Self:
+        new_block = {
+            "action":None,
+            "content":str(),
+            "style": "",
+        }
+        self.update_block(block, new_block)
         return self
 
     def clear(self) -> Self:

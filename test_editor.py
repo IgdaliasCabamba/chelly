@@ -105,6 +105,7 @@ h_scrollbar = editor.panels.append(HorizontalScrollBar, Panel.Position.BOTTOM)
 v_scrollbar = editor.panels.append(VerticalScrollBar, Panel.Position.RIGHT)
 editor.setCursorWidth(2)
 minimap = editor.panels.append(MiniMap, Panel.Position.RIGHT, 2)
+minimap.chelly_editor.features.append(CaretLineHighLighter)
 editor.panels.append(BreadcrumbNav, Panel.Position.TOP, 1)
 
 editor1 = ChellyEditor(div)
@@ -122,6 +123,7 @@ editor1.setCursorWidth(2)
 editor1.panels.append(h_scrollbar1, Panel.Position.BOTTOM)
 editor1.panels.append(v_scrollbar1, Panel.Position.RIGHT)
 minimap1 = editor1.panels.append(MiniMap, Panel.Position.RIGHT, 2)
+minimap1.chelly_editor.features.append(CaretLineHighLighter)
 editor1.panels.append(BreadcrumbNav, Panel.Position.TOP, 1)
 
 editor.language.lexer = {"language":PythonLanguage, "style":"one-dark"}
@@ -130,7 +132,7 @@ with minimap as m:
 	m.language.lexer = [PythonLanguage, "one-dark"]
 
 editor1.language.lexer = (PythonLanguage, "one-dark")
-PygmentsSH(minimap1.code_viewer, color_scheme="one-dark")
+PygmentsSH(minimap1.chelly_editor, color_scheme="one-dark")
 
 div.addWidget(editor)
 div.addWidget(editor1)
@@ -200,8 +202,10 @@ editor.style.theme.set_margin_highlight(LineNumberMargin, QColor("#72c3f0"))
 
 #dont: editor1.style = editor.style
 #do: editor1.style.theme = editor.style.theme
+
 editor1.style.theme = editor.style.theme
-#editor1.style.theme.selection.foreground = QColor("#2b2b2b")
+minimap.chelly_editor.style.theme = editor.style.theme
+editor1.style.theme.selection.foreground = QColor("#2b2b2b")
 
 if __name__ == "__main__":
 	def fake_benchmark(any):

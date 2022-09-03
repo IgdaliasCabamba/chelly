@@ -83,6 +83,8 @@ class _DocumentMap(CodeEditor):
         self.editor.wheelEvent(event)
     
     def _update_contents(self, pos:int=0, charsrem:int=0, charsadd:int=0):
+        #print(f"[{charsadd}] chars added [{charsrem}] removed at: {pos}")
+        
         line_number = TextEngine(self.editor).current_line_nbr
         TextEngine(self).move_cursor_to_line(line_number)
         line_count = TextEngine(self.editor).line_count
@@ -93,18 +95,17 @@ class _DocumentMap(CodeEditor):
                 self.textCursor().blockNumber(), text)
             TextEngine(self).move_cursor_to_line(line_number)
         
-        # TODO: create new line
         elif self._amount_of_blocks == line_count-1:
             cursor = self.textCursor()
             cursor.setPosition(pos)
             cursor.insertText("\n")
+            self.setTextCursor(cursor)
         
-        # TODO: delete last line
-        #elif self._amount_of_blocks == line_count+1:
-            #cursor = self.textCursor()
-            #cursor.setPosition(pos)
-            #cursor.deletePreviousChar()
-            #print(f"[{charsadd}] chars added [{charsrem}] removed at: {pos}")
+        elif self._amount_of_blocks == line_count+1:
+            TextEngine(self).move_cursor_to_line(line_number+1)
+            cursor = self.textCursor()
+            cursor.deletePreviousChar()
+            self.setTextCursor(cursor)
 
         else:
             self.document().setPlainText(
@@ -136,6 +137,8 @@ class MiniMapEditor(_DocumentMap):
         self.slider.move(0, y_point)
 
     def update_ui(self):
+        row, column = TextEngine(self.editor).cursor_position
+        TextEngine(self).goto_line(row, column)
         self._scroll_slide()
 
     def _scroll_slide(self):
@@ -217,8 +220,8 @@ class MiniMap(Panel):
             drop_shadow.setYOffset(-3)
             drop_shadow.setBlurRadius(6)
             self.shadow = drop_shadow
-            self.__minimap_container.code_viewer.slider.setFixedHeight(self.__slider_fixed_heigth)
-            self.__minimap_container.code_viewer.slider.setFixedWidth(self.__minimap_container.size().width())
+            self.__minimap_container.chelly_editor.slider.setFixedHeight(self.__slider_fixed_heigth)
+            self.__minimap_container.chelly_editor.slider.setFixedWidth(self.__minimap_container.size().width())
         
         @property
         def shadow(self) -> QGraphicsDropShadowEffect:
@@ -247,7 +250,7 @@ class MiniMap(Panel):
             else:
                 max_width = self.__max_width
             
-            self.__minimap_container.code_viewer.slider.setFixedWidth(max_width)
+            self.__minimap_container.chelly_editor.slider.setFixedWidth(max_width)
             return max_width
         
         @max_width.setter
@@ -289,7 +292,7 @@ class MiniMap(Panel):
         @slider_heigth.setter
         def slider_fixed_heigth(self, size:QSize) -> None:
             self.__slider_fixed_heigth = size
-            self.__minimap_container.code_viewer.slider.setFixedHeight(self.__slider_fixed_heigth)
+            self.__minimap_container.chelly_editor.slider.setFixedHeight(self.__slider_fixed_heigth)
 
     def __init__(self, editor, properties:Properties = None):
         super().__init__(editor)
@@ -309,7 +312,7 @@ class MiniMap(Panel):
         self.update_shadow(True)
     
     @property
-    def code_viewer(self) -> MiniMapEditor:
+    def chelly_editor(self) -> MiniMapEditor:
         return self._minimap
     
     @property
@@ -364,7 +367,7 @@ class MiniMap(Panel):
         return QSize(self.properties.max_width, self.fixed_size_hint)
     
     def __enter__(self):
-        return self.code_viewer
+        return self.chelly_editor
     
     def __exit__(self, *args, **kvargs) -> None:
         return None
