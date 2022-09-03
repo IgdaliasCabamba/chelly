@@ -88,8 +88,8 @@ editor.features.append(IndentationGuides)
 editor.features.append(AutoIndent)
 editor.features.append(CursorHistory)
 editor.features.append(SmartBackSpace)
-symbol_margin = editor.panels.append(MarkerMargin, Panel.Position.LEFT)
-editor.panels.append(LineNumberMargin, Panel.Position.LEFT)
+symbol_margin = editor.panels.append(MarkerMargin, Panel.Position.LEFT, 1)
+editor.panels.append(LineNumberMargin, Panel.Position.LEFT, 1)
 
 # dont:
 #	editor.panels.append(LineNumberMargin, Panel.Position.LEFT)
@@ -104,9 +104,8 @@ editor.panels.append(LineNumberMargin, Panel.Position.LEFT)
 h_scrollbar = editor.panels.append(HorizontalScrollBar, Panel.Position.BOTTOM)
 v_scrollbar = editor.panels.append(VerticalScrollBar, Panel.Position.RIGHT)
 editor.setCursorWidth(2)
-
-minimap = editor.panels.append(MiniMap, Panel.Position.RIGHT, index=1)
-editor.panels.append(BreadcrumbNav, Panel.Position.TOP)
+minimap = editor.panels.append(MiniMap, Panel.Position.RIGHT, 2)
+editor.panels.append(BreadcrumbNav, Panel.Position.TOP, 1)
 
 editor1 = ChellyEditor(div)
 editor1.features.append(CaretLineHighLighter)
@@ -120,12 +119,10 @@ editor1.panels.append(LineNumberMargin, Panel.Position.LEFT)
 h_scrollbar1 = HorizontalScrollBar(editor1)
 v_scrollbar1 = VerticalScrollBar(editor1)
 editor1.setCursorWidth(2)
-#editor1.setHorizontalScrollBar(h_scrollbar1.scrollbar)
-#editor1.setVerticalScrollBar(v_scrollbar1.scrollbar)
 editor1.panels.append(h_scrollbar1, Panel.Position.BOTTOM)
 editor1.panels.append(v_scrollbar1, Panel.Position.RIGHT)
-minimap1 = editor1.panels.append(MiniMap, Panel.Position.RIGHT)
-editor1.panels.append(BreadcrumbNav, Panel.Position.TOP)
+minimap1 = editor1.panels.append(MiniMap, Panel.Position.RIGHT, 2)
+editor1.panels.append(BreadcrumbNav, Panel.Position.TOP, 1)
 
 editor.language.lexer = {"language":PythonLanguage, "style":"one-dark"}
 

@@ -1,3 +1,4 @@
+from typing_extensions import Self
 from PySide6.QtCore import QSize, Qt, QEvent
 from PySide6.QtGui import (QFontMetrics, QResizeEvent)
 from PySide6.QtWidgets import (QGraphicsDropShadowEffect, QHBoxLayout,QFrame)
@@ -59,7 +60,7 @@ class SliderArea(QFrame):
 class _DocumentMap(CodeEditor):
     def __init__(self, parent):
         super().__init__(parent)
-        self.editor = parent.editor
+        self.editor:CodeEditor = parent.editor
         self.setTextInteractionFlags(Qt.NoTextInteraction)
         self.setMouseTracking(True)
         self.setTabStopDistance(QFontMetrics(
@@ -81,7 +82,7 @@ class _DocumentMap(CodeEditor):
     def wheelEvent(self, event) -> None:
         self.editor.wheelEvent(event)
     
-    def _update_contents(self, pos, charsrem, charsadd):
+    def _update_contents(self, pos:int=0, charsrem:int=0, charsadd:int=0):
         line_number = TextEngine(self.editor).current_line_nbr
         TextEngine(self).move_cursor_to_line(line_number)
         line_count = TextEngine(self.editor).line_count
@@ -93,13 +94,16 @@ class _DocumentMap(CodeEditor):
             TextEngine(self).move_cursor_to_line(line_number)
         
         # TODO: create new line
-        #elif self._amount_of_blocks == line_count-1:
-            #TextEngine(self).move_cursor_to_line(line_number-1)
-            #self.textCursor().insertBlock()
-            #TextEngine(self).move_cursor_to_line(line_number)
+        elif self._amount_of_blocks == line_count-1:
+            cursor = self.textCursor()
+            cursor.setPosition(pos)
+            cursor.insertText("\n")
         
         # TODO: delete last line
         #elif self._amount_of_blocks == line_count+1:
+            #cursor = self.textCursor()
+            #cursor.setPosition(pos)
+            #cursor.deletePreviousChar()
             #print(f"[{charsadd}] chars added [{charsrem}] removed at: {pos}")
 
         else:
@@ -287,9 +291,9 @@ class MiniMap(Panel):
             self.__slider_fixed_heigth = size
             self.__minimap_container.code_viewer.slider.setFixedHeight(self.__slider_fixed_heigth)
 
-
     def __init__(self, editor, properties:Properties = None):
         super().__init__(editor)
+
         self.box = QHBoxLayout(self)
         self.box.setContentsMargins(0, 0, 0, 0)
 
@@ -299,6 +303,10 @@ class MiniMap(Panel):
         self.setLayout(self.box)
 
         self.__properties = MiniMap.Properties(self)
+        self.editor.blockCountChanged.connect(self.update_shadow)
+        self.editor.on_resized.connect(self.update_shadow)
+        self.editor.on_text_setted.connect(self.update_shadow)
+        self.update_shadow(True)
     
     @property
     def code_viewer(self) -> MiniMapEditor:
@@ -313,10 +321,35 @@ class MiniMap(Panel):
         if isinstance(new_properties, Properties):
             self.__properties = new_properties
     
-    def update(self):
+    def update_shadow(self, force:bool = False) -> Self:
+        if len(self.editor.visible_blocks) == 1 and not force:
+            self.properties.shadow.setEnabled(False)
+        
+        elif len(self.editor.visible_blocks) == 1 and force and len(self.editor.toPlainText()) > 0:
+            self.properties.shadow.setEnabled(True)
+        
+        else:
+            for top, block_number, block in self.editor.visible_blocks:
+                width = (
+                    self.editor.fontMetrics()
+                    .boundingRect(block.text())
+                    .width()
+                )
+
+                line_width = (self.editor.geometry().width() - self.geometry().width()) - width
+                if line_width < 0:
+                    self.properties.shadow.setEnabled(True)
+                    break
+                else:
+                    self.properties.shadow.setEnabled(False)
+
+        return self
+
+    def update(self) -> Self:
         self.properties.shadow.setColor(self.editor.style.theme.minimap.shadow_color)
         super().update()
-    
+        return self
+
     def activate_shadow(self):
         self._minimap.setGraphicsEffect(self.properties.shadow)
 

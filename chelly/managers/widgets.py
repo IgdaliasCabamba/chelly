@@ -178,6 +178,7 @@ class PanelsManager(Manager):
                 
                 if index == 1:
                     h = crect.height() - size_top - h_offset
+
                 elif index == 2:
                     h = crect.height() - h_offset
                 
@@ -225,14 +226,14 @@ class PanelsManager(Manager):
 
                 x = crect.left()
                 y = crect.top() + top
-                w = crect.width() - w_offset
+                w = crect.width() - w_offset - right
                 h = size_hint.height()
 
                 if index == 1:
-                    pass
+                    w = crect.width() - w_offset
                     
                 elif index == 2:
-                    pass
+                    w = crect.width()
                     
                 panel.setGeometry(x,y,w,h)
                 top += size_hint.height()

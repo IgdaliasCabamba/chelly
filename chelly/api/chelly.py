@@ -210,4 +210,5 @@ class ChellyEditor(QPlainTextEdit):
     
     def setPlainText(self, text: str) -> None:
         self.on_text_setted.emit(text)
+        self._update_visible_blocks()
         return super().setPlainText(text)

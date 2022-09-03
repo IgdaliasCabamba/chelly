@@ -1,9 +1,11 @@
-from .manager import Manager
-from .properties import Properties
-from .feature import Feature
-from .exceptions import *
-from .panel import *
-from .utils import TextEngine, Character, drift_color, TextBlockHelper, FontEngine, DelayJobRunner, TextDecoration
 from .document import ChellyDocument
-from .lexer import SyntaxHighlighter, Highlighter, ColorScheme, TextBlockUserData, Language
+from .exceptions import *
+from .feature import Feature
+from .manager import Manager
+from .panel import *
+from .properties import Properties
 from .styles import ChellyStyle
+from .utils import (Character, DelayJobRunner, FontEngine, TextBlockHelper,
+                    TextDecoration, TextEngine, drift_color, sanitize_html)
+from .lexer import (ColorScheme, Highlighter, Language, SyntaxHighlighter,
+                    TextBlockUserData)
