@@ -56,7 +56,6 @@ class SliderArea(QFrame):
         super().enterEvent(event)
         self.change_transparency(self.minimap.editor.style.theme.minimap.slider.hover_color)
 
-
 class _DocumentMap(CodeEditor):
     def __init__(self, parent):
         super().__init__(parent)

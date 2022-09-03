@@ -1,11 +1,12 @@
 from PySide6.QtWidgets import QLabel, QHBoxLayout, QGraphicsDropShadowEffect
-from PySide6.QtCore import QSize
+from PySide6.QtCore import QSize, Qt
 from PySide6.QtGui import QColor
 from ..core import Panel
 
 class BreadcrumbNav(Panel):
     def __init__(self, editor) -> None:
         super().__init__(editor)
+
         self.setStyleSheet("BreadcrumbNav QLabel{background:#2b2b2b}")
         self.scrollable = False
         self.box = QHBoxLayout(self)
@@ -17,12 +18,22 @@ class BreadcrumbNav(Panel):
         self.box.addWidget(self._breadcrumb)
         self.setLayout(self.box)
 
-        drop_shadow = QGraphicsDropShadowEffect(self)
-        drop_shadow.setColor(QColor("#111111"))
-        drop_shadow.setXOffset(-1)
-        drop_shadow.setYOffset(2)
-        drop_shadow.setBlurRadius(6)
-        self.setGraphicsEffect(drop_shadow)
+        self.drop_shadow = QGraphicsDropShadowEffect(self)
+        self.drop_shadow.setColor(QColor("#111111"))
+        self.drop_shadow.setXOffset(-1)
+        self.drop_shadow.setYOffset(2)
+        self.drop_shadow.setBlurRadius(6)
+        self.setGraphicsEffect(self.drop_shadow)
+
+        self.editor.on_painted.connect(self.update_shadow)
+        self.update_shadow()
+    
+    def update_shadow(self):
+        if self.editor.verticalScrollBar().value() > 0:
+            self.drop_shadow.setColor(QColor("#111111"))
+        else:
+            self.drop_shadow.setColor(QColor(Qt.GlobalColor.transparent))
+        
     
     def sizeHint(self) -> QSize:
         """

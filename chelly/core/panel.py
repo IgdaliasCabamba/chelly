@@ -1,14 +1,22 @@
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from ..api import ChellyEditor
+
 from PySide6.QtWidgets import QWidget
 
 class Panel(QWidget):
 
-    def __init__(self, editor) -> None:
+    def __init__(self, editor:ChellyEditor) -> None:
         super().__init__(editor)
         self.order_in_zone = -1
         self._scrollable = False
         self.__enabled = True
         self.__editor = editor
         self.editor.panels.refresh()
+        self.setAutoFillBackground(False)
 
     @property
     def enabled(self) -> bool:
@@ -19,7 +27,7 @@ class Panel(QWidget):
         self.__enabled = status
         
     @property
-    def editor(self):
+    def editor(self) -> ChellyEditor:
         return self.__editor
     
     @property

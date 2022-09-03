@@ -19,7 +19,7 @@ from chelly.features import (AutoIndent, CaretLineHighLighter,
 from chelly.languages import PygmentsSH, PythonLanguage
 from chelly.managers import FeaturesManager, LanguagesManager, PanelsManager
 
-DEBUG_OUTPUT_FILE = os.path.join("dev","chelly.log")
+DEBUG_OUTPUT_FILE = os.path.join("dev", "chelly.log")
 pathlib.Path(DEBUG_OUTPUT_FILE).touch(exist_ok=True)
 
 logging.basicConfig(filename=DEBUG_OUTPUT_FILE, filemode='a', format='%(name)s - %(levelname)s - %(message)s')
@@ -29,7 +29,7 @@ app = QApplication(sys.argv)
 div = QSplitter()
 
 editor = ChellyEditor(div)
-editor.setCornerWidget(QLabel())
+editor.setCornerWidget(None)
 div.setStyleSheet(
 """
 	QLabel, ChellyEditor, MiniMap MiniMapEditor {
@@ -103,9 +103,7 @@ editor.panels.append(LineNumberMargin, Panel.Position.LEFT)
 
 h_scrollbar = editor.panels.append(HorizontalScrollBar, Panel.Position.BOTTOM)
 v_scrollbar = editor.panels.append(VerticalScrollBar, Panel.Position.RIGHT)
-#editor.setHorizontalScrollBar(h_scrollbar.scrollbar)
 editor.setCursorWidth(2)
-#editor.setVerticalScrollBar(v_scrollbar.scrollbar)
 
 minimap = editor.panels.append(MiniMap, Panel.Position.RIGHT, index=1)
 editor.panels.append(BreadcrumbNav, Panel.Position.TOP)
@@ -122,8 +120,8 @@ editor1.panels.append(LineNumberMargin, Panel.Position.LEFT)
 h_scrollbar1 = HorizontalScrollBar(editor1)
 v_scrollbar1 = VerticalScrollBar(editor1)
 editor1.setCursorWidth(2)
-editor1.setHorizontalScrollBar(h_scrollbar1.scrollbar)
-editor1.setVerticalScrollBar(v_scrollbar1.scrollbar)
+#editor1.setHorizontalScrollBar(h_scrollbar1.scrollbar)
+#editor1.setVerticalScrollBar(v_scrollbar1.scrollbar)
 editor1.panels.append(h_scrollbar1, Panel.Position.BOTTOM)
 editor1.panels.append(v_scrollbar1, Panel.Position.RIGHT)
 minimap1 = editor1.panels.append(MiniMap, Panel.Position.RIGHT)
