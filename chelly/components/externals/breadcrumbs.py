@@ -1,9 +1,51 @@
+# UNDER CONTRUCTION
+
 from typing import Union
 from typing_extensions import Self
 from PySide6.QtWidgets import QLabel, QHBoxLayout, QGraphicsDropShadowEffect, QWidget
 from PySide6.QtCore import QSize, Qt
 from PySide6.QtGui import QColor
-from ..core import Panel, sanitize_html
+from ...core import Panel, sanitize_html
+import qtawesome
+
+class BreadcrumbBlock:
+    def __init__(self, action:str = None, style:str=None, icon:str=None, content:str = None, *args, **kwargs):
+        self.__action = action 
+        self.__style = style
+        self.__icon = icon
+        self.__content = content
+
+    @property
+    def action(self) -> str:
+        return self.__action
+
+    @action.setter
+    def action(self, action:str) -> None:
+        self.__action = action
+    
+    @property
+    def style(self) -> str:
+        return self.__style
+    
+    @style.setter
+    def style(self, style:str) -> None:
+        self.__style = style
+    
+    @property
+    def icon(self) -> str:
+        return self.__icon
+    
+    @icon.setter
+    def icon(self, icon:str) -> None:
+        self.__icon = icon
+    
+    @property
+    def content(self) -> str:
+        return self.__content
+
+    @content.setter
+    def content(self, content:str) -> None:
+        self.__content = content
 
 class BreadcrumbNav(Panel):
     def __init__(self, editor) -> None:
@@ -75,15 +117,22 @@ class BreadcrumbNav(Panel):
         if len(new_text) == 0:
             new_text += "&nbsp;&nbsp;"
 
-        block["content"] = sanitize_html(block["content"])
+        block["content"] = sanitize_html(block["content"], valid_tags=["span", "img"])
 
         if block["action"] is None:
             new_text += f"<span style={block['style']}>{block['content']}&nbsp;>&nbsp;</span>"
         else:
             new_text += f"<a href={block['action']} style='text-decoration:none; {block['style']}'>{block['content']}&nbsp;>&nbsp;</a>"
+        
+        new_text += '<img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAUAAAAFCAYAAACNbyblAAAAHElEQVQI12P4//8/w38GIAXDIBKE0DHxgljNBAAO9TXL0Y4OHwAAAABJRU5ErkJggg==" alt="Red dot" />'
+        new_text += "&nbsp;"
 
         self._breadcrumb.setText(new_text)
         self.__blocks.append(block)
+        
+        #fa5_icon = qtawesome.icon('fa5.flag')
+        #print(fa5_icon)
+
         return self
     
     def update_block(self, block:Union[int, dict], new_block:dict) -> Self:

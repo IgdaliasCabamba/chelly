@@ -2,6 +2,7 @@
 cenv/
 dev/*
 !dev/local_resources
+!dev/libs
 *.pyi
 *.pyc
 site/

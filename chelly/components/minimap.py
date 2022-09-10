@@ -138,7 +138,7 @@ class MiniMapEditor(_DocumentMap):
 
     def update_ui(self):
         row, column = TextEngine(self.editor).cursor_position
-        TextEngine(self).goto_line(row, column)
+        TextEngine(self).goto_line(row, column=0)
         self._scroll_slide()
 
     def _scroll_slide(self):

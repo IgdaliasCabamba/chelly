@@ -1,4 +1,5 @@
 import sys
+
 sys.dont_write_bytecode = True
 
 import logging
@@ -7,17 +8,21 @@ import pathlib
 
 import pytest
 from PySide6.QtCore import *
-from PySide6.QtWidgets import *
 from PySide6.QtGui import *
+from PySide6.QtWidgets import *
 
 from chelly.api import ChellyEditor
-from chelly.components import (HorizontalScrollBar, LineNumberMargin, Marker,
-                               MarkerMargin, MiniMap, VerticalScrollBar, BreadcrumbNav)
+from chelly.components import (NoficationPanel, HorizontalScrollBar,
+                               LineNumberMargin, Marker, MarkerMargin, MiniMap,
+                               VerticalScrollBar, BreadcrumbNav)
 from chelly.core import Panel
-from chelly.features import (AutoIndent, CaretLineHighLighter,
-                             IndentationGuides, SmartBackSpace, CursorHistory)
+from chelly.features import (AutoIndent, CaretLineHighLighter, CursorHistory,
+                             IndentationGuides, SmartBackSpace)
 from chelly.languages import PygmentsSH, PythonLanguage
 from chelly.managers import FeaturesManager, LanguagesManager, PanelsManager
+
+from dev.libs.qtmodern import styles as qtmodern_styles
+from dev.libs.qtmodern import windows as qtmodern_windows
 
 DEBUG_OUTPUT_FILE = os.path.join("dev", "chelly.log")
 pathlib.Path(DEBUG_OUTPUT_FILE).touch(exist_ok=True)
@@ -28,15 +33,31 @@ app = QApplication(sys.argv)
 
 div = QSplitter()
 
+qtmodern_styles.dark(app)
+modern_window = qtmodern_windows.ModernWindow(div)
+
 editor = ChellyEditor(div)
 editor.setCornerWidget(None)
 div.setStyleSheet(
 """
-	QLabel, ChellyEditor, MiniMap MiniMapEditor {
+	LineNumberMargin, QLabel, ChellyEditor, MiniMap MiniMapEditor {
 		font-family:Monaco;
 		color: #ccc;
-		background-color: #2b2b2b;
-		/*background-color: #dbdbdb;*/
+		background-color: #1e1e1e;
+		border:none
+	}
+	BreadcrumbNav{
+		background-color: #1e1e1e;
+		border:none
+	}
+	NoficationPanel{
+		background-color: rgb(2, 109, 196);
+	}
+	NoficationPanel QPushButton{
+		background-color: #0d0d0d;
+	}
+	NoficationPanel QLabel{
+		background-color: transparent;
 		border:none
 	}
 	ChellyEditor{
@@ -106,7 +127,6 @@ v_scrollbar = editor.panels.append(VerticalScrollBar, Panel.Position.RIGHT)
 editor.setCursorWidth(2)
 minimap = editor.panels.append(MiniMap, Panel.Position.RIGHT, 2)
 minimap.chelly_editor.features.append(CaretLineHighLighter)
-editor.panels.append(BreadcrumbNav, Panel.Position.TOP, 1)
 
 editor1 = ChellyEditor(div)
 editor1.features.append(CaretLineHighLighter)
@@ -124,7 +144,16 @@ editor1.panels.append(h_scrollbar1, Panel.Position.BOTTOM)
 editor1.panels.append(v_scrollbar1, Panel.Position.RIGHT)
 minimap1 = editor1.panels.append(MiniMap, Panel.Position.RIGHT, 2)
 minimap1.chelly_editor.features.append(CaretLineHighLighter)
-editor1.panels.append(BreadcrumbNav, Panel.Position.TOP, 1)
+#editor1.panels.append(BreadcrumbNav, Panel.Position.TOP, 1)
+notify = editor1.panels.append(NoficationPanel, Panel.Position.TOP, 1)
+
+notification = NoficationPanel.NotificationCard()
+notification.text = "Hey idiot, are u sleeping? LOL, ur <strong>githoob</strong> account got hacked"
+notification.icon = "fa5b.github"
+notification.buttons = [QPushButton("Take me to it")]
+
+notify.card = notification
+notify.setVisible(True)
 
 editor.language.lexer = {"language":PythonLanguage, "style":"one-dark"}
 
@@ -136,8 +165,10 @@ PygmentsSH(minimap1.chelly_editor, color_scheme="one-dark")
 
 div.addWidget(editor)
 div.addWidget(editor1)
-div.resize(700, 500)
-div.show()
+modern_window.resize(1000, 600)
+modern_window.move(200, 100)
+modern_window.setWindowTitle("ChellyEditor Preview")
+modern_window.show()
 
 editor1.properties.indent_with_spaces = True
 editor.setVerticalScrollBarPolicy(

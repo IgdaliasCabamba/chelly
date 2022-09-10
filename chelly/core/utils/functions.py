@@ -1,15 +1,12 @@
 from PySide6.QtGui import QColor
 from bs4 import BeautifulSoup
 
-VALID_TAGS = ["span"]
-
-
-def sanitize_html(value:str):
+def sanitize_html(value:str, valid_tags:list=["span"]):
 
     soup = BeautifulSoup(value, features="html.parser")
 
     for tag in soup.findAll(True):
-        if tag.name not in VALID_TAGS:
+        if tag.name not in valid_tags:
             tag.hidden = True
 
     return soup.decode_contents()

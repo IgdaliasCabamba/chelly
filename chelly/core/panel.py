@@ -5,9 +5,9 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from ..api import ChellyEditor
 
-from PySide6.QtWidgets import QWidget
+from PySide6.QtWidgets import QFrame
 
-class Panel(QWidget):
+class Panel(QFrame):
 
     def __init__(self, editor:ChellyEditor) -> None:
         super().__init__(editor)
