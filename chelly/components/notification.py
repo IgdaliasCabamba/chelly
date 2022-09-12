@@ -7,7 +7,11 @@ from ..core import Panel
 import qtawesome
 
 
-class NoficationPanel(Panel):
+class NotificationPanel(Panel):
+
+    class CloseButton(QPushButton):
+        def __init__(self, *args, **kvargs):
+            super().__init__(*args, **kvargs)
 
     class NotificationCard:
 
@@ -17,7 +21,10 @@ class NoficationPanel(Panel):
         
         @buttons.setter
         def buttons(self, new_buttons:list):
-            self.__buttons = new_buttons
+            if isinstance(new_buttons, list):
+                self.__buttons = new_buttons
+            else:
+                self.__buttons = [new_buttons]
         
         @property
         def icon(self) -> str:
@@ -55,20 +62,23 @@ class NoficationPanel(Panel):
         super().__init__(editor)
         self.scrollable = False
         self.setAutoFillBackground(True)
-        pal = QPalette()
 
         self.box = QHBoxLayout(self)
         self.setLayout(self.box)
-        
 
         self.__icon = qtawesome.IconWidget()
         self.__icon.setMaximumWidth(32)
         self.__display = QLabel(self)
         self.__buttons = QHBoxLayout()
+        self.__close_button = NotificationPanel.CloseButton(self)
+        self.__close_button.setIcon(qtawesome.icon("mdi.close"))
+        self.__close_button.setMaximumWidth(32)
+        self.__close_button.clicked.connect(self.hide)
 
         self.box.addWidget(self.__icon)
         self.box.addWidget(self.__display)
         self.box.addLayout(self.__buttons)
+        self.box.addWidget(self.__close_button)
 
         self.box.setContentsMargins(1, 1, 1, 1)
 
@@ -108,7 +118,8 @@ class NoficationPanel(Panel):
         self.__display.setText(notication_card.text)
         
         while self.__buttons.takeAt(0) is not None:
-            print("Clear at 0")
+            widget = self.__buttons.itemAt(0).widget()
+            self.__buttons.removeWidget(widget)
         
         for button in notication_card.buttons:
             self.__buttons.addWidget(button)
@@ -117,4 +128,5 @@ class NoficationPanel(Panel):
 
     def clear(self) -> Self:
         self.__card = None
+        self.setVisible(False)
         return self

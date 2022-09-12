@@ -35,6 +35,13 @@ pycodestyle==2.8.0
 Pygments==2.12.0
 pymdown-extensions==9.5
 pyparsing==3.0.9
+pyqt-explanation-balloon==0.0.21
+pyqt-frameless-window==0.0.61
+pyqt-shadow-frame-window-example @ git+https://github.com/yjg30737/pyqt-shadow-frame-window-example.git@59c4114ba54e75a2c329df3bc8ce8d085b9c1b0e
+pyqt-tab-widget==0.0.1
+PyQt5==5.15.7
+PyQt5-Qt5==5.15.2
+PyQt5-sip==12.11.0
 PySide6==6.3.1
 PySide6-Addons==6.3.1
 PySide6-Essentials==6.3.1
@@ -44,6 +51,7 @@ python-dateutil==2.8.2
 pytz==2022.1
 PyYAML==6.0
 pyyaml_env_tag==0.1
+qml-rounded-shadow-framelesswindow @ git+https://github.com/yjg30737/qml-rounded-shadow-framelesswindow.git@84f07a7ae71f2ecd85b695a4d040b91fe86a8280
 QtAwesome==1.1.1
 QtPy==2.2.0
 requests==2.28.1

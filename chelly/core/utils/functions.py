@@ -1,4 +1,6 @@
-from PySide6.QtGui import QColor
+from typing import Union
+from PySide6.QtGui import QColor, QIcon
+from PySide6.QtCore import QSize, QByteArray, QBuffer
 from bs4 import BeautifulSoup
 
 def sanitize_html(value:str, valid_tags:list=["span"]):
@@ -28,3 +30,10 @@ def drift_color(base_color, factor=110):
             return drift_color(QColor('#101010'), factor + 20)
         else:
             return base_color.lighter(factor + 10)
+
+def icon_to_base64(icon: QIcon, size: Union[int, QSize], format: str = "PNG") -> str:
+    image = icon.pixmap(size).toImage()
+    byte_array = QByteArray()
+    buffer = QBuffer(byte_array)
+    image.save(buffer, format)
+    return byte_array.toBase64().data().decode("utf-8")

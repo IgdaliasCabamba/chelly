@@ -3,5 +3,5 @@ from .marker_margin import MarkerMargin, Marker
 from .minimap import MiniMap
 from .scrollbar import HorizontalScrollBar, VerticalScrollBar
 from .code_editor import CodeEditor
-from .notification import NoficationPanel
-from .externals.breadcrumbs import BreadcrumbNav
+from .notification import NotificationPanel
+from .externals.breadcrumbs import *

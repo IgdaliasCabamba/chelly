@@ -6,6 +6,6 @@ from .panel import *
 from .properties import Properties
 from .styles import ChellyStyle
 from .utils import (Character, DelayJobRunner, FontEngine, TextBlockHelper,
-                    TextDecoration, TextEngine, drift_color, sanitize_html)
+                    TextDecoration, TextEngine, drift_color, sanitize_html, icon_to_base64)
 from .lexer import (ColorScheme, Highlighter, Language, SyntaxHighlighter,
                     TextBlockUserData)

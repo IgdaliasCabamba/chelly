@@ -12,7 +12,7 @@ from PySide6.QtGui import *
 from PySide6.QtWidgets import *
 
 from chelly.api import ChellyEditor
-from chelly.components import (NoficationPanel, HorizontalScrollBar,
+from chelly.components import (NotificationPanel, HorizontalScrollBar,
                                LineNumberMargin, Marker, MarkerMargin, MiniMap,
                                VerticalScrollBar, BreadcrumbNav)
 from chelly.core import Panel
@@ -23,6 +23,7 @@ from chelly.managers import FeaturesManager, LanguagesManager, PanelsManager
 
 from dev.libs.qtmodern import styles as qtmodern_styles
 from dev.libs.qtmodern import windows as qtmodern_windows
+import qtawesome
 
 DEBUG_OUTPUT_FILE = os.path.join("dev", "chelly.log")
 pathlib.Path(DEBUG_OUTPUT_FILE).touch(exist_ok=True)
@@ -50,13 +51,13 @@ div.setStyleSheet(
 		background-color: #1e1e1e;
 		border:none
 	}
-	NoficationPanel{
+	NotificationPanel{
 		background-color: rgb(2, 109, 196);
 	}
-	NoficationPanel QPushButton{
+	NotificationPanel QPushButton{
 		background-color: #0d0d0d;
 	}
-	NoficationPanel QLabel{
+	NotificationPanel QLabel, NotificationPanel CloseButton{
 		background-color: transparent;
 		border:none
 	}
@@ -127,6 +128,7 @@ v_scrollbar = editor.panels.append(VerticalScrollBar, Panel.Position.RIGHT)
 editor.setCursorWidth(2)
 minimap = editor.panels.append(MiniMap, Panel.Position.RIGHT, 2)
 minimap.chelly_editor.features.append(CaretLineHighLighter)
+breadcrumb:BreadcrumbNav = editor.panels.append(BreadcrumbNav, Panel.Position.TOP, 2)
 
 editor1 = ChellyEditor(div)
 editor1.features.append(CaretLineHighLighter)
@@ -144,13 +146,14 @@ editor1.panels.append(h_scrollbar1, Panel.Position.BOTTOM)
 editor1.panels.append(v_scrollbar1, Panel.Position.RIGHT)
 minimap1 = editor1.panels.append(MiniMap, Panel.Position.RIGHT, 2)
 minimap1.chelly_editor.features.append(CaretLineHighLighter)
-#editor1.panels.append(BreadcrumbNav, Panel.Position.TOP, 1)
-notify = editor1.panels.append(NoficationPanel, Panel.Position.TOP, 1)
+notify = editor1.panels.append(NotificationPanel, Panel.Position.TOP, 1)
 
-notification = NoficationPanel.NotificationCard()
+notification = NotificationPanel.NotificationCard()
 notification.text = "Hey idiot, are u sleeping? LOL, ur <strong>githoob</strong> account got hacked"
 notification.icon = "fa5b.github"
-notification.buttons = [QPushButton("Take me to it")]
+notification_action1 = QPushButton("Take me to it")
+notification_action1.setMaximumWidth(100)
+notification.buttons = [notification_action1]
 
 notify.card = notification
 notify.setVisible(True)
@@ -203,19 +206,22 @@ def test_load_file(benchmark):
 	assert editor.properties.text == content
 
 def add_mark_at_line(sm, line:int):
-	sm.add_marker(
-		Marker(
-			line,
-			QIcon(
-				pathlib.Path.cwd()
-				.joinpath("dev")
-				.joinpath("local_resources")
-				.joinpath("mark-test.png")
-				.as_posix()
-			),
-			"An example mark"
+	if sm == symbol_margin:
+		sm.add_marker(
+			Marker(
+				line,
+				QIcon(
+					pathlib.Path.cwd()
+					.joinpath("dev")
+					.joinpath("local_resources")
+					.joinpath("mark-test.png")
+					.as_posix()
+				),
+				"An example mark"
+			)
 		)
-	)
+	else:
+		sm.add_marker(Marker(line, qtawesome.icon("msc.debug-stackframe-dot")))
 
 def rem_mark_at_line(sm, line:int):
 	sm.remove_marker(
@@ -227,6 +233,31 @@ symbol_margin.on_remove_marker.connect(lambda line: rem_mark_at_line(symbol_marg
 symbol_margin1 = editor1.panels.get(MarkerMargin)
 symbol_margin1.on_add_marker.connect(lambda line: add_mark_at_line(symbol_margin1, line))
 symbol_margin1.on_remove_marker.connect(lambda line: rem_mark_at_line(symbol_margin1, line))
+
+def create_breadcrumb():
+	foo_block = BreadcrumbNav.BreadcrumbBlock()
+	foo_block.content = "foo"
+	foo_block.icon = qtawesome.icon("msc.symbol-variable")
+	
+	bar_block = BreadcrumbNav.BreadcrumbBlock()
+	bar_block.content = "bar"
+	bar_block.icon = qtawesome.icon("msc.symbol-class")
+
+	foobar_block = BreadcrumbNav.BreadcrumbBlock()
+	foobar_block.content = "FooBar"
+	foobar_block.icon = qtawesome.icon("msc.symbol-property")
+
+	breadcrumb.add_block(foo_block)
+	breadcrumb.add_block(bar_block)
+	breadcrumb.add_block(foobar_block)
+	
+	new_foobar_block = BreadcrumbNav.BreadcrumbBlock()
+	new_foobar_block.content = "foobar"
+	new_foobar_block.icon = qtawesome.icon("msc.symbol-property")
+
+	breadcrumb.update_block(foobar_block, new_foobar_block)
+
+create_breadcrumb()
 
 editor.style.theme.set_margin_style(LineNumberMargin)
 editor.style.theme.set_margin_highlight(LineNumberMargin, QColor("#72c3f0"))
