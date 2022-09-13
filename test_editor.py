@@ -247,15 +247,25 @@ def create_breadcrumb():
 	foobar_block.content = "FooBar"
 	foobar_block.icon = qtawesome.icon("msc.symbol-property")
 
-	breadcrumb.add_block(foo_block)
-	breadcrumb.add_block(bar_block)
-	breadcrumb.add_block(foobar_block)
+	bad_block = BreadcrumbNav.BreadcrumbBlock(content="I'm a bad block hahaha")
+
+	breadcrumb.append_breadcrumb(foo_block)
+	breadcrumb.append_breadcrumb(bad_block)
+	breadcrumb.append_breadcrumb(bar_block)
+	breadcrumb.append_breadcrumb(foobar_block)
 	
 	new_foobar_block = BreadcrumbNav.BreadcrumbBlock()
-	new_foobar_block.content = "foobar"
+	new_foobar_block.content = "fooba"
 	new_foobar_block.icon = qtawesome.icon("msc.symbol-property")
 
-	breadcrumb.update_block(foobar_block, new_foobar_block)
+	breadcrumb.update_breadcrumb(foobar_block, new_foobar_block)
+	breadcrumb.update_breadcrumb(foobar_block, {"content":"foobar"})
+
+	breadcrumb.remove_breadcrumb(bad_block)
+	#breadcrumb.remove_breadcrumb(foo_block)
+	
+	breadcrumb.insert_breadcrumb(bad_block, 0)
+	#breadcrumb.clear_all_breadcrumbs()
 
 create_breadcrumb()
 
