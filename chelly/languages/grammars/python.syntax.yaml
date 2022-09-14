@@ -1,0 +1,40 @@
+header:
+  name: python
+  languages: [python3]
+  version: { major: 1, minor: 0, patch: 0 }
+
+static:
+  keywords_list:
+    [
+      "self",
+      "False",
+      "None",
+      "True",
+      "assert",
+      "break",
+      "class",
+      "continue",
+      "def",
+      "del",
+      "elif",
+      "else",
+      "except",
+      "finally",
+      "for",
+      "global",
+      "if",
+      "lambda",
+      "nonlocal",
+      "pass",
+      "raise",
+      "return",
+      "try",
+      "while",
+      "with",
+      "yield",
+    ]
+  keyword_namespace_list: ['from', 'import', 'as']
+  wordop_list : ['and', 'or', 'not', 'in', 'is']
+
+rules:
+# TODO

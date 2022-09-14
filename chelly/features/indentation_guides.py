@@ -122,7 +122,7 @@ class IndentationGuides(Feature):
                 for guide in self.get_indentation_guides_for_spaces():
                     for level in range(-1, guide.max_level-1):
                         point_x = self.font_width + (level * self.font_width)
-                        point_x //= 2
+                        #point_x //= 2
 
                         painter.drawLine(point_x, TextEngine(self.editor).point_y_from_line_number(guide.line), point_x,
                                          TextEngine(self.editor).point_y_from_line_number(guide.line) + self.font_height)

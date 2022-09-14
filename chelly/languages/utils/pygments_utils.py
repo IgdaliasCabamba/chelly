@@ -5,6 +5,7 @@ from pygments.lexers.agile import PythonLexer
 from pygments.lexers.compiled import CLexer, CppLexer
 from pygments.lexers.dotnet import CSharpLexer
 from pygments.lexers.special import TextLexer
+from pygments.lexers.javascript import JavascriptLexer
 from pygments.styles import get_style_by_name, get_all_styles
 from pygments.token import Whitespace, Comment, Token
 from pygments.util import ClassNotFound
@@ -93,6 +94,8 @@ COMMENT_STATE = [(r'[^*/]', Comment.Multiline),
                  (r'[*/]', Comment.Multiline)]
 replace_pattern(CLexer.tokens, COMMENT_START)
 replace_pattern(CppLexer.tokens, COMMENT_START)
+replace_pattern(JavascriptLexer.tokens, COMMENT_START)
 CLexer.tokens['comment'] = COMMENT_STATE
 CppLexer.tokens['comment'] = COMMENT_STATE
 CSharpLexer.tokens['comment'] = COMMENT_STATE
+JavascriptLexer.tokens['comment'] = COMMENT_STATE

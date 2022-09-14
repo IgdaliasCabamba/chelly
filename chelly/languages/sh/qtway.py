@@ -6,8 +6,8 @@ except ImportError:
     builtins = __import__('__builtin__')
 
 import re
-from ..core import Language
-from ..core import TextBlockHelper
+from ...core import Language
+from ...core import TextBlockHelper
 
 
 def any(name, alternates):
@@ -231,5 +231,5 @@ class PythonSH(Language):
         self.docstrings[:] = []
         super(PythonSH, self).rehighlight()
 
-class PythonLanguage(PythonSH):
+class PythonLanguageNew(PythonSH):
     ...

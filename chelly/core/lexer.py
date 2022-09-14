@@ -29,7 +29,7 @@ class Highlighter(QSyntaxHighlighter):
         class CustomStyle(Style):
             pass
 
-        if isinstance(style, Style) or isinstance(style, StyleMeta):
+        if isinstance(style, (StyleMeta, Style)):
             return style
 
         elif isinstance(style, str):
@@ -310,11 +310,11 @@ class SyntaxHighlighter(Highlighter):
             super().rehighlight()
         except RuntimeError:
             # cloned widget, no need to rehighlight the same document twice ;)
-            pass
+            ...
         QApplication.restoreOverrideCursor()
 
 class Language(SyntaxHighlighter):
-    pass
+    ...
 
 class TextBlockUserData(QTextBlockUserData):
     """

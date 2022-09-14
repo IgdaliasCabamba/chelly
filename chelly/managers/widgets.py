@@ -3,18 +3,18 @@ from dataclasses import dataclass
 from ..core import Manager, Panel, TextEngine
 from PySide6.QtCore import QRect
 
-class PanelsManager(Manager):
-
+class BasePanelManager(Manager):
+    
     @dataclass(frozen=True)
     class ZoneSizes:
         left: int
         top: int
         right: int
         bottom: int
-
+    
     def __init__(self, editor) -> None:
         super().__init__(editor)
-
+    
         self._cached_cursor_pos: tuple = (-1, -1)
         self._margin_sizes: tuple = (0, 0, 0, 0)
         self._top: int = -1
@@ -28,14 +28,14 @@ class PanelsManager(Manager):
             Panel.Position.BOTTOM: dict()
         }
         self._zones: list = self._widgets.keys()
-        self._indexes = dict()
+        self._settings = dict()
 
         self.editor.blockCountChanged[int].connect(
             self._update_viewport_margins)
         self.editor.updateRequest[QRect, int].connect(self._update)
         self.editor.on_resized.connect(self.refresh)
-
-    def __call_panel(self, panel: Panel) -> Union[None, Panel]:
+    
+    def _call_panel(self, panel: Panel) -> Union[None, Panel]:
         if callable(panel):
             # avoid appending more than one of the same panel type
             if self.get(panel.__name__):
@@ -47,38 +47,7 @@ class PanelsManager(Manager):
                 return None
             widget = panel
         return widget
-
-    def append(self, panel: Panel, position=Panel.Position.LEFT, index: int = 0) -> Panel:
-        widget = self.__call_panel(panel)
-        if widget is not None:
-            widget_name = widget.__class__.__name__
-            self._widgets[position][widget_name] = widget
-            self._indexes[widget_name] = index
-            return widget
-
-        # make it like a singleton
-        if callable(panel):
-            return self.get(panel.__name__)
-
-        return self.get(panel.__class__.__name__)
-
-    def remove(self, panel: Panel) -> None:
-        pass
-
-    def get(self, widget):
-        """
-        Gets a specific panel instance.
-        """
-        if not isinstance(widget, str):
-            widget = widget.__name__
-
-        for zone in Panel.Position.iterable():
-            try:
-                return self._widgets[zone][widget]
-            except KeyError:
-                pass
-        return None
-
+    
     def keys(self) -> list:
         """
         Returns the list of installed panel names.
@@ -123,21 +92,15 @@ class PanelsManager(Manager):
 
         return None
 
-    def panel_index(self, widget: Union[Panel, str]) -> int:
+    def panel_settings(self, widget: Union[Panel, str]) -> dict:
         if not isinstance(widget, str):
             widget = widget.__class__.__name__
 
-        if widget in self._indexes.keys():
-            return self._indexes[widget]
+        if widget in self._settings.keys():
+            return self._settings[widget]
 
-        return 0
-
-    def refresh(self) -> None:
-        """ Refreshes the editor panels (resize and update margins) """
-        self.resize()
-        self._update(self.editor.contentsRect(), 0,
-                     force_update_margins=True)
-
+        return {"level":0, "z-index":0}
+    
     def _valid_panels_at(self, zone: Panel.Position, reverse: bool = False) -> list:
         panels = self.panels_for_zone(zone)
         panels.sort(key=lambda panel: panel.order_in_zone, reverse=reverse)
@@ -145,6 +108,70 @@ class PanelsManager(Manager):
             if not panel.isVisible():
                 panels.remove(panel)
         return panels
+    
+    @property
+    def zones_sizes(self) -> ZoneSizes:
+        """ Compute panel zone sizes """
+
+        self._left = self._compute_zone_size(Panel.Position.LEFT)
+
+        self._right = self._compute_zone_size(Panel.Position.RIGHT)
+
+        self._top = self._compute_zone_size(Panel.Position.TOP)
+
+        self._bottom = self._compute_zone_size(Panel.Position.BOTTOM)
+
+        return BasePanelManager.ZoneSizes(
+            left=self._left,
+            right=self._right,
+            top=self._top,
+            bottom=self._bottom
+        )
+
+
+class PanelsManager(BasePanelManager):
+
+    
+    def __init__(self, editor) -> None:
+        super().__init__(editor)
+
+    #TODO: add settings
+    def append(self, panel: Panel, position=Panel.Position.LEFT, settings: dict = {"level":0, "z-index":0}) -> Panel:
+        widget = self._call_panel(panel)
+        if widget is not None:
+            widget_name = widget.__class__.__name__
+            self._widgets[position][widget_name] = widget
+            self._settings[widget_name] = settings
+            return widget
+
+        # make it like a singleton
+        if callable(panel):
+            return self.get(panel.__name__)
+
+        return self.get(panel.__class__.__name__)
+
+    def remove(self, panel: Panel) -> None:
+        pass
+
+    def get(self, widget):
+        """
+        Gets a specific panel instance.
+        """
+        if not isinstance(widget, str):
+            widget = widget.__name__
+
+        for zone in Panel.Position.iterable():
+            try:
+                return self._widgets[zone][widget]
+            except KeyError:
+                pass
+        return None
+
+    def refresh(self) -> None:
+        """ Refreshes the editor panels (resize and update margins) """
+        self.resize()
+        self._update(self.editor.contentsRect(), 0,
+                     force_update_margins=True)
 
     def resize(self) -> None:
         """ Resizes panels """
@@ -174,7 +201,7 @@ class PanelsManager(Manager):
                 w = size_hint.width()
                 h = crect.height() - size_bottom - size_top - h_offset
 
-                index = self.panel_index(panel)
+                index = self.panel_settings(panel)["level"]
                 
                 if index == 1:
                     h = crect.height() - size_top - h_offset
@@ -200,7 +227,7 @@ class PanelsManager(Manager):
                 w = size_hint.width()
                 h = crect.height() - size_bottom - size_top - h_offset
 
-                index = self.panel_index(panel)
+                index = self.panel_settings(panel)["level"]
 
                 if index == 1:
                     h = crect.height() - size_top - h_offset
@@ -222,7 +249,7 @@ class PanelsManager(Manager):
             for panel in self._valid_panels_at(Panel.Position.TOP):
                 size_hint = panel.sizeHint()
 
-                index = self.panel_index(panel)
+                index = self.panel_settings(panel)["level"]
 
                 x = crect.left()
                 y = crect.top() + top
@@ -253,7 +280,7 @@ class PanelsManager(Manager):
                 w = crect.width() - w_offset - right
                 h = size_hint.height()
 
-                index = self.panel_index(panel)
+                index = self.panel_settings(panel)["level"]
 
                 if index == 1:
                     w = crect.width() - w_offset
@@ -324,22 +351,3 @@ class PanelsManager(Manager):
                 size_hint = panel.sizeHint()
                 res += size_hint.width()
         return res
-
-    @property
-    def zones_sizes(self) -> ZoneSizes:
-        """ Compute panel zone sizes """
-
-        self._left = self._compute_zone_size(Panel.Position.LEFT)
-
-        self._right = self._compute_zone_size(Panel.Position.RIGHT)
-
-        self._top = self._compute_zone_size(Panel.Position.TOP)
-
-        self._bottom = self._compute_zone_size(Panel.Position.BOTTOM)
-
-        return PanelsManager.ZoneSizes(
-            left=self._left,
-            right=self._right,
-            top=self._top,
-            bottom=self._bottom
-        )
