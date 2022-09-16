@@ -1,9 +1,4 @@
-try:
-    #it works on windows
-    import builtins
-except ImportError:
-    #it works on osx
-    builtins = __import__('__builtin__')
+import builtins
 
 import re
 from ..core import Language

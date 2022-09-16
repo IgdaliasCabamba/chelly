@@ -33,8 +33,5 @@ static:
       "with",
       "yield",
     ]
-  keyword_namespace_list: ['from', 'import', 'as']
   wordop_list : ['and', 'or', 'not', 'in', 'is']
-
-rules:
-# TODO
+  keywords_namespace_list: ['from', 'import', 'as']

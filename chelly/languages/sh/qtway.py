@@ -1,13 +1,13 @@
-try:
-    #it works on windows
-    import builtins
-except ImportError:
-    #it works on osx
-    builtins = __import__('__builtin__')
-
+import builtins
+from pprint import pprint
 import re
 from ...core import Language
 from ...core import TextBlockHelper
+import yaml
+import pathlib
+
+with open(pathlib.Path.cwd().joinpath("chelly", "languages", "grammars", "python.syntax.yaml"), "r") as fp:
+    pytohn_syntax = yaml.safe_load(fp)
 
 
 def any(name, alternates):
@@ -15,38 +15,9 @@ def any(name, alternates):
     return "(?P<%s>" % name + "|".join(alternates) + ")"
 
 
-kwlist = [
-    'self',
-    'False',
-    'None',
-    'True',
-    'assert',
-    'break',
-    'class',
-    'continue',
-    'def',
-    'del',
-    'elif',
-    'else',
-    'except',
-    'finally',
-    'for',
-    'global',
-    'if',
-    'lambda',
-    'nonlocal',
-    'pass',
-    'raise',
-    'return',
-    'try',
-    'while',
-    'with',
-    'yield',
-]
-
-kw_namespace_list = ['from', 'import', 'as']
-wordop_list = ['and', 'or', 'not', 'in', 'is']
-
+kwlist = pytohn_syntax["static"]["keywords_list"]
+kw_namespace_list = pytohn_syntax["static"]["keywords_namespace_list"]
+wordop_list = pytohn_syntax["static"]["wordop_list"]
 
 def make_python_patterns(additional_keywords=[], additional_builtins=[]):
     """Strongly inspired from idlelib.ColorDelegator.make_pat"""
@@ -87,15 +58,10 @@ def make_python_patterns(additional_keywords=[], additional_builtins=[]):
                      number, any("SYNC", [r"\n"])])
 
 
-#
-# Pygments Syntax highlighter
-#
-class PythonSH(Language):
+class PythonLanguageNew(Language):
     """
     Highlights python syntax in the editor.
     """
-    mimetype = 'text/x-python'
-
     # Syntax highlighting rules:
     PROG = re.compile(make_python_patterns(), re.S)
     IDPROG = re.compile(r"\s+(\w+)", re.S)
@@ -229,7 +195,4 @@ class PythonSH(Language):
         self.import_statements[:] = []
         self.global_import_statements[:] = []
         self.docstrings[:] = []
-        super(PythonSH, self).rehighlight()
-
-class PythonLanguageNew(PythonSH):
-    ...
+        super().rehighlight()

@@ -5,9 +5,34 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from ..api import ChellyEditor
 
+from dataclasses import dataclass
 from PySide6.QtWidgets import QFrame
 
 class Panel(QFrame):
+    
+    @dataclass(frozen=True)
+    class Settings:
+        level:int = 0
+        z_index:int = 0
+
+    class Position(object):
+        """
+        Enumerates the possible panel positions
+        """
+        #: Top margin
+        TOP = 0
+        #: Left margin
+        LEFT = 1
+        #: Right margin
+        RIGHT = 2
+        #: Bottom margin
+        BOTTOM = 3
+
+        @classmethod
+        def iterable(cls):
+            """ Returns possible positions as an iterable (list) """
+            return [cls.TOP, cls.LEFT, cls.RIGHT, cls.BOTTOM]
+
 
     def __init__(self, editor:ChellyEditor) -> None:
         super().__init__(editor)
@@ -43,26 +68,7 @@ class Panel(QFrame):
     @scrollable.setter
     def scrollable(self, value:bool):
         self._scrollable = value
-
-
-    class Position(object):
-        """
-        Enumerates the possible panel positions
-        """
-        #: Top margin
-        TOP = 0
-        #: Left margin
-        LEFT = 1
-        #: Right margin
-        RIGHT = 2
-        #: Bottom margin
-        BOTTOM = 3
-
-        @classmethod
-        def iterable(cls):
-            """ Returns possible positions as an iterable (list) """
-            return [cls.TOP, cls.LEFT, cls.RIGHT, cls.BOTTOM]
-
+    
     def setVisible(self, visible:bool):
         """
         Shows/Hides the panel

@@ -8,11 +8,11 @@ from chelly.managers import FeaturesManager, LanguagesManager, PanelsManager
 from chelly.languages import PygmentsSH, PythonLanguage, JavaScriptLanguage
 from chelly.languages.sh.qtway import PythonLanguageNew
 from chelly.features import (AutoIndent, CaretLineHighLighter, CursorHistory,
-                             IndentationGuides, SmartBackSpace)
+							 IndentationGuides, SmartBackSpace)
 from chelly.core import Panel
 from chelly.components import (NotificationPanel, HorizontalScrollBar,
-                               LineNumberMargin, Marker, MarkerMargin, MiniMap,
-                               VerticalScrollBar, BreadcrumbNav)
+							   LineNumberMargin, Marker, MarkerMargin, MiniMap,
+							   VerticalScrollBar, BreadcrumbNav)
 from chelly.api import ChellyEditor
 from PySide6.QtWidgets import *
 from PySide6.QtGui import *
@@ -29,7 +29,7 @@ DEBUG_OUTPUT_FILE = os.path.join("dev", "chelly.log")
 pathlib.Path(DEBUG_OUTPUT_FILE).touch(exist_ok=True)
 
 logging.basicConfig(filename=DEBUG_OUTPUT_FILE, filemode='a',
-                    format='%(name)s - %(levelname)s - %(message)s')
+					format='%(name)s - %(levelname)s - %(message)s')
 
 app = QApplication(sys.argv)
 
@@ -42,7 +42,7 @@ modern_window = qtmodern_windows.ModernWindow(div)
 editor = ChellyEditor(div)
 editor.setCornerWidget(None)
 div.setStyleSheet(
-    """
+	"""
 	LineNumberMargin, QLabel, ChellyEditor, MiniMap MiniMapEditor {
 		font-family:Monaco;
 		color: #ccc;
@@ -112,8 +112,8 @@ editor.features.append(IndentationGuides)
 editor.features.append(AutoIndent)
 editor.features.append(CursorHistory)
 editor.features.append(SmartBackSpace)
-symbol_margin = editor.panels.append(MarkerMargin, Panel.Position.LEFT, {"level": 2, "z-index": 0})
-editor.panels.append(LineNumberMargin, Panel.Position.LEFT, {"level": 2, "z-index": 0})
+symbol_margin = editor.panels.append(MarkerMargin, Panel.Position.LEFT, Panel.Settings(level = 2))
+editor.panels.append(LineNumberMargin, Panel.Position.LEFT, Panel.Settings(level = 2))
 
 # dont:
 #	editor.panels.append(LineNumberMargin, Panel.Position.LEFT)
@@ -128,10 +128,10 @@ editor.panels.append(LineNumberMargin, Panel.Position.LEFT, {"level": 2, "z-inde
 h_scrollbar = editor.panels.append(HorizontalScrollBar, Panel.Position.BOTTOM)
 v_scrollbar = editor.panels.append(VerticalScrollBar, Panel.Position.RIGHT)
 editor.setCursorWidth(2)
-minimap = editor.panels.append(MiniMap, Panel.Position.RIGHT, {"level": 2, "z-index": 0})
+minimap = editor.panels.append(MiniMap, Panel.Position.RIGHT, Panel.Settings(level = 2))
 minimap.chelly_editor.features.append(CaretLineHighLighter)
 breadcrumbs: BreadcrumbNav = editor.panels.append(
-    BreadcrumbNav, Panel.Position.TOP, {"level": 2, "z-index": 0})
+	BreadcrumbNav, Panel.Position.TOP, Panel.Settings(level = 2))
 
 editor1 = ChellyEditor(div)
 editor1.features.append(CaretLineHighLighter)
@@ -147,10 +147,10 @@ v_scrollbar1 = VerticalScrollBar(editor1)
 editor1.setCursorWidth(2)
 editor1.panels.append(h_scrollbar1, Panel.Position.BOTTOM)
 editor1.panels.append(v_scrollbar1, Panel.Position.RIGHT)
-minimap1 = editor1.panels.append(MiniMap, Panel.Position.RIGHT, {"level": 2, "z-index": 0})
+minimap1 = editor1.panels.append(MiniMap, Panel.Position.RIGHT, Panel.Settings(level = 2))
 minimap1.chelly_editor.features.append(CaretLineHighLighter)
 notify: NotificationPanel = editor1.panels.append(
-    NotificationPanel, Panel.Position.TOP, {"level": 1, "z-index": 0})
+	NotificationPanel, Panel.Position.TOP, Panel.Settings(level = 1))
 
 notification = NotificationPanel.NotificationCard()
 notification.text = "Hey idiot, are u sleeping? LOL, ur <strong>githoob</strong> account got hacked"
@@ -165,7 +165,7 @@ notify.setVisible(True)
 editor.language.lexer = {"language": PythonLanguage, "style": "one-dark"}
 
 with minimap as m:
-    m.language.lexer = [PythonLanguage, "one-dark"]
+	m.language.lexer = [PythonLanguage, "one-dark"]
 
 #editor1.language.lexer = (JavaScriptLanguage, "github-dark")
 editor1.language.lexer = (PythonLanguageNew, "one-dark")
@@ -178,109 +178,109 @@ div.addWidget(editor1)
 
 editor1.properties.indent_with_spaces = True
 editor.setVerticalScrollBarPolicy(
-    Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+	Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
 editor.setHorizontalScrollBarPolicy(
-    Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+	Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
 
 editor1.setVerticalScrollBarPolicy(
-    Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+	Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
 editor1.setHorizontalScrollBarPolicy(
-    Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+	Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
 
 
 def test_lexer_set(benchmark):
-    new_lexer = benchmark(LanguagesManager, editor)
-    editor.lexer = new_lexer
-    assert editor.lexer == new_lexer
+	new_lexer = benchmark(LanguagesManager, editor)
+	editor.lexer = new_lexer
+	assert editor.lexer == new_lexer
 
 
 def test_singleton_panel(benchmark):
-    minimap = benchmark(editor.panels.get, MiniMap)
-    assert minimap == editor.panels.append(MiniMap, Panel.Position.RIGHT)
+	minimap = benchmark(editor.panels.get, MiniMap)
+	assert minimap == editor.panels.append(MiniMap, Panel.Position.RIGHT)
 
 
 def test_feature_set(benchmark):
-    new_features = benchmark(FeaturesManager, editor)
-    editor.features = new_features
-    assert editor.features == new_features
+	new_features = benchmark(FeaturesManager, editor)
+	editor.features = new_features
+	assert editor.features == new_features
 
 
 def test_load_file(benchmark):
-    with open(__file__, "r") as infile:
-        content = benchmark(infile.read)
+	with open(__file__, "r") as infile:
+		content = benchmark(infile.read)
 
-    editor.properties.text = content
-    assert editor.properties.text == content
+	editor.properties.text = content
+	assert editor.properties.text == content
 
 
 def add_mark_at_line(sm, line: int):
-    if sm == symbol_margin:
-        sm.add_marker(
-            Marker(
-                line,
-                QIcon(
-                    pathlib.Path.cwd()
-                    .joinpath("dev")
-                    .joinpath("local_resources")
-                    .joinpath("mark-test.png")
-                    .as_posix()
-                ),
-                "An example mark"
-            )
-        )
-    else:
-        sm.add_marker(Marker(line, qtawesome.icon("msc.debug-stackframe-dot")))
+	if sm == symbol_margin:
+		sm.add_marker(
+			Marker(
+				line,
+				QIcon(
+					pathlib.Path.cwd()
+					.joinpath("dev")
+					.joinpath("local_resources")
+					.joinpath("mark-test.png")
+					.as_posix()
+				),
+				"An example mark"
+			)
+		)
+	else:
+		sm.add_marker(Marker(line, qtawesome.icon("msc.debug-stackframe-dot")))
 
 
 def rem_mark_at_line(sm, line: int):
-    sm.remove_marker(
-        sm.marker_for_line(line)
-    )
+	sm.remove_marker(
+		sm.marker_for_line(line)
+	)
 
 
 symbol_margin.on_add_marker.connect(
-    lambda line: add_mark_at_line(symbol_margin, line))
+	lambda line: add_mark_at_line(symbol_margin, line))
 symbol_margin.on_remove_marker.connect(
-    lambda line: rem_mark_at_line(symbol_margin, line))
+	lambda line: rem_mark_at_line(symbol_margin, line))
 symbol_margin1 = editor1.panels.get(MarkerMargin)
 symbol_margin1.on_add_marker.connect(
-    lambda line: add_mark_at_line(symbol_margin1, line))
+	lambda line: add_mark_at_line(symbol_margin1, line))
 symbol_margin1.on_remove_marker.connect(
-    lambda line: rem_mark_at_line(symbol_margin1, line))
+	lambda line: rem_mark_at_line(symbol_margin1, line))
 
 
 def create_breadcrumbs():
-    foo_block = BreadcrumbNav.BreadcrumbBlock()
-    foo_block.content = "foo"
-    foo_block.icon = qtawesome.icon("msc.symbol-variable")
+	foo_block = BreadcrumbNav.BreadcrumbBlock()
+	foo_block.content = "foo"
+	foo_block.icon = qtawesome.icon("msc.symbol-variable")
 
-    bar_block = BreadcrumbNav.BreadcrumbBlock()
-    bar_block.content = "bar"
-    bar_block.icon = qtawesome.icon("msc.symbol-class")
+	bar_block = BreadcrumbNav.BreadcrumbBlock()
+	bar_block.content = "bar"
+	bar_block.icon = qtawesome.icon("msc.symbol-class")
 
-    foobar_block = BreadcrumbNav.BreadcrumbBlock()
-    foobar_block.content = "FooBar"
-    foobar_block.icon = qtawesome.icon("msc.symbol-property")
+	foobar_block = BreadcrumbNav.BreadcrumbBlock()
+	foobar_block.content = "FooBar"
+	foobar_block.icon = qtawesome.icon("msc.symbol-property")
 
-    bad_block = BreadcrumbNav.BreadcrumbBlock(content="I'm a bad block hahaha")
+	bad_block = BreadcrumbNav.BreadcrumbBlock(content="I'm a bad block hahaha")
 
-    breadcrumbs.append_breadcrumb(foo_block)
-    breadcrumbs.append_breadcrumb(bad_block)
-    breadcrumbs.append_breadcrumb(bar_block)
-    breadcrumbs.append_breadcrumb(foobar_block)
+	breadcrumbs.append_breadcrumb(foo_block)
+	breadcrumbs.append_breadcrumb(bad_block)
+	breadcrumbs.append_breadcrumb(bar_block)
+	breadcrumbs.append_breadcrumb(foobar_block)
 
-    new_foobar_block = BreadcrumbNav.BreadcrumbBlock()
-    new_foobar_block.content = "fooba"
-    new_foobar_block.icon = qtawesome.icon("msc.symbol-property")
+	new_foobar_block = BreadcrumbNav.BreadcrumbBlock()
+	new_foobar_block.content = "fooba"
+	new_foobar_block.icon = qtawesome.icon("msc.symbol-property")
 
-    breadcrumbs.update_breadcrumb(foobar_block, new_foobar_block)
-    breadcrumbs.update_breadcrumb(foobar_block, {"content": "foobar"})
+	breadcrumbs.update_breadcrumb(foobar_block, new_foobar_block)
+	breadcrumbs.update_breadcrumb(foobar_block, {"content": "foobar"})
 
-    breadcrumbs.remove_breadcrumb(bad_block)
-    # breadcrumbs.remove_breadcrumb(foo_block)
+	breadcrumbs.remove_breadcrumb(bad_block)
+	# breadcrumbs.remove_breadcrumb(foo_block)
 
-    breadcrumbs.insert_breadcrumb(bad_block, 0)
-    # breadcrumbs.clear_all_breadcrumbs()
+	breadcrumbs.insert_breadcrumb(bad_block, 0)
+	# breadcrumbs.clear_all_breadcrumbs()
 
 
 create_breadcrumbs()
@@ -296,9 +296,9 @@ minimap.chelly_editor.style.theme = editor.style.theme
 editor1.style.theme.selection.foreground = QColor("#2b2b2b")
 
 if __name__ == "__main__":
-    def fake_benchmark(any):
-        return any()
-    test_load_file(fake_benchmark)
+	def fake_benchmark(any):
+		return any()
+	test_load_file(fake_benchmark)
 
 
 modern_window.resize(1000, 600)
