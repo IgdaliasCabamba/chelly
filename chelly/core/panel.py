@@ -1,17 +1,40 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
+from typing_extensions import Self
 
 if TYPE_CHECKING:
     from ..api import ChellyEditor
 
 from dataclasses import dataclass
 from PySide6.QtWidgets import QFrame
+import pprint
 
 class Panel(QFrame):
+
+    class Settings:
+        __settings = dict()
+
+        def __setattr__(self, __name: str, __value: Any) -> None:
+            self.__settings[__name] = __value
+        
+        def __getattr__(self, __name: str) -> Any:
+            return self.__settings.get(__name, False)
+        
+        def __delattr__(self, __name: str) -> None:
+            self.__settings.pop(__name, None)
+        
+        def __repr__(self) -> str:
+            return pprint.pformat(self.__settings)
+        
+        def __enter__(self) -> dict:
+            return self.__settings
+        
+        def __exit__(self, *args, **kvargs) -> Self:
+            return self
     
     @dataclass(frozen=True)
-    class Settings:
+    class WidgetSettings:
         level:int = 0
         z_index:int = 0
 
@@ -42,6 +65,11 @@ class Panel(QFrame):
         self.__editor = editor
         self.editor.panels.refresh()
         self.setAutoFillBackground(False)
+        self.__settings = Panel.Settings()
+    
+    @property
+    def settings(self) -> Settings:
+        return self.__settings
 
     @property
     def enabled(self) -> bool:

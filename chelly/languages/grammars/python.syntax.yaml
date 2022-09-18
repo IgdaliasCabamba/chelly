@@ -35,3 +35,6 @@ static:
     ]
   wordop_list : ['and', 'or', 'not', 'in', 'is']
   keywords_namespace_list: ['from', 'import', 'as']
+
+rules:
+  outline_explorer_comments: '^(# ?--[-]+|##[#]+ )[ -]*[^- ]+'

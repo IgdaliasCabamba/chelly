@@ -9,11 +9,9 @@ import pathlib
 with open(pathlib.Path.cwd().joinpath("chelly", "languages", "grammars", "python.syntax.yaml"), "r") as fp:
     pytohn_syntax = yaml.safe_load(fp)
 
-
 def any(name, alternates):
     """Return a named group pattern matching list of alternates."""
-    return "(?P<%s>" % name + "|".join(alternates) + ")"
-
+    return f"(?P<{name}>" + "|".join(alternates) + ")"
 
 kwlist = pytohn_syntax["static"]["keywords_list"]
 kw_namespace_list = pytohn_syntax["static"]["keywords_namespace_list"]
@@ -29,7 +27,7 @@ def make_python_patterns(additional_keywords=[], additional_builtins=[]):
     for v in ['None', 'True', 'False']:
         builtinlist.remove(v)
     builtin = r"([^.'\"\\#]\b|^)" + any("builtin", builtinlist) + r"\b"
-    builtin_fct = any("builtin_fct", [r'_{2}[a-zA-Z_]*_{2}'])
+    builtin_functions = any("builtin_functions", [r'_{2}[a-zA-Z_]*_{2}'])
     comment = any("comment", [r"#[^\n]*"])
     instance = any("instance", [r"\bself\b", r"\bcls\b"])
     decorator = any('decorator', [r'@\w*', r'.setter'])
@@ -53,7 +51,7 @@ def make_python_patterns(additional_keywords=[], additional_builtins=[]):
     ufstring3 = any("uf_sq3string", [uf_sq3string])
     ufstring4 = any("uf_dq3string", [uf_dq3string])
     return "|".join([instance, decorator, kw, kw_namespace, builtin,
-                     word_operators, builtin_fct, comment,
+                     word_operators, builtin_functions, comment,
                      ufstring1, ufstring2, ufstring3, ufstring4, string,
                      number, any("SYNC", [r"\n"])])
 
@@ -71,7 +69,7 @@ class PythonLanguageNew(Language):
      INSIDE_SQSTRING, INSIDE_DQSTRING) = list(range(5))
 
     # Comments suitable for Outline Explorer
-    OECOMMENT = re.compile('^(# ?--[-]+|##[#]+ )[ -]*[^- ]+')
+    OECOMMENT = re.compile(pytohn_syntax["rules"]["outline_explorer_comments"])
 
     def __init__(self, editor, color_scheme=None):
         super().__init__(editor, color_scheme)
@@ -129,7 +127,7 @@ class PythonLanguageNew(Language):
                         self.setFormat(start, end - start,
                                        self.formats["string"])
                         state = self.INSIDE_DQSTRING
-                    elif key == 'builtin_fct':
+                    elif key == 'builtin_functions':
                         # trick to highlight __init__, __add__ and so on with
                         # builtin color
                         self.setFormat(start, end - start,

@@ -12,7 +12,7 @@ from chelly.features import (AutoIndent, CaretLineHighLighter, CursorHistory,
 from chelly.core import Panel
 from chelly.components import (NotificationPanel, HorizontalScrollBar,
 							   LineNumberMargin, Marker, MarkerMargin, MiniMap,
-							   VerticalScrollBar, BreadcrumbNav)
+							   VerticalScrollBar, BreadcrumbNav, EditionMargin)
 from chelly.api import ChellyEditor
 from PySide6.QtWidgets import *
 from PySide6.QtGui import *
@@ -112,8 +112,9 @@ editor.features.append(IndentationGuides)
 editor.features.append(AutoIndent)
 editor.features.append(CursorHistory)
 editor.features.append(SmartBackSpace)
-symbol_margin = editor.panels.append(MarkerMargin, Panel.Position.LEFT, Panel.Settings(level = 2))
-editor.panels.append(LineNumberMargin, Panel.Position.LEFT, Panel.Settings(level = 2))
+symbol_margin: MarkerMargin = editor.panels.append(MarkerMargin, Panel.Position.LEFT, Panel.WidgetSettings(level = 2))
+editor.panels.append(LineNumberMargin, Panel.Position.LEFT, Panel.WidgetSettings(level = 2))
+editor.panels.append(EditionMargin, Panel.Position.LEFT, Panel.WidgetSettings(level = 2))
 
 # dont:
 #	editor.panels.append(LineNumberMargin, Panel.Position.LEFT)
@@ -128,10 +129,11 @@ editor.panels.append(LineNumberMargin, Panel.Position.LEFT, Panel.Settings(level
 h_scrollbar = editor.panels.append(HorizontalScrollBar, Panel.Position.BOTTOM)
 v_scrollbar = editor.panels.append(VerticalScrollBar, Panel.Position.RIGHT)
 editor.setCursorWidth(2)
-minimap = editor.panels.append(MiniMap, Panel.Position.RIGHT, Panel.Settings(level = 2))
+minimap: MiniMap = editor.panels.append(MiniMap, Panel.Position.RIGHT, Panel.WidgetSettings(level = 2))
 minimap.chelly_editor.features.append(CaretLineHighLighter)
+minimap.chelly_editor.panels.append(EditionMargin, Panel.Position.LEFT, Panel.WidgetSettings(level = 2))
 breadcrumbs: BreadcrumbNav = editor.panels.append(
-	BreadcrumbNav, Panel.Position.TOP, Panel.Settings(level = 2))
+	BreadcrumbNav, Panel.Position.TOP, Panel.WidgetSettings(level = 2))
 
 editor1 = ChellyEditor(div)
 editor1.features.append(CaretLineHighLighter)
@@ -141,16 +143,18 @@ editor1.features.append(CursorHistory)
 editor1.features.append(SmartBackSpace)
 editor1.panels.append(MarkerMargin, Panel.Position.LEFT)
 editor1.panels.append(LineNumberMargin, Panel.Position.LEFT)
+editor1.panels.append(EditionMargin, Panel.Position.LEFT, Panel.WidgetSettings(level = 2))
 
 h_scrollbar1 = HorizontalScrollBar(editor1)
 v_scrollbar1 = VerticalScrollBar(editor1)
 editor1.setCursorWidth(2)
 editor1.panels.append(h_scrollbar1, Panel.Position.BOTTOM)
 editor1.panels.append(v_scrollbar1, Panel.Position.RIGHT)
-minimap1 = editor1.panels.append(MiniMap, Panel.Position.RIGHT, Panel.Settings(level = 2))
+minimap1: MiniMap = editor1.panels.append(MiniMap, Panel.Position.RIGHT, Panel.WidgetSettings(level = 2))
 minimap1.chelly_editor.features.append(CaretLineHighLighter)
+minimap1.chelly_editor.panels.append(EditionMargin, Panel.Position.LEFT, Panel.WidgetSettings(level = 2))
 notify: NotificationPanel = editor1.panels.append(
-	NotificationPanel, Panel.Position.TOP, Panel.Settings(level = 1))
+	NotificationPanel, Panel.Position.TOP, Panel.WidgetSettings(level = 1))
 
 notification = NotificationPanel.NotificationCard()
 notification.text = "Hey idiot, are u sleeping? LOL, ur <strong>githoob</strong> account got hacked"
@@ -162,15 +166,15 @@ notification.buttons = [notification_action1]
 notify.card = notification
 notify.setVisible(True)
 
-editor.language.lexer = {"language": PythonLanguage, "style": "one-dark"}
+editor.language.lexer = {"language": PythonLanguage, "style": dict()}
 
 with minimap as m:
-	m.language.lexer = [PythonLanguage, "one-dark"]
+	m.language.lexer = [PythonLanguage, dict()]
 
 #editor1.language.lexer = (JavaScriptLanguage, "github-dark")
-editor1.language.lexer = (PythonLanguageNew, "one-dark")
+editor1.language.lexer = (PythonLanguageNew, dict())
 #PythonHighlighter(editor1)
-minimap1.chelly_editor.language.lexer = (PythonLanguage, "one-dark")
+minimap1.chelly_editor.language.lexer = (PythonLanguage, dict())
 #PygmentsSH(minimap1.chelly_editor, color_scheme="one-dark")
 
 div.addWidget(editor)
@@ -213,7 +217,7 @@ def test_load_file(benchmark):
 	assert editor.properties.text == content
 
 
-def add_mark_at_line(sm, line: int):
+def add_mark_at_line(sm:MarkerMargin, line: int):
 	if sm == symbol_margin:
 		sm.add_marker(
 			Marker(
@@ -229,10 +233,15 @@ def add_mark_at_line(sm, line: int):
 			)
 		)
 	else:
-		sm.add_marker(Marker(line, qtawesome.icon("msc.debug-stackframe-dot")))
+		mark_icon = qtawesome.icon("msc.debug-stackframe-dot", options=[{
+                'scale_factor': 2.0,
+                'active': 'fa5s.balance-scale',
+				'color': 'red'
+            }])
+		sm.add_marker(Marker(line, mark_icon))
 
 
-def rem_mark_at_line(sm, line: int):
+def rem_mark_at_line(sm:MarkerMargin, line: int):
 	sm.remove_marker(
 		sm.marker_for_line(line)
 	)

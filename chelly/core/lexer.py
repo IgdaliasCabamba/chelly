@@ -1,6 +1,6 @@
 from typing import Union
 
-from pygments.styles import get_style_by_name
+from pygments.plugin import find_plugin_styles
 from pygments.style import Style, StyleMeta
 from pygments.token import Punctuation, Token
 from pygments.util import ClassNotFound
@@ -16,36 +16,21 @@ class Highlighter(QSyntaxHighlighter):
         pattern = QRegularExpression()
         format = QTextCharFormat()
 
-    class Format(QTextCharFormat):
-        def __init__(self, *args, **kvargs):
-            super().__init__(*args, **kvargs)
-
-    class Expression(QRegularExpression):
-        def __init__(self, *args, **kvargs):
-            super().__init__(*args, **kvargs)
-
     @staticmethod
-    def get_style(style: Union[str, StyleMeta, Style, dict]) -> Style:
+    def get_style(style: Union[StyleMeta, Style, dict]) -> Style:
         class CustomStyle(Style):
-            pass
+            ...
 
         if isinstance(style, (StyleMeta, Style)):
             return style
 
-        elif isinstance(style, str):
-            try:
-                style = get_style_by_name(style)
-                return style
-            except ClassNotFound:
-                return CustomStyle
-
-        elif isinstance(style, dict):
+        if isinstance(style, dict):
             CustomStyle.styles = style
             return CustomStyle
 
         else:
             raise TypeError(
-                f"style must be Union[str, Style, dict] not {type(style)}")
+                f"style must be dict not {type(style)}")
 
     @staticmethod
     def get_style_name(style: Style) -> str:
@@ -123,7 +108,6 @@ class Highlighter(QSyntaxHighlighter):
         'operator_word': Token.Operator.Word
     }
 
-
 class ColorScheme(object):
     """
     Translates a pygments style into a dictionary of colors associated with a
@@ -147,15 +131,11 @@ class ColorScheme(object):
     def brushes(self) -> dict:
         return self._brushes
 
-    def __init__(self, style: Union[str, dict]) -> None:
-        """
-        :param style: name of the pygments style to load
-        """
-        self._style = Highlighter.get_style(style)
+    def __init__(self, style: dict) -> None:
+
+        self._style = Highlighter.get_style({})
         self._name = Highlighter.get_style_name(self._style)
         self._brushes = {}
-        #: Dictionary of formats colors (keys are the same as for
-        #: :attr:`pyqode.core.api.COLOR_SCHEME_KEYS`
         self.formats = {}
 
         self.load_formats_from_style(self._style)
@@ -173,14 +153,14 @@ class ColorScheme(object):
                 self.formats[key] = self.get_format_from_style(token, style)
 
     def get_format_from_color(self, color):
-        fmt = Highlighter.Format()
+        fmt = QTextCharFormat()
         fmt.setBackground(self.get_brush(color))
         return fmt
 
     def get_format_from_style(self, token, style):
         """ Returns a QTextCharFormat for token by reading a Pygments style.
         """
-        result = Highlighter.Format()
+        result = QTextCharFormat()
         items = list(style.style_for_token(token).items())
 
         for key, value in items:
@@ -266,15 +246,11 @@ class SyntaxHighlighter(Highlighter):
             self.rehighlight()
 
     def __init__(self, editor, color_scheme=None):
-        """
-        :param parent: parent document (QTextDocument)
-        :param color_scheme: color scheme to use.
-        """
         super().__init__(editor.document())
         self.__editor = editor
 
         if not color_scheme:
-            color_scheme = "default"
+            color_scheme = dict()
 
         self._color_scheme = ColorScheme(color_scheme)
 
@@ -283,38 +259,24 @@ class SyntaxHighlighter(Highlighter):
         return self.__editor
 
     def highlightBlock(self, text):
-        """
-        Highlights a block of text. Please do not override, this method.
-        Instead you should implement
-        :func:`pyqode.core.api.SyntaxHighlighter.highlight_block`.
-        :param text: text to highlight.
-        """
         current_block = self.currentBlock()
         self.highlight_block(text, current_block)
 
     def highlight_block(self, text, block):
-        """
-        Abstract method. Override this to apply syntax highlighting.
-        :param text: Line of text to highlight.
-        :param block: current block
-        """
         raise NotImplementedError()
 
     def rehighlight(self):
-        """
-        Rehighlight the entire document, may be slow.
-        """
         QApplication.setOverrideCursor(
             QCursor(Qt.WaitCursor))
         try:
             super().rehighlight()
         except RuntimeError:
-            # cloned widget, no need to rehighlight the same document twice ;)
             ...
         QApplication.restoreOverrideCursor()
 
 class Language(SyntaxHighlighter):
-    ...
+    def __init__(self, editor, color_scheme=None):
+        super().__init__(editor, color_scheme)
 
 class TextBlockUserData(QTextBlockUserData):
     """

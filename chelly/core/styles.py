@@ -106,16 +106,15 @@ class ChellyStyle:
             self._background = QColor(Qt.GlobalColor.darkBlue)
             self._background.setAlpha(50)
             self._foreground = QColor(Qt.GlobalColor.white)
-            self.__mount()
+            self.__mount(self)
         
-        def __mount(self):
-            self.__set_bg(self._background)
-            self.__set_fg(self._foreground)
-        
-        def clone(self, other_selection) -> Self:
-            self.__set_bg(other_selection.background)
-            self.__set_fg(other_selection.foreground)
+        def __mount(self, selection: ChellyStyle.Selection) -> Self:
+            self.__set_bg(selection.background)
+            self.__set_fg(selection.foreground)
             return self
+
+        def clone(self, other_selection: ChellyStyle.Selection) -> Self:
+            return self.__mount(other_selection)
         
         def __set_bg(self, color:QColor) -> None:
             self._background = color

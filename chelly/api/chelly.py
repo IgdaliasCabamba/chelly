@@ -183,12 +183,12 @@ class ChellyEditor(QPlainTextEdit):
             self.contentOffset()).top()
         )
         bottom = top + int(self.blockBoundingRect(block).height())
-        ebottom_top = 0
-        ebottom_bottom = self.height()
+        editor_bottom_top = 0
+        editor_bottom_bottom = self.height()
         first_block = True
 
         while block.isValid():
-            visible = (top >= ebottom_top and bottom <= ebottom_bottom)
+            visible = (top >= editor_bottom_top and bottom <= editor_bottom_bottom)
 
             if not visible and not first_block:
                 break
@@ -196,6 +196,7 @@ class ChellyEditor(QPlainTextEdit):
 
             if visible and block.isVisible():
                 self._visible_blocks.append((top, block_nbr, block))
+
             block = block.next()
             top = bottom
             bottom = top + int(self.blockBoundingRect(block).height())
