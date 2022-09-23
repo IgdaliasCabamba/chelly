@@ -1,6 +1,6 @@
 from typing import Any
 from ..core import Manager, Language
-from ..core import Highlighter
+from pygments.style import Style
 from dataclasses import dataclass
 
 class LanguagesManager(Manager):
@@ -39,22 +39,17 @@ class LanguagesManager(Manager):
     def get_lexer_from_any(arg) -> LexerObject:
         if isinstance(arg, dict):
             language = arg.get("language", None)
-            _style = arg.get("style", None)
-            
-            if _style is None:
-                style = Highlighter.get_style("default")
-            
-            else:
-                style = Highlighter.get_style(_style)
-            
+            style = arg.get("style", None)
             return LanguagesManager.LexerObject(language, style)
         
         elif isinstance(arg, tuple) or isinstance(arg, list):
-            return LanguagesManager.LexerObject(language=arg[0], style=Highlighter.get_style(arg[1]))
+            return LanguagesManager.LexerObject(language=arg[0], style=arg[1])
         
         elif isinstance(arg, Language):
-            style = Highlighter.get_style("default")
-            return LanguagesManager.LexerObject(arg, style)
+            class _NewStyle(Style):
+                ...
+                
+            return LanguagesManager.LexerObject(arg, _NewStyle)
 
     @lexer.setter
     def lexer(self, arg:dict) -> None:

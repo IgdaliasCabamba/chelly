@@ -1,12 +1,20 @@
+import sys
+sys.dont_write_bytecode = True
+
 import os
 os.environ["QT_API"] = "pyside6"
+
+from pygments.styles.dracula import DraculaStyle
+from pygments.styles.monokai import MonokaiStyle
+from pygments.styles.paraiso_dark import ParaisoDarkStyle
+from pygments.styles.onedark import OneDarkStyle
 
 import qtawesome
 from dev.libs.qtmodern import windows as qtmodern_windows
 from dev.libs.qtmodern import styles as qtmodern_styles
 from chelly.managers import FeaturesManager, LanguagesManager, PanelsManager
-from chelly.languages import PygmentsSH, PythonLanguage, JavaScriptLanguage
-from chelly.languages.sh.qtway import PythonLanguageNew
+from chelly.languages import PythonLanguage, JavaScriptLanguage
+from chelly.languages.sh.python_test import PythonLanguageNew
 from chelly.features import (AutoIndent, CaretLineHighLighter, CursorHistory,
 							 IndentationGuides, SmartBackSpace)
 from chelly.core import Panel
@@ -166,16 +174,15 @@ notification.buttons = [notification_action1]
 notify.card = notification
 notify.setVisible(True)
 
-editor.language.lexer = {"language": PythonLanguage, "style": dict()}
+editor.language.lexer = {"language": PythonLanguage, "style": ParaisoDarkStyle}
 
 with minimap as m:
-	m.language.lexer = [PythonLanguage, dict()]
+	m.language.lexer = [PythonLanguage, MonokaiStyle]
 
 #editor1.language.lexer = (JavaScriptLanguage, "github-dark")
-editor1.language.lexer = (PythonLanguageNew, dict())
-#PythonHighlighter(editor1)
-minimap1.chelly_editor.language.lexer = (PythonLanguage, dict())
-#PygmentsSH(minimap1.chelly_editor, color_scheme="one-dark")
+#editor1.language.lexer = (PythonLanguageNew, OneDarkStyle)
+PythonLanguageNew(editor1, OneDarkStyle)
+minimap1.chelly_editor.language.lexer = (PythonLanguage, DraculaStyle)
 
 div.addWidget(editor)
 div.addWidget(editor1)
