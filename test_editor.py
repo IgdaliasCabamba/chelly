@@ -327,7 +327,6 @@ modern_window.show()
 
 x = CompleterManager(editor)
 y: Completer = x.set_completion_list(Completer)
-#x.setCustomCompletions({"ola", "hello", "hi", "thanks", "more", "love"})
-#x.invokeCompletion()
+y.setCustomCompletions({"ola", "hello", "hi", "thanks", "more", "love"})
 
 app.exec()

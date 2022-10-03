@@ -1,7 +1,7 @@
 from qtpy.QtCore import Signal as pyqtSignal
 from qtpy.QtCore import QAbstractItemModel, QEvent, QModelIndex, QObject, QSize, Qt, QTimer
-from qtpy.QtWidgets import QListView
-from qtpy.QtGui import QCursor
+from qtpy.QtWidgets import QListView, QGraphicsDropShadowEffect
+from qtpy.QtGui import QCursor, QColor
 
 import time
 
@@ -115,6 +115,13 @@ class _CompletionList(QListView):
 
     def __init__(self, qpart, model):
         QListView.__init__(self, qpart.viewport())
+
+        self.drop_shadow = QGraphicsDropShadowEffect(self)
+        self.drop_shadow.setColor(QColor("#111111"))
+        self.drop_shadow.setXOffset(0)
+        self.drop_shadow.setYOffset(3)
+        self.drop_shadow.setBlurRadius(6)
+        self.setGraphicsEffect(self.drop_shadow)
 
         # ensure good selected item background on Windows
         palette = self.palette()
