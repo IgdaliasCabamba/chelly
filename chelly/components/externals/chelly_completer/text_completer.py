@@ -3,6 +3,8 @@ from qtpy.QtCore import QAbstractItemModel, QEvent, QModelIndex, QObject, QSize,
 from qtpy.QtWidgets import QListView
 from qtpy.QtGui import QCursor
 
+import time
+
 from .html_delegate import *
 from .utils import *
 from .word_set_timer import *
@@ -10,11 +12,12 @@ from .word_set_timer import *
 
 class _CompletionModel(QAbstractItemModel):
     """QAbstractItemModel implementation for a list of completion variants
+
     words attribute contains all words
     canCompleteText attribute contains text, which may be inserted with tab
     """
     def __init__(self, wordSet):
-        super().__init__(self)
+        QAbstractItemModel.__init__(self)
 
         self._wordSet = wordSet
 
@@ -170,6 +173,7 @@ class _CompletionList(QListView):
     def sizeHint(self):
         """QWidget.sizeHint implementation
         Automatically resizes the widget according to rows count
+
         FIXME very bad algorithm. Remove all this margins, if you can
         """
         width = max([self.fontMetrics().width(word) \
@@ -278,13 +282,12 @@ class _CompletionList(QListView):
         self._selectedIndex = index
         self.setCurrentIndex(self.model().createIndex(index, 0))
 
-
 class Completer(QObject):
     """Object listens Qutepart widget events, computes and shows autocompletion lists
     """
     _globalUpdateWordSetTimer = GlobalUpdateWordSetTimer()
 
-    _WORD_SET_UPDATE_MAX_TIME_SEC = 2
+    _WORD_SET_UPDATE_MAX_TIME_SEC = 0.4
 
     def __init__(self, qpart):
         QObject.__init__(self, qpart)
@@ -318,6 +321,8 @@ class Completer(QObject):
     def _onTextChanged(self):
         """Text in the qpart changed. Update word set"""
         self._globalUpdateWordSetTimer.schedule(self._updateWordSet)
+        
+        self.invokeCompletion() # WEIRD
 
     def _onModificationChanged(self, modified):
         if not modified:
@@ -328,15 +333,19 @@ class Completer(QObject):
         """
         self._wordSet = set(self._keywords) | set(self._customCompletions)
 
+        start = time.time()
+
         for line in self._qpart.properties.lines_text:
             for match in wordRegExp.findall(line):
                 self._wordSet.add(match)
+            if time.time() - start > self._WORD_SET_UPDATE_MAX_TIME_SEC:
+                """It is better to have incomplete word set, than to freeze the GUI"""
+                break
 
     def invokeCompletion(self):
         """Invoke completion manually"""
         if self.invokeCompletionIfAvailable(requestedByUser=True):
             self._completionOpenedManually = True
-
 
     def _shouldShowModel(self, model, forceShow):
         if not model.hasWords():
@@ -355,12 +364,14 @@ class Completer(QObject):
         """Invoke completion, if available. Called after text has been typed in qpart
         Returns True, if invoked
         """
+        #if self._qpart.completionEnabled and self._wordSet is not None:
         if self._wordSet is not None:
             wordBeforeCursor = self._wordBeforeCursor()
             wholeWord = wordBeforeCursor + self._wordAfterCursor()
 
             forceShow = requestedByUser or self._completionOpenedManually
             if wordBeforeCursor:
+                #if len(wordBeforeCursor) >= self._qpart.completionThreshold or forceShow:
                 if forceShow:
                     if self._widget is None:
                         model = _CompletionModel(self._wordSet)
@@ -426,3 +437,6 @@ class Completer(QObject):
         if canCompleteText:
             self._qpart.textCursor().insertText(canCompleteText)
             self.invokeCompletionIfAvailable()
+
+class CompletionWidget:
+    ...

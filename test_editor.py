@@ -4,7 +4,7 @@ from chelly.components.externals.chelly_completer.manager import CompleterManage
 from chelly.components.externals.chelly_completer.text_completer import Completer
 sys.dont_write_bytecode = True
 
-#import os
+import os
 #os.environ["QT_API"] = "PySide6"
 
 from pygments.styles.dracula import DraculaStyle
