@@ -1,4 +1,4 @@
-from PySide6 import QtCore, QtGui
+from qtpy import QtCore, QtGui
 from ..core import Feature
 
 

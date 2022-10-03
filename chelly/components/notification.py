@@ -1,8 +1,8 @@
 from typing import Union
 from typing_extensions import Self
-from PySide6.QtWidgets import QLabel, QPushButton, QGraphicsDropShadowEffect, QFrame, QHBoxLayout
-from PySide6.QtCore import QSize, Qt
-from PySide6.QtGui import QColor, QIcon, QPalette
+from qtpy.QtWidgets import QLabel, QPushButton, QGraphicsDropShadowEffect, QFrame, QHBoxLayout
+from qtpy.QtCore import QSize, Qt
+from qtpy.QtGui import QColor, QIcon, QPalette
 from ..core import Panel
 import qtawesome
 

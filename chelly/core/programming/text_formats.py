@@ -2,7 +2,7 @@ from typing import Union
 
 from pygments.style import Style
 from pygments.token import Punctuation, Token
-from PySide6.QtGui import (QBrush, QColor, QFont, QTextCharFormat)
+from qtpy.QtGui import (QBrush, QColor, QFont, QTextCharFormat)
 from .. import drift_color
 
 class ColorScheme(object):

@@ -1,5 +1,5 @@
 from ..core import Feature, TextEngine, Character
-from PySide6.QtCore import Qt
+from qtpy.QtCore import Qt
 
 
 class AutoIndent(Feature):

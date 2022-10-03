@@ -1,5 +1,5 @@
-from PySide6.QtWidgets import QScrollBar, QHBoxLayout, QVBoxLayout
-from PySide6.QtCore import Qt, QSize
+from qtpy.QtWidgets import QScrollBar, QHBoxLayout, QVBoxLayout
+from qtpy.QtCore import Qt, QSize
 from ..core import Panel
 
 class ScrollBar(QScrollBar):

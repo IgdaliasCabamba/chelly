@@ -1,7 +1,7 @@
 from typing import Type
 from typing_extensions import Self
 import weakref
-from PySide6.QtCore import QTimer
+from qtpy.QtCore import QTimer
 
 class ChellyEvent:
     def __init__(self, *emit_types:Type) -> None:

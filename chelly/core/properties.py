@@ -1,6 +1,6 @@
 from typing import Any
-from PySide6.QtGui import QFontMetrics, QTextOption
-from PySide6.QtWidgets import QPlainTextEdit
+from qtpy.QtGui import QFontMetrics, QTextOption
+from qtpy.QtWidgets import QPlainTextEdit
 
 from ..core.utils import Character, FontEngine
 
@@ -22,6 +22,10 @@ class Properties(object):
         self.__decorations:list = []
     
     @property
+    def lines_text(self) -> list:
+        return self.text.splitlines()
+    
+    @property
     def decorations(self):
         return self.__decorations
     
@@ -36,14 +40,6 @@ class Properties(object):
     @text.setter
     def text(self, text:Any) -> None:
         self._editor.setPlainText(str(text))
-    
-    @property
-    def document(self) -> object:
-        return self._editor.document()
-    
-    @document.setter
-    def document(self, qtextdocument:Any) -> None:
-        self._editor.setDocument(qtextdocument)
     
     @property
     def indent_type(self) -> int:

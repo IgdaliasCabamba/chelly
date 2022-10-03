@@ -1,8 +1,11 @@
 import sys
+
+from chelly.components.externals.chelly_completer.manager import CompleterManager
+from chelly.components.externals.chelly_completer.text_completer import Completer
 sys.dont_write_bytecode = True
 
-import os
-os.environ["QT_API"] = "pyside6"
+#import os
+#os.environ["QT_API"] = "PySide6"
 
 from pygments.styles.dracula import DraculaStyle
 from pygments.styles.monokai import MonokaiStyle
@@ -22,9 +25,9 @@ from chelly.components import (NotificationPanel, HorizontalScrollBar,
 							   LineNumberMargin, Marker, MarkerMargin, MiniMap,
 							   VerticalScrollBar, BreadcrumbNav, EditionMargin)
 from chelly.api import ChellyEditor
-from PySide6.QtWidgets import *
-from PySide6.QtGui import *
-from PySide6.QtCore import *
+from qtpy.QtWidgets import *
+from qtpy.QtGui import *
+from qtpy.QtCore import *
 import pytest
 import pathlib
 import logging
@@ -321,5 +324,10 @@ modern_window.resize(1000, 600)
 modern_window.move(200, 100)
 modern_window.setWindowTitle("ChellyEditor Preview")
 modern_window.show()
+
+x = CompleterManager(editor)
+y: Completer = x.set_completion_list(Completer)
+#x.setCustomCompletions({"ola", "hello", "hi", "thanks", "more", "love"})
+#x.invokeCompletion()
 
 app.exec()

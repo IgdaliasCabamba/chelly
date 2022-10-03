@@ -1,5 +1,5 @@
 from ..core import Manager, ChellyStyle
-from PySide6.QtGui import QPalette, QColor
+from qtpy.QtGui import QPalette, QColor
 from ..core import ChellyStyle
 
 class ChellyStyleManager(Manager):

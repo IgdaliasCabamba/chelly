@@ -1,5 +1,5 @@
-from PySide6.QtGui import QFont, QPainter, QPen, QColor
-from PySide6.QtCore import Qt, QSize
+from qtpy.QtGui import QFont, QPainter, QPen, QColor
+from qtpy.QtCore import Qt, QSize
 from ..core import Panel, FontEngine, TextEngine
 import difflib
 

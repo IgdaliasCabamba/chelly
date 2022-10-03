@@ -1,10 +1,10 @@
 from pprint import pprint
 from typing import Any, Union
 from typing_extensions import Self
-from PySide6.QtWidgets import QLabel, QHBoxLayout, QGraphicsDropShadowEffect, QWidget, QSizePolicy
-from PySide6.QtCore import QSize, Qt
-from PySide6.QtGui import QColor, QIcon
-from ...core import Panel, sanitize_html, icon_to_base64
+from qtpy.QtWidgets import QLabel, QHBoxLayout, QGraphicsDropShadowEffect, QWidget, QSizePolicy
+from qtpy.QtCore import QSize, Qt
+from qtpy.QtGui import QColor, QIcon
+from ..core import Panel, sanitize_html, icon_to_base64
 import qtawesome
 
 

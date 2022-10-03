@@ -6,4 +6,5 @@ from .code_editor import CodeEditor
 from .notification import NotificationPanel
 from .edition_margin import EditionMargin
 
-from .externals.breadcrumbs import *
+from .breadcrumbs import *
+from .externals.chelly_completer import *

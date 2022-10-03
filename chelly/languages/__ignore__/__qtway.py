@@ -1,5 +1,5 @@
-from PySide6.QtGui import QFont
-from PySide6.QtCore import Qt
+from qtpy.QtGui import QFont
+from qtpy.QtCore import Qt
 from ...core import Highlighter
 
 class PythonHighlighter(Highlighter):

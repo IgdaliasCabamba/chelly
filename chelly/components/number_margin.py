@@ -1,5 +1,5 @@
-from PySide6.QtGui import QFont, QTextCursor, QColor, QPainter
-from PySide6.QtCore import Qt, QSize, QRect
+from qtpy.QtGui import QFont, QTextCursor, QColor, QPainter
+from qtpy.QtCore import Qt, QSize, QRect
 from ..core import Panel, FontEngine
 
 class LineNumberMargin(Panel):

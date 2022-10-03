@@ -1,7 +1,7 @@
 from typing import Union
-from PySide6.QtGui import QBrush, QIcon, QColor, QPainter, QTextDocument, QFontMetricsF
-from PySide6.QtCore import Qt, QSize, QRect, QObject, Signal, QPoint
-from PySide6.QtWidgets import QToolTip, QStyle
+from qtpy.QtGui import QBrush, QIcon, QColor, QPainter, QTextDocument, QFontMetricsF
+from qtpy.QtCore import Qt, QSize, QRect, QObject, Signal, QPoint
+from qtpy.QtWidgets import QToolTip, QStyle
 from ..core import Panel, FontEngine, DelayJobRunner, TextEngine, TextDecoration
 
 

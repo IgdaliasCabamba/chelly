@@ -1,7 +1,7 @@
 from typing_extensions import Self
-from PySide6.QtCore import QSize, Qt, QEvent
-from PySide6.QtGui import (QFontMetrics, QResizeEvent)
-from PySide6.QtWidgets import (QGraphicsDropShadowEffect, QHBoxLayout,QFrame)
+from qtpy.QtCore import QSize, Qt, QEvent
+from qtpy.QtGui import (QFontMetrics, QResizeEvent)
+from qtpy.QtWidgets import (QGraphicsDropShadowEffect, QHBoxLayout,QFrame)
 
 #from ..api.chelly import ChellyEditor as CodeEditor
 from .code_editor import CodeEditor

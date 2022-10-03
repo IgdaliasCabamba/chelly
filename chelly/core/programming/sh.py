@@ -1,8 +1,8 @@
 from typing import Union
-from PySide6.QtCore import Qt, Signal
-from PySide6.QtWidgets import QApplication
-from PySide6.QtCore import QRegularExpression
-from PySide6.QtGui import QSyntaxHighlighter, QTextCharFormat, QCursor
+from qtpy.QtCore import Qt, Signal
+from qtpy.QtWidgets import QApplication
+from qtpy.QtCore import QRegularExpression
+from qtpy.QtGui import QSyntaxHighlighter, QTextCharFormat, QCursor
 from .text_formats import ColorScheme
 
 class Highlighter(QSyntaxHighlighter):

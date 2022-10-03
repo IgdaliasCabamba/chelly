@@ -1,4 +1,4 @@
-from PySide6.QtGui import QTextBlockUserData
+from qtpy.QtGui import QTextBlockUserData
 
 class TextBlockUserData(QTextBlockUserData):
     """

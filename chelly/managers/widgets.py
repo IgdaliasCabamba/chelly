@@ -2,7 +2,7 @@ from typing import Iterator, Union
 from dataclasses import dataclass
 from typing_extensions import Self
 from ..core import Manager, Panel, TextEngine
-from PySide6.QtCore import QRect, QSize
+from qtpy.QtCore import QRect, QSize
 
 class BasePanelManager(Manager):
     

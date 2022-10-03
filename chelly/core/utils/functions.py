@@ -1,6 +1,6 @@
 from typing import Union
-from PySide6.QtGui import QColor, QIcon
-from PySide6.QtCore import QSize, QByteArray, QBuffer
+from qtpy.QtGui import QColor, QIcon
+from qtpy.QtCore import QSize, QByteArray, QBuffer
 from bs4 import BeautifulSoup
 
 def sanitize_html(value:str, valid_tags:list=["span"]):

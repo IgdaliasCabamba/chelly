@@ -7,7 +7,7 @@ if TYPE_CHECKING:
     from ..api import ChellyEditor
 
 from dataclasses import dataclass
-from PySide6.QtWidgets import QFrame
+from qtpy.QtWidgets import QFrame
 import pprint
 
 class Panel(QFrame):

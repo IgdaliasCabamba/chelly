@@ -1,8 +1,8 @@
 from typing import Union
 
-from PySide6 import QtGui
-from PySide6.QtCore import Qt, Signal
-from PySide6.QtWidgets import QPlainTextEdit
+from qtpy import QtGui
+from qtpy.QtCore import Qt, Signal
+from qtpy.QtWidgets import QPlainTextEdit
 
 from ..core.document import ChellyDocument
 from ..core.exceptions import ChellyDocumentExceptions, FeaturesExceptions, LexerExceptions, PanelsExceptions, PropertiesExceptions, StyleExceptions, TextExceptions

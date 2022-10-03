@@ -1,1 +1,1 @@
-from .breadcrumbs import BreadcrumbNav
+from .chelly_completer import CompleterManager

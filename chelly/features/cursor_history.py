@@ -1,5 +1,5 @@
 import weakref
-from PySide6 import QtCore, QtWidgets, QtGui
+from qtpy import QtCore, QtWidgets, QtGui
 from ..core import Feature, TextEngine
 
 class MoveCursorCommand(QtGui.QUndoCommand):

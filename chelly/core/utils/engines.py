@@ -1,5 +1,5 @@
 from typing import Any, Union
-from PySide6.QtGui import QTextCursor, QTextBlock, QFont, QFontMetrics
+from qtpy.QtGui import QTextCursor, QTextBlock, QFont, QFontMetrics
 
 class TextEngine:
     def __init__(self, editor):

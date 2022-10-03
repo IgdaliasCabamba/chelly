@@ -1,6 +1,6 @@
-from PySide6.QtWidgets import QTextEdit
-from PySide6.QtGui import QColor, QTextFormat, QBrush
-from PySide6.QtCore import Qt
+from qtpy.QtWidgets import QTextEdit
+from qtpy.QtGui import QColor, QTextFormat, QBrush
+from qtpy.QtCore import Qt
 from ..core import Feature, TextDecoration, drift_color
 
 class CaretLineHighLighter(Feature):

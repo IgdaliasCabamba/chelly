@@ -8,8 +8,8 @@ if TYPE_CHECKING:
 from string import Template
 from typing import Any
 
-from PySide6.QtCore import Qt
-from PySide6.QtGui import QColor, QPalette
+from qtpy.QtCore import Qt
+from qtpy.QtGui import QColor, QPalette
 from typing_extensions import Self
 from .utils.helpers import ChellyEvent
 

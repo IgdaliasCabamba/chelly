@@ -1,8 +1,8 @@
 """
 """
 from typing import Any
-from PySide6.QtGui import QPainter, QColor, QFontMetrics, QPen
-from PySide6.QtCore import Qt
+from qtpy.QtGui import QPainter, QColor, QFontMetrics, QPen
+from qtpy.QtCore import Qt
 from ..core import Feature, TextEngine, Character
 import re
 
