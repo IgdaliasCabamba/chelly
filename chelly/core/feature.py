@@ -1,31 +1,41 @@
-from typing import Any
+from __future__ import annotations
+
+from typing import TYPE_CHECKING, Type, Union, Any
 import pprint
 from typing_extensions import Self
+
+if TYPE_CHECKING:
+    from ..api import ChellyEditor
 
 class Feature(object):
     
     class Settings:
-        __settings = dict()
+
+        __dict = dict()
 
         def __setattr__(self, __name: str, __value: Any) -> None:
-            self.__settings[__name] = __value
+            self.__dict[__name] = __value
         
         def __getattr__(self, __name: str) -> Any:
-            return self.__settings.get(__name, False)
+            return self.__dict.get(__name, False)
         
         def __delattr__(self, __name: str) -> None:
-            self.__settings.pop(__name, None)
+            self.__dict.pop(__name, None)
         
         def __repr__(self) -> str:
-            return pprint.pformat(self.__settings)
+            return pprint.pformat(self.__dict)
         
         def __enter__(self) -> dict:
-            return self.__settings
+            return self.__dict
         
         def __exit__(self, *args, **kvargs) -> Self:
             return self
+        
+        @property
+        def as_dict(self):
+            return self.__dict
 
-    def __init__(self, editor):
+    def __init__(self, editor:ChellyEditor):
         self.__editor:object = editor
         self.__enabled = True
         self.__settings = Feature.Settings()
@@ -43,6 +53,6 @@ class Feature(object):
         self.__enabled = status
 
     @property
-    def editor(self) -> object:
+    def editor(self) -> ChellyEditor:
         return self.__editor
     
