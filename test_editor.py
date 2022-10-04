@@ -19,7 +19,7 @@ from chelly.managers import FeaturesManager, LanguagesManager, PanelsManager
 from chelly.languages import PythonLanguage, JavaScriptLanguage
 from chelly.languages.sh.python_test import PythonLanguageNew
 from chelly.features import (AutoIndent, CaretLineHighLighter, CursorHistory,
-							 IndentationGuides, SmartBackSpace, IndentationMarks)
+							 IndentationGuides, SmartBackSpace, IndentationMarks, EdgeLine, AutoComplete)
 from chelly.core import Panel
 from chelly.components import (NotificationPanel, HorizontalScrollBar,
 							   LineNumberMargin, Marker, MarkerMargin, MiniMap,
@@ -119,11 +119,13 @@ div.setStyleSheet(
 )
 
 caret_line = editor.features.append(CaretLineHighLighter)
-editor.features.append(IndentationGuides)
-editor.features.append(AutoIndent)
+indentation_guides1: IndentationGuides = editor.features.append(IndentationGuides)
+auto_indent1: AutoIndent = editor.features.append(AutoIndent)
 editor.features.append(CursorHistory)
 editor.features.append(SmartBackSpace)
 editor.features.append(IndentationMarks)
+editor.features.append(EdgeLine)
+editor.features.append(AutoComplete)
 symbol_margin: MarkerMargin = editor.panels.append(MarkerMargin, Panel.Position.LEFT, Panel.WidgetSettings(level = 2))
 editor.panels.append(LineNumberMargin, Panel.Position.LEFT, Panel.WidgetSettings(level = 2))
 editor.panels.append(EditionMargin, Panel.Position.LEFT, Panel.WidgetSettings(level = 2))

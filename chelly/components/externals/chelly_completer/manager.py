@@ -36,3 +36,6 @@ class CompleterManager:
         widget = completion_widget(self.editor)
         self._widgets.completion_tooltip = widget
         return widget
+    
+    def update_geometry(self):
+        ...

@@ -11,29 +11,27 @@ class Feature(object):
     
     class Settings:
 
-        __dict = dict()
-
         def __setattr__(self, __name: str, __value: Any) -> None:
-            self.__dict[__name] = __value
+            self.__dict__[__name] = __value
         
         def __getattr__(self, __name: str) -> Any:
-            return self.__dict.get(__name, False)
+            self.__dict__.get(__name, False)
         
         def __delattr__(self, __name: str) -> None:
-            self.__dict.pop(__name, None)
+            self.__dict__.pop(__name, None)
         
         def __repr__(self) -> str:
-            return pprint.pformat(self.__dict)
+            return pprint.pformat(self.__dict__)
         
         def __enter__(self) -> dict:
-            return self.__dict
+            return self.__dict__
         
         def __exit__(self, *args, **kvargs) -> Self:
             return self
         
         @property
         def as_dict(self):
-            return self.__dict
+            return self.__dict__
 
     def __init__(self, editor:ChellyEditor):
         self.__editor:object = editor

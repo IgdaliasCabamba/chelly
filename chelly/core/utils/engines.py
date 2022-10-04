@@ -161,6 +161,74 @@ class TextEngine:
         TextEngine.set_position_in_block(cursor, column)
         return self._editor.cursorRect(cursor).translated(offset, 0)
 
+
+    
+    def get_right_word(self, cursor=None):
+        """
+        Gets the character on the right of the text cursor.
+        :param cursor: QTextCursor where the search will start.
+        :return: The word that is on the right of the text cursor.
+        """
+        if cursor is None:
+            cursor = self._editor.textCursor()
+        cursor.movePosition(QTextCursor.WordRight,
+                            QTextCursor.KeepAnchor)
+        return cursor.selectedText().strip()
+
+    def get_right_character(self, cursor=None):
+        """
+        Gets the character that is on the right of the text cursor.
+        :param cursor: QTextCursor that defines the position where the search
+            will start.
+        """
+        next_char = self.get_right_word(cursor=cursor)
+        if len(next_char):
+            next_char = next_char[0]
+        else:
+            next_char = None
+        return next_char
+
+    def insert_text(self, text, keep_position=True):
+        """
+        Inserts text at the cursor position.
+        :param text: text to insert
+        :param keep_position: Flag that specifies if the cursor position must
+            be kept. Pass False for a regular insert (the cursor will be at
+            the end of the inserted text).
+        """
+        text_cursor = self._editor.textCursor()
+        if keep_position:
+            s = text_cursor.selectionStart()
+            e = text_cursor.selectionEnd()
+        text_cursor.insertText(text)
+        if keep_position:
+            text_cursor.setPosition(s)
+            text_cursor.setPosition(e, text_cursor.KeepAnchor)
+        self._editor.setTextCursor(text_cursor)
+
+    def clear_selection(self):
+        """
+        Clears text cursor selection
+        """
+        text_cursor = self._editor.textCursor()
+        text_cursor.clearSelection()
+        self._editor.setTextCursor(text_cursor)
+    
+    def move_right(self, keep_anchor=False, nb_chars=1):
+        """
+        Moves the cursor on the right.
+        :param keep_anchor: True to keep anchor (to select text) or False to
+            move the anchor (no selection)
+        :param nb_chars: Number of characters to move.
+        """
+        text_cursor = self._editor.textCursor()
+        text_cursor.movePosition(
+            text_cursor.Right, text_cursor.KeepAnchor if keep_anchor else
+            text_cursor.MoveAnchor, nb_chars)
+        self._editor.setTextCursor(text_cursor)
+
+    
+
     
     def goto_line(self, line, column=0, move=True):
         text_cursor = self.move_cursor_to_line(line)
