@@ -1,8 +1,12 @@
-from typing import Any, Union
+from __future__ import annotations
+from typing import TYPE_CHECKING, Union, Any
 from qtpy.QtGui import QTextCursor, QTextBlock, QFont, QFontMetrics
 
+if TYPE_CHECKING:
+    from ...api import ChellyEditor
+
 class TextEngine:
-    def __init__(self, editor):
+    def __init__(self, editor:ChellyEditor):
         self._editor = editor
     
     @property
@@ -148,6 +152,16 @@ class TextEngine:
         indentation_level = len(line) - len(line.lstrip(indent_char))
         return indentation_level
     
+    def cursor_rect(self, line_or_block:Union[QTextBlock, int], column, offset):
+        block = line_or_block
+        if isinstance(line_or_block, int):
+            block = self.block_from_line_number(line_or_block)
+        
+        cursor = QTextCursor(block)
+        TextEngine.set_position_in_block(cursor, column)
+        return self._editor.cursorRect(cursor).translated(offset, 0)
+
+    
     def goto_line(self, line, column=0, move=True):
         text_cursor = self.move_cursor_to_line(line)
         if column:
@@ -156,6 +170,10 @@ class TextEngine:
         if move:
             self._editor.setTextCursor(text_cursor)
         return text_cursor
+    
+    @staticmethod
+    def set_position_in_block(cursor:QTextCursor, position_in_block:int, anchor:QTextCursor.MoveMode = QTextCursor.MoveAnchor):
+        return cursor.setPosition(cursor.block().position() + position_in_block, anchor)
 
 class FontEngine:
     def __init__(self, font:QFont):

@@ -1,7 +1,4 @@
-"""
-"""
-from typing import Any
-from qtpy.QtGui import QPainter, QColor, QFontMetrics, QPen
+from qtpy.QtGui import QPainter, QColor, QFontMetrics, QPen, QTextCursor
 from qtpy.QtCore import Qt
 from ..core import Feature, TextEngine, Character
 import re
@@ -113,16 +110,22 @@ class IndentationGuides(Feature):
 
             if self.editor.properties.indent_with_tabs:
                 for guide in self.get_indentation_guides_for_tabs():
-                    for level in range(-1, guide.max_level-1):
-                        point_x = self.font_width + (level * self.font_width)
+                    #for level in range(-1, guide.max_level-1):
+                    for level in range(guide.max_level):
+                        rect = TextEngine(self.editor).cursor_rect(guide.line, level, offset=0)
+                        painter.drawLine(rect.topLeft(), rect.bottomLeft())
 
-                        painter.drawLine(point_x, TextEngine(self.editor).point_y_from_line_number(guide.line), point_x,
-                                         TextEngine(self.editor).point_y_from_line_number(guide.line) + self.font_height)
+                        #point_x = self.font_width + (level * self.font_width)
+                        #painter.drawLine(point_x, TextEngine(self.editor).point_y_from_line_number(guide.line), point_x,
+                                         #TextEngine(self.editor).point_y_from_line_number(guide.line) + self.font_height)
             else:
                 for guide in self.get_indentation_guides_for_spaces():
-                    for level in range(-1, guide.max_level-1):
-                        point_x = self.font_width + (level * self.font_width)
-                        #point_x //= 2
+                    for level in range(guide.max_level):              
+                        
+                        spaces_level = level * self.editor.properties.indent_size          
+                        rect = TextEngine(self.editor).cursor_rect(guide.line, spaces_level, offset=0)
+                        painter.drawLine(rect.topLeft(), rect.bottomLeft())
 
-                        painter.drawLine(point_x, TextEngine(self.editor).point_y_from_line_number(guide.line), point_x,
-                                         TextEngine(self.editor).point_y_from_line_number(guide.line) + self.font_height)
+                        #point_x = self.font_width + (level * self.font_width)
+                        #painter.drawLine(point_x, TextEngine(self.editor).point_y_from_line_number(guide.line), point_x,
+                                         #TextEngine(self.editor).point_y_from_line_number(guide.line) + self.font_height)
