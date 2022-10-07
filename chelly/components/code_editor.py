@@ -51,7 +51,7 @@ class __CodeEditorCopy(QPlainTextEdit):
     def __build(self):
         self._properties.default()
         self.setLineWrapMode(self.NoWrap)
-        #self.setCenterOnScroll(True)
+        self.setCenterOnScroll(True)
         self._update_visible_blocks(None)
 
     def update_state(self):

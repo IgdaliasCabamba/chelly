@@ -34,8 +34,6 @@ import logging
 import sys
 
 sys.dont_write_bytecode = True
-
-
 DEBUG_OUTPUT_FILE = os.path.join("dev", "chelly.log")
 pathlib.Path(DEBUG_OUTPUT_FILE).touch(exist_ok=True)
 
@@ -55,12 +53,12 @@ editor.setCornerWidget(None)
 div.setStyleSheet(
 	"""
 	LineNumberMargin, QLabel, MiniMap MiniMapEditor, ChellyEditor {
-		font-family:Monaco;
 		color: #ccc;
 		background-color: #1e1e1e;
 		border:none
 	}
 	LineNumberMargin, QLabel, MiniMap {
+		font-family:Monaco;
 		font-size:10pt;
 	}
 	BreadcrumbNav{
@@ -283,13 +281,14 @@ def create_breadcrumbs():
 
 create_breadcrumbs()
 
-editor.commands.zoom_in(100)
-editor.commands.zoom_in(20) #120
-editor.commands.zoom_out(10)
-editor.commands.zoom_out(10)
-editor.commands.zoom_out(100)
-editor.commands.zoom_out(10)# -140
-#editor.commands.reset_zoom()
+#editor.commands.zoom_in(100)
+#editor.commands.zoom_in(20) #120
+
+#editor.commands.zoom_out(100)
+#editor.commands.zoom_out(20)
+#editor.commands.zoom_out(10)
+# TODO editor.commands.zoom_out(10)
+editor.commands.reset_zoom()
 editor.style.theme.set_margin_style(LineNumberMargin)
 editor.style.theme.set_margin_highlight(LineNumberMargin, QColor("#72c3f0"))
 

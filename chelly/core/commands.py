@@ -27,7 +27,7 @@ class BasicCommands:
     def un_indent(self):
         ...
         
-    def home_key(self):
+    def home_key(self, *args, **kwargs):
         ...
     
     def zoom_in(self, range_:int = 1):
