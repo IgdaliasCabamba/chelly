@@ -31,13 +31,14 @@ class BasicCommands:
         ...
     
     def zoom_in(self, range_:int = 1):
-        # TODO: Work with fonts
-        ...
+        level = self.editor.properties.zoom
+        level += range_
+        self.editor.properties.zoom = level
     
     def zoom_out(self, range_:int):
-        # TODO: Work with fonts
-        ...
+        level = self.editor.properties.zoom
+        level -= range_
+        self.editor.properties.zoom = level
     
     def reset_zoom(self):
-        # TODO: Work with fonts
-        ...
+        self.editor.properties.zoom = 0

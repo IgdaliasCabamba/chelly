@@ -206,32 +206,6 @@ editor1.setVerticalScrollBarPolicy(
 editor1.setHorizontalScrollBarPolicy(
 	Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
 
-
-def test_lexer_set(benchmark):
-	new_lexer = benchmark(LanguagesManager, editor)
-	editor.lexer = new_lexer
-	assert editor.lexer == new_lexer
-
-
-def test_singleton_panel(benchmark):
-	minimap = benchmark(editor.panels.get, MiniMap)
-	assert minimap == editor.panels.append(MiniMap, Panel.Position.RIGHT)
-
-
-def test_feature_set(benchmark):
-	new_features = benchmark(FeaturesManager, editor)
-	editor.features = new_features
-	assert editor.features == new_features
-
-
-def test_load_file(benchmark):
-	with open(__file__, "r") as infile:
-		content = benchmark(infile.read)
-
-	editor.properties.text = content
-	assert editor.properties.text == content
-
-
 def add_mark_at_line(sm:MarkerMargin, line: int):
 	if sm == symbol_margin:
 		sm.add_marker(
@@ -309,12 +283,13 @@ def create_breadcrumbs():
 
 create_breadcrumbs()
 
-editor.commands.zoom_in(10)
-editor.commands.zoom_in(20)
-editor.commands.zoom_in(10)
+editor.commands.zoom_in(100)
+editor.commands.zoom_in(20) #120
 editor.commands.zoom_out(10)
 editor.commands.zoom_out(10)
-editor.commands.reset_zoom()
+editor.commands.zoom_out(100)
+editor.commands.zoom_out(10)# -140
+#editor.commands.reset_zoom()
 editor.style.theme.set_margin_style(LineNumberMargin)
 editor.style.theme.set_margin_highlight(LineNumberMargin, QColor("#72c3f0"))
 
@@ -325,11 +300,6 @@ editor1.style.theme = editor.style.theme
 minimap.chelly_editor.style.theme = editor.style.theme
 editor1.style.theme.selection.foreground = QColor("#2b2b2b")
 
-if __name__ == "__main__":
-	def fake_benchmark(any):
-		return any()
-	test_load_file(fake_benchmark)
-
 
 modern_window.resize(1000, 600)
 modern_window.move(200, 100)
@@ -339,5 +309,35 @@ modern_window.show()
 x = CompleterManager(editor)
 y: Completer = x.set_completion_list(Completer)
 y.setCustomCompletions({"ola", "hello", "hi", "thanks", "more", "love"})
+
+def test_lexer_set(benchmark):
+	new_lexer = benchmark(LanguagesManager, editor)
+	editor.lexer = new_lexer
+	assert editor.lexer == new_lexer
+
+
+def test_singleton_panel(benchmark):
+	minimap = benchmark(editor.panels.get, MiniMap)
+	assert minimap == editor.panels.append(MiniMap, Panel.Position.RIGHT)
+
+
+def test_feature_set(benchmark):
+	new_features = benchmark(FeaturesManager, editor)
+	editor.features = new_features
+	assert editor.features == new_features
+
+
+def test_load_file(benchmark):
+	with open(__file__, "r") as infile:
+		content = benchmark(infile.read)
+
+	editor.properties.text = content
+	assert editor.properties.text == content
+
+
+if __name__ == "__main__":
+	def fake_benchmark(any):
+		return any()
+	test_load_file(fake_benchmark)
 
 app.exec()
