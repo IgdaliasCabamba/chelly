@@ -19,6 +19,7 @@ class Properties(object):
         self._indent_type:int = Property.Indentation.tabs
         self._indent_char:Character = Character.TAB
         self._show_whitespaces:bool = False
+        self._zoom:int = 0
         self.__decorations:list = []
     
     @property
@@ -89,6 +90,14 @@ class Properties(object):
     def indent_size(self, size:int) -> None:
         self._indent_size = size
         self.__set_tab_distance(Character.SPACE.value, size)
+    
+    @property
+    def zoom(self) -> int:
+        return self._zoom
+    
+    @zoom.setter
+    def zoom(self, level:int) -> None:
+        self._zoom = level
     
     def __set_tab_distance(self, char:str, indent_size:int):        
         char_width:float = FontEngine(self._editor.font()).real_horizontal_advance(char, min_zero=True)

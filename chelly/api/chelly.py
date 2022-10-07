@@ -1,13 +1,13 @@
 from typing import Union
 
 from qtpy import QtGui
-from qtpy.QtCore import Qt, Signal
-from qtpy.QtWidgets import QPlainTextEdit
+from qtpy.QtCore import Qt, Signal, QSize
+from qtpy.QtWidgets import QPlainTextEdit, QLabel
 
 from ..core import (ChellyDocument, ChellyDocumentExceptions,
                     FeaturesExceptions, LexerExceptions, PanelsExceptions,
                     Properties, PropertiesExceptions, StyleExceptions,
-                    TextExceptions)
+                    TextExceptions, BasicCommands)
 from ..managers import (ChellyStyleManager, FeaturesManager, LanguagesManager,
                         PanelsManager, TextDecorationsManager)
 
@@ -20,10 +20,16 @@ class ChellyEditor(QPlainTextEdit):
     on_key_pressed = Signal(object)
     on_key_released = Signal(object)
     on_text_setted = Signal(str)
+    on_mouse_wheel_activated = Signal(object)
+    post_on_key_pressed = Signal(object)
 
     @property
     def visible_blocks(self) -> list:
         return self._visible_blocks
+    
+    @property
+    def commands(self) -> BasicCommands:
+        return self.__commands
 
     def __init__(self, parent):
         super().__init__(parent)
@@ -36,6 +42,7 @@ class ChellyEditor(QPlainTextEdit):
         self._chelly_document = ChellyDocument(self)
         self._style = ChellyStyleManager(self)
         self._decorations = TextDecorationsManager(self)
+        self.__commands = BasicCommands(self)
 
         self._visible_blocks = list()
         self.__build()
@@ -43,6 +50,7 @@ class ChellyEditor(QPlainTextEdit):
     def __build(self):
         self._properties.default()
         self.setLineWrapMode(self.NoWrap)
+        self.setCenterOnScroll(True)
         self._update_visible_blocks(None)
 
     def update_state(self):
@@ -168,7 +176,7 @@ class ChellyEditor(QPlainTextEdit):
         self._update_visible_blocks(event)
         super().paintEvent(event)
         self.on_painted.emit(event)
-
+        
     def resizeEvent(self, event) -> None:
         super().resizeEvent(event)
         self.on_resized.emit()
@@ -206,19 +214,29 @@ class ChellyEditor(QPlainTextEdit):
 
     def keyPressEvent(self, event: QtGui.QKeyEvent) -> Union[None, object]:
         self.on_key_pressed.emit(event)
-        if event.key() == Qt.Key_Tab:
-            cursor = self.textCursor()
-            if self.properties.indent_with_spaces:
-                cursor.insertText(
-                    self.properties.indent_char.value * self.properties.indent_size)
-            else:
-                cursor.insertText(self.properties.indent_char.value)
-            return None
-        return super().keyPressEvent(event)
+        
+        if event.key() == Qt.Key_Tab and event.modifiers() == Qt.NoModifier:
+            self.__commands.indent()
+            return super().keyPressEvent(event)
 
-    def keyReleaseEvent(self, e: QtGui.QKeyEvent) -> None:
-        self.on_key_released.emit(e)
-        return super().keyReleaseEvent(e)
+        elif event.key() == Qt.Key_Backtab and event.modifiers() == Qt.NoModifier:
+            self.__commands.un_indent()
+            return super().keyPressEvent(event)
+
+        elif event.key() == Qt.Key_Home and int(event.modifiers()) & Qt.ControlModifier == 0:
+            self.__commands.home_key(event, int(event.modifiers()) & Qt.ShiftModifier)
+            return super().keyPressEvent(event)
+    
+        super().keyPressEvent(event)
+        self.post_on_key_pressed.emit(event)
+
+    def keyReleaseEvent(self, event: QtGui.QKeyEvent) -> None:
+        self.on_key_released.emit(event)
+        return super().keyReleaseEvent(event)
+    
+    def wheelEvent(self, event: QtGui.QWheelEvent) -> None:
+        self.on_mouse_wheel_activated.emit(event)
+        return super().wheelEvent(event)
     
     def setPlainText(self, text: str) -> None:
         self.on_text_setted.emit(text)

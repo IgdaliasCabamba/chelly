@@ -1,5 +1,5 @@
 from textwrap import indent
-from qtpy.QtGui import QPainter, QColor, QFontMetrics, QPen, QPaintEvent, QBrush
+from qtpy.QtGui import QPainter, QColor, QFontMetrics, QPen, QPaintEvent, QBrush, QTextCursor
 from qtpy.QtCore import Qt, QRect
 from ..core import Feature, TextEngine, Character
 from typing import List
@@ -47,7 +47,15 @@ class IndentationMarks(Feature):
                 self.paint_white_sapces(range, painter)
 
     def paint_white_sapces(self, range:tuple, painter:QPainter):
-        for top, block_number, block in self.editor.visible_blocks:
+        cursor = self.editor.textCursor()
+        
+        cursor.setPosition(range[0])
+        first_block = cursor.block()
+
+        cursor.setPosition(range[1], QTextCursor.KeepAnchor)
+        last_line = cursor.blockNumber()
+
+        for block in TextEngine.iterate_blocks_from(first_block, last_line):
             text = block.text()
             for column, draw in enumerate(self._chooseVisibleWhitespace(text)):
                 if draw:

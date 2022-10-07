@@ -19,7 +19,7 @@ from chelly.managers import FeaturesManager, LanguagesManager, PanelsManager
 from chelly.languages import PythonLanguage, JavaScriptLanguage
 from chelly.languages.sh.python_test import PythonLanguageNew
 from chelly.features import (AutoIndent, CaretLineHighLighter, CursorHistory,
-							 IndentationGuides, SmartBackSpace, IndentationMarks, EdgeLine, AutoComplete)
+							 IndentationGuides, SmartBackSpace, IndentationMarks, EdgeLine, AutoComplete, ZoomMode)
 from chelly.core import Panel
 from chelly.components import (NotificationPanel, HorizontalScrollBar,
 							   LineNumberMargin, Marker, MarkerMargin, MiniMap,
@@ -54,11 +54,14 @@ editor = ChellyEditor(div)
 editor.setCornerWidget(None)
 div.setStyleSheet(
 	"""
-	LineNumberMargin, QLabel, ChellyEditor, MiniMap MiniMapEditor {
+	LineNumberMargin, QLabel, MiniMap MiniMapEditor, ChellyEditor {
 		font-family:Monaco;
 		color: #ccc;
 		background-color: #1e1e1e;
 		border:none
+	}
+	LineNumberMargin, QLabel, MiniMap {
+		font-size:10pt;
 	}
 	BreadcrumbNav{
 		background-color: #1e1e1e;
@@ -73,9 +76,6 @@ div.setStyleSheet(
 	NotificationPanel QLabel, NotificationPanel CloseButton{
 		background-color: transparent;
 		border:none
-	}
-	ChellyEditor{
-		font-size:10pt;
 	}
 	MiniMap{
 		border: none;
@@ -126,6 +126,7 @@ editor.features.append(SmartBackSpace)
 editor.features.append(IndentationMarks)
 editor.features.append(EdgeLine)
 editor.features.append(AutoComplete)
+editor.features.append(ZoomMode)
 symbol_margin: MarkerMargin = editor.panels.append(MarkerMargin, Panel.Position.LEFT, Panel.WidgetSettings(level = 2))
 editor.panels.append(LineNumberMargin, Panel.Position.LEFT, Panel.WidgetSettings(level = 2))
 editor.panels.append(EditionMargin, Panel.Position.LEFT, Panel.WidgetSettings(level = 2))
@@ -187,7 +188,7 @@ with minimap as m:
 	m.language.lexer = [PythonLanguage, MonokaiStyle]
 
 #editor1.language.lexer = (JavaScriptLanguage, "github-dark")
-#editor1.language.lexer = (PythonLanguageNew, OneDarkStyle)
+editor1.language.lexer = (PythonLanguageNew, OneDarkStyle)
 PythonLanguageNew(editor1, OneDarkStyle)
 minimap1.chelly_editor.language.lexer = (PythonLanguage, DraculaStyle)
 
@@ -308,6 +309,12 @@ def create_breadcrumbs():
 
 create_breadcrumbs()
 
+editor.commands.zoom_in(10)
+editor.commands.zoom_in(20)
+editor.commands.zoom_in(10)
+editor.commands.zoom_out(10)
+editor.commands.zoom_out(10)
+editor.commands.reset_zoom()
 editor.style.theme.set_margin_style(LineNumberMargin)
 editor.style.theme.set_margin_highlight(LineNumberMargin, QColor("#72c3f0"))
 

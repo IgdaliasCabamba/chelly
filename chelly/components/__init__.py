@@ -8,3 +8,4 @@ from .edition_margin import EditionMargin
 
 from .breadcrumbs import *
 from .externals.chelly_completer import *
+from .minimap import *

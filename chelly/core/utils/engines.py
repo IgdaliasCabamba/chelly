@@ -1,11 +1,23 @@
 from __future__ import annotations
 from typing import TYPE_CHECKING, Union, Any
 from qtpy.QtGui import QTextCursor, QTextBlock, QFont, QFontMetrics
+from qtpy.QtCore import QRect
+import enum
 
 if TYPE_CHECKING:
-    from ...api import ChellyEditor
+    from ...api import ChellyEditor    
 
 class TextEngine:
+    
+    class TextDirection(enum.Enum):
+        LEFT = 0
+        RIGHT = 1
+        UNDER = 2
+    
+    @property
+    def editor(self):
+        return self._editor
+
     def __init__(self, editor:ChellyEditor):
         self._editor = editor
     
@@ -71,7 +83,7 @@ class TextEngine:
                 return block.position()
         return 0
     
-    def point_y_from_block(self, block) -> int:
+    def point_y_from_block(self, block: QTextBlock) -> int:
         if block.isValid():
             return int(self._editor.blockBoundingGeometry(block).translated(
                 self._editor.contentOffset()).top())
@@ -97,34 +109,6 @@ class TextEngine:
             if top <= y_pos <= top + height:
                 return line
         return -1
-    
-    def move_cursor_to_block(self, block) -> QTextCursor:
-        text_cursor = self._editor.textCursor()
-        text_cursor.setPosition(block.position())
-        return text_cursor
-    
-    def move_cursor_to_line(self, line) -> QTextCursor:
-        block = self._editor.document().findBlockByLineNumber(line)
-        text_cursor = self.move_cursor_to_block(block)
-        text_cursor.movePosition(text_cursor.StartOfLine, text_cursor.MoveAnchor)
-        self._editor.setTextCursor(text_cursor)
-        return text_cursor
-    
-    def move_cursor_to_position(self, line:int, column:int=0) -> QTextCursor:
-        text_cursor = self._editor.textCursor()
-        block = self._editor.document().findBlockByLineNumber(line)
-        self.move_cursor_to_block(block)
-        if column:
-            text_cursor.movePosition(text_cursor.Right, text_cursor.MoveAnchor, column)
-        
-        return text_cursor
-
-    def set_text_at_line(self, line_nbr:int, new_text:str) -> None:
-        editor = self._editor
-        text_cursor = self.move_cursor_to_line(line_nbr)
-        text_cursor.select(text_cursor.LineUnderCursor)
-        text_cursor.insertText(new_text)
-        editor.setTextCursor(text_cursor)
     
     def text_at_line(self, line_nbr:int) -> str:
         if line_nbr is None:
@@ -152,69 +136,62 @@ class TextEngine:
         indentation_level = len(line) - len(line.lstrip(indent_char))
         return indentation_level
     
-    def cursor_rect(self, line_or_block:Union[QTextBlock, int], column, offset):
-        block = line_or_block
-        if isinstance(line_or_block, int):
-            block = self.block_from_line_number(line_or_block)
-        
-        cursor = QTextCursor(block)
-        TextEngine.set_position_in_block(cursor, column)
-        return self._editor.cursorRect(cursor).translated(offset, 0)
-
-
-    
-    def get_right_word(self, cursor=None):
+    def word_at(self, direction:TextDirection = TextDirection.RIGHT, cursor:QTextCursor=None) -> str:
         """
-        Gets the character on the right of the text cursor.
+        Gets the character on the given direction of the text cursor.
         :param cursor: QTextCursor where the search will start.
         :return: The word that is on the right of the text cursor.
         """
         if cursor is None:
             cursor = self._editor.textCursor()
-        cursor.movePosition(QTextCursor.WordRight,
-                            QTextCursor.KeepAnchor)
-        return cursor.selectedText().strip()
+        
+        if direction == TextEngine.TextDirection.UNDER:
+            cursor.movePosition(QTextCursor.WordUnderCursor, QTextCursor.KeepAnchor)
 
-    def get_right_character(self, cursor=None):
-        """
-        Gets the character that is on the right of the text cursor.
-        :param cursor: QTextCursor that defines the position where the search
-            will start.
-        """
-        next_char = self.get_right_word(cursor=cursor)
-        if len(next_char):
-            next_char = next_char[0]
-        else:
-            next_char = None
-        return next_char
+        elif direction == TextEngine.TextDirection.LEFT:
+            cursor.movePosition(QTextCursor.WordLeft, QTextCursor.KeepAnchor)
+        elif direction == TextEngine.TextDirection.RIGHT:
+            cursor.movePosition(QTextCursor.WordRight, QTextCursor.KeepAnchor)
 
-    def insert_text(self, text, keep_position=True):
-        """
-        Inserts text at the cursor position.
-        :param text: text to insert
-        :param keep_position: Flag that specifies if the cursor position must
-            be kept. Pass False for a regular insert (the cursor will be at
-            the end of the inserted text).
-        """
-        text_cursor = self._editor.textCursor()
-        if keep_position:
-            s = text_cursor.selectionStart()
-            e = text_cursor.selectionEnd()
-        text_cursor.insertText(text)
-        if keep_position:
-            text_cursor.setPosition(s)
-            text_cursor.setPosition(e, text_cursor.KeepAnchor)
-        self._editor.setTextCursor(text_cursor)
+        return cursor.selectedText()
 
-    def clear_selection(self):
+    def character_at(self, direction:TextDirection = TextDirection.RIGHT, cursor:QTextCursor=None) -> str:
         """
-        Clears text cursor selection
+        Gets the character that is on the given direction of the text cursor.
+        :param cursor: QTextCursor that defines the position where the search will start.
         """
-        text_cursor = self._editor.textCursor()
-        text_cursor.clearSelection()
-        self._editor.setTextCursor(text_cursor)
+        next_char = self.word_at(direction, cursor).strip()
+        if len(next_char) > 0:
+            return next_char[0]
+        return None
     
-    def move_right(self, keep_anchor=False, nb_chars=1):
+    @staticmethod
+    def iterate_blocks_from(block:QTextBlock, until_line:int = None):
+        """Generator, which iterates QTextBlocks from block until the End of a document
+        """
+        while block.isValid():
+            yield block
+            if block.blockNumber() == until_line:
+                break
+            block = block.next()
+
+    @staticmethod
+    def iterate_blocks_back_from(block:QTextBlock, until_line:int = None):
+        """Generator, which iterates QTextBlocks from block until the Start of a document
+        """
+        while block.isValid():
+            yield block
+            if block.blockNumber() == until_line:
+                break
+            block = block.previous()
+    
+    @staticmethod
+    def set_position_in_block(cursor:QTextCursor, position_in_block:int, anchor:QTextCursor.MoveMode = QTextCursor.MoveAnchor):
+        return cursor.setPosition(cursor.block().position() + position_in_block, anchor)
+
+    # Cursor
+    
+    def move_cursor(self, keep_anchor=False, nb_chars=1):
         """
         Moves the cursor on the right.
         :param keep_anchor: True to keep anchor (to select text) or False to
@@ -226,11 +203,73 @@ class TextEngine:
             text_cursor.Right, text_cursor.KeepAnchor if keep_anchor else
             text_cursor.MoveAnchor, nb_chars)
         self._editor.setTextCursor(text_cursor)
-
     
-
+    def move_cursor_to_block(self, block:QTextBlock) -> QTextCursor:
+        text_cursor = self._editor.textCursor()
+        text_cursor.setPosition(block.position())
+        return text_cursor
     
-    def goto_line(self, line, column=0, move=True):
+    def move_cursor_to_line(self, line) -> QTextCursor:
+        block = self._editor.document().findBlockByLineNumber(line)
+        text_cursor = self.move_cursor_to_block(block)
+        text_cursor.movePosition(text_cursor.StartOfLine, text_cursor.MoveAnchor)
+        self._editor.setTextCursor(text_cursor)
+        return text_cursor
+    
+    def move_cursor_to_position(self, line:int, column:int=0) -> QTextCursor:
+        text_cursor = self._editor.textCursor()
+        block = self._editor.document().findBlockByLineNumber(line)
+        self.move_cursor_to_block(block)
+        if column:
+            text_cursor.movePosition(text_cursor.Right, text_cursor.MoveAnchor, column)
+        
+        return text_cursor
+ 
+    def cursor_rect(self, line_or_block:Union[QTextBlock, int], column:int, offset:int) -> QRect:
+        block = line_or_block
+        if isinstance(line_or_block, int):
+            block = self.block_from_line_number(line_or_block)
+        
+        cursor = QTextCursor(block)
+        self.set_position_in_block(cursor, column)
+        return self._editor.cursorRect(cursor).translated(offset, 0)
+    
+    def set_text_at_line(self, line_nbr:int, new_text:str) -> None:
+        editor = self._editor
+        text_cursor = self.move_cursor_to_line(line_nbr)
+        text_cursor.select(text_cursor.LineUnderCursor)
+        text_cursor.insertText(new_text)
+        editor.setTextCursor(text_cursor)
+
+    def insert_text(self, text:str, keep_position:bool=True):
+        """
+        Inserts text at the cursor position.
+        :param text: text to insert
+        :param keep_position: Flag that specifies if the cursor position must
+            be kept. Pass False for a regular insert (the cursor will be at
+            the end of the inserted text).
+        """
+        text_cursor = self._editor.textCursor()
+        
+        if keep_position:
+            selection_start = text_cursor.selectionStart()
+            selection_end = text_cursor.selectionEnd()
+
+        text_cursor.insertText(text)
+        if keep_position:
+            text_cursor.setPosition(selection_start)
+            text_cursor.setPosition(selection_end, text_cursor.KeepAnchor)
+        self._editor.setTextCursor(text_cursor)
+
+    def clear_selection(self) -> None:
+        """
+        Clears text cursor selection
+        """
+        text_cursor = self._editor.textCursor()
+        text_cursor.clearSelection()
+        self._editor.setTextCursor(text_cursor)
+
+    def goto_line(self, line:int, column:int=0, move:bool=True) -> None:
         text_cursor = self.move_cursor_to_line(line)
         if column:
             text_cursor.movePosition(text_cursor.Right, text_cursor.MoveAnchor,
@@ -239,10 +278,6 @@ class TextEngine:
             self._editor.setTextCursor(text_cursor)
         return text_cursor
     
-    @staticmethod
-    def set_position_in_block(cursor:QTextCursor, position_in_block:int, anchor:QTextCursor.MoveMode = QTextCursor.MoveAnchor):
-        return cursor.setPosition(cursor.block().position() + position_in_block, anchor)
-
 class FontEngine:
     def __init__(self, font:QFont):
         self._font = font
