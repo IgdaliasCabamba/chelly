@@ -29,33 +29,34 @@ class IndentationMarks(Feature):
         lastNonSpaceColumn = len(text.rstrip()) - 1
 
         for column, char in enumerate(text[:lastNonSpaceColumn]):
-            if char.isspace() and \
-                (char == '\t' or \
-                column == 0 or \
-                text[column - 1].isspace() or \
-                ((column + 1) < lastNonSpaceColumn and \
-                    text[column + 1].isspace())):
+            if (
+                char.isspace()
+                
+                and (char == '\t'
+                    or column == 0
+                    or text[column - 1].isspace())
+
+                or ((column + 1) < lastNonSpaceColumn
+                    and text[column + 1].isspace())
+            ):
                 result[column] = True
         
         return result
     
     def paint_indentation(self, event:QPaintEvent):    
-        cursor = self.editor.textCursor()
-        if cursor.hasSelection():
-            range = (cursor.selectionStart(), cursor.selectionEnd())
-            with QPainter(self.editor.viewport()) as painter:
-                self.paint_white_sapces(range, painter)
+        selection_range = TextEngine(self.editor).selection_range
+        if selection_range is None:
+            return None
+        with QPainter(self.editor.viewport()) as painter:
+            self.paint_white_sapces(selection_range, painter)
 
-    def paint_white_sapces(self, range:tuple, painter:QPainter):
-        cursor = self.editor.textCursor()
-        
-        cursor.setPosition(range[0])
-        first_block = cursor.block()
+    def paint_white_sapces(self, selection_range:tuple, painter:QPainter):
+        first_block, last_block = TextEngine(self.editor).blocks_from_selection_range(
+            start = selection_range[0],
+            end = selection_range[1]
+        )
 
-        cursor.setPosition(range[1], QTextCursor.KeepAnchor)
-        last_line = cursor.blockNumber()
-
-        for block in TextEngine.iterate_blocks_from(first_block, last_line):
+        for block in TextEngine.iterate_blocks_from(first_block, last_block.blockNumber()):
             text = block.text()
             for column, draw in enumerate(self._chooseVisibleWhitespace(text)):
                 if draw:

@@ -9,6 +9,8 @@ class DocumentMap(CodeEditor):
     def __init__(self, parent):
         super().__init__(parent)
         self.editor:CodeEditor = parent.editor
+        self._amount_of_blocks = TextEngine(self.editor).line_count
+        
         self.setTextInteractionFlags(Qt.NoTextInteraction)
         self.setMouseTracking(True)
         self.setTabStopDistance(QFontMetrics(

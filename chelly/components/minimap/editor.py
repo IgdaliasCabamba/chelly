@@ -1,16 +1,18 @@
 from qtpy.QtCore import QEvent
-from qtpy.QtGui import QMouseEvent
+from qtpy.QtGui import QMouseEvent, QResizeEvent
 from ...core import TextEngine
 from .slider import SliderArea
 from .document import DocumentMap
+from math import modf
 
 class MiniMapEditor(DocumentMap):
     def __init__(self, parent):
         super().__init__(parent)
-
-        self._amount_of_blocks = TextEngine(self.editor).line_count
-        self.current_scroll_value = self.editor.verticalScrollBar().value()
-
+        
+        self.__cached_height = self.height()
+        self.__cached_scroll_y = self.editor.verticalScrollBar().value()
+        self.__cached_max_scroll_y = self.editor.verticalScrollBar().maximum()
+        
         self.slider = SliderArea(self)
         self.slider.show()
         
@@ -19,7 +21,11 @@ class MiniMapEditor(DocumentMap):
     def bind(self):
         self.editor.document().contentsChange.connect(self._update_contents)
         self.editor.on_painted.connect(self.update_ui)
-        self.slider.on_scroll_area.connect(self.scroll_area)
+        self.slider.on_scroll_area.connect(self.scroll_editor)
+        self.editor.verticalScrollBar().rangeChanged.connect(self._update_scrollbar_cache)
+    
+    def _update_scrollbar_cache(self):
+        self.__cached_max_scroll_y = self.editor.verticalScrollBar().maximum()
 
     def update_ui(self):
         line = TextEngine(self.editor).current_line_nbr
@@ -27,46 +33,50 @@ class MiniMapEditor(DocumentMap):
         self._scroll_slide()
 
     def _scroll_slide(self):
-        num_editor_visible_lines = TextEngine(
-            self.editor).visible_lines_from_line_count
+        num_editor_visible_lines = TextEngine(self.editor).visible_lines_from_line_count
         lines_on_editor_screen = TextEngine(self.editor).visible_lines
 
         if num_editor_visible_lines > lines_on_editor_screen:
+            
+            self.verticalScrollBar().setValue(self.editor.verticalScrollBar().value())
+            
+            if not self.slider.is_pressed:
+                
+                max_height = self.__cached_height
+                current_scroll_y = self.editor.verticalScrollBar().value()
+                max_scroll_y = self.__cached_max_scroll_y
+                
+                delta_y = current_scroll_y
 
-            self._move_scroll_bar(num_editor_visible_lines, lines_on_editor_screen)
+                if max_scroll_y > max_height:
+                    decimal_delta_y = max_scroll_y / max_height
+            
+                    if modf(decimal_delta_y)[0] <= 0.5:
+                        decimal_delta_y += 1
+                    else:
+                        decimal_delta_y += 0.5
 
-            #editor_line_nr = TextEngine(
-                #self.editor).line_number_from_position(0, 0)
-            #delta_y = TextEngine(self).point_y_from_line_number(editor_line_nr)
+                    delta_y = current_scroll_y // decimal_delta_y
 
-            #or:
-            higher_pos = TextEngine(self.editor).position_from_point(0,0)
-            delta_y = TextEngine(self).point_y_from_position(higher_pos)
+                self.slider.scroll_y(delta_y)
+        
 
-            self.slider.scroll(delta_y)
+    def scroll_editor(self, y_pos) -> None:
+        max_height = self.__cached_height
+        max_scroll_y = self.__cached_max_scroll_y
+        delta_y = y_pos
 
-        self.current_scroll_value = self.editor.verticalScrollBar().value()
+        if max_scroll_y > max_height:
+            decimal_delta_y = max_scroll_y / max_height
+            
+            if modf(decimal_delta_y)[0] <= 0.5:
+                decimal_delta_y += 1
+            else:
+                decimal_delta_y += 0.5
 
-    def _move_scroll_bar(self, num_editor_visible_lines, lines_on_editor_screen):
-        editor_first_visible_line = TextEngine(self.editor).first_visible_line
-        editor_last_top_visible_line = num_editor_visible_lines - lines_on_editor_screen
+            delta_y = y_pos * int(decimal_delta_y)
 
-        num_visible_lines = TextEngine(self).visible_lines_from_line_count
-        lines_on_screen = TextEngine(self).visible_lines
-
-        last_top_visible_line = num_visible_lines - lines_on_screen
-
-        portion = editor_first_visible_line / editor_last_top_visible_line
-        first_visible_line = round(last_top_visible_line * portion)
-
-        self.verticalScrollBar().setValue(first_visible_line)
-
-    def scroll_area(self, pos_parent, line_area) -> None:
-        line = TextEngine(self).line_number_from_position(
-            y_pos = pos_parent.y(),
-            x_pos = pos_parent.x()
-        )
-        self.editor.verticalScrollBar().setValue(line - line_area)
+        self.editor.verticalScrollBar().setValue(delta_y)
 
     def mousePressEvent(self, event: QMouseEvent) -> None:
         TextEngine(self.editor).move_cursor_to_line(
@@ -83,3 +93,7 @@ class MiniMapEditor(DocumentMap):
     def enterEvent(self, event: QEvent) -> None:
         self.slider.change_transparency(self.editor.style.theme.minimap.slider.color)
         return super().enterEvent(event)
+    
+    def resizeEvent(self, event: QResizeEvent) -> None:
+        self.__cached_height = self.height()
+        return super().resizeEvent(event)

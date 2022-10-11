@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import TYPE_CHECKING, Union, Any
+from typing import TYPE_CHECKING, Tuple, Union, Any
 from qtpy.QtGui import QTextCursor, QTextBlock, QFont, QFontMetrics
 from qtpy.QtCore import QRect
 import enum
@@ -35,6 +35,17 @@ class TextEngine:
         return self._editor.textCursor().selectedText()
     
     @property
+    def selection_range(self) -> tuple:
+        ...
+    
+    @property
+    def selection_range(self) -> tuple:
+        cursor = self._editor.textCursor()
+        if cursor.hasSelection():
+            return (cursor.selectionStart(), cursor.selectionEnd())
+        return None
+    
+    @property
     def cursor_position(self):
         return (self._editor.textCursor().blockNumber(),
                 self._editor.textCursor().columnNumber())
@@ -60,18 +71,17 @@ class TextEngine:
     def visible_lines_from_line_count(self):
         count = self.line_count
         return count
+    
+    def blocks_from_selection_range(self, start:int, end:int = None) -> Tuple[QTextBlock, QTextBlock]:
+        cursor = self._editor.textCursor()
+        
+        cursor.setPosition(start)
+        first_block = cursor.block()
 
-    @staticmethod
-    def previous_non_blank_block(current_block:QTextBlock) -> Union[QTextBlock, None]:
-        if current_block.blockNumber():
-            previous_block = current_block.previous()
-        else:
-            previous_block = None
+        cursor.setPosition(end, QTextCursor.KeepAnchor)
+        last_block = cursor.block()
 
-        # find the previous non-blank block
-        while (previous_block and previous_block.blockNumber() and previous_block.text().strip() == ''):
-            previous_block = previous_block.previous()
-        return previous_block
+        return first_block, last_block
     
     def block_from_line_number(self, line_number:int) -> QTextBlock:
         return self._editor.document().findBlockByLineNumber(line_number)
@@ -188,6 +198,18 @@ class TextEngine:
     @staticmethod
     def set_position_in_block(cursor:QTextCursor, position_in_block:int, anchor:QTextCursor.MoveMode = QTextCursor.MoveAnchor):
         return cursor.setPosition(cursor.block().position() + position_in_block, anchor)
+    
+    @staticmethod
+    def previous_non_blank_block(current_block:QTextBlock) -> Union[QTextBlock, None]:
+        if current_block.blockNumber():
+            previous_block = current_block.previous()
+        else:
+            previous_block = None
+
+        # find the previous non-blank block
+        while (previous_block and previous_block.blockNumber() and previous_block.text().strip() == ''):
+            previous_block = previous_block.previous()
+        return previous_block
 
     # Cursor
     
@@ -278,6 +300,7 @@ class TextEngine:
             self._editor.setTextCursor(text_cursor)
         return text_cursor
     
+
 class FontEngine:
     def __init__(self, font:QFont):
         self._font = font

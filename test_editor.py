@@ -78,41 +78,49 @@ div.setStyleSheet(
 	MiniMap{
 		border: none;
 	}
+
+	QListView{
+		background-color: #222;
+		border: 1px solid #333;
+		font-family:Monaco;
+		font-size:10pt;
+	}
+
 	QSplitter::handle {background-color:#252526}
 	QSplitter::handle:horizontal {width: 2px}
 	QSplitter::handle:vertical {height: 2px}
 	QSplitter::handle:pressed {background-color:#00a2e8}
 
-	QScrollBar:vertical {
+	ChellyEditor QScrollBar:vertical {
 		border: none;
 		border-left: 0.5px solid rgb(60, 60, 60);
 		border-top: 0.5px solid rgb(60, 60, 60);
 		background: transparent;
 	}
-	QScrollBar::handle:vertical {
+	ChellyEditor QScrollBar::handle:vertical {
 		background:rgba(180, 180, 180, 70);
 	}
-	QScrollBar::sub-line:vertical, QScrollBar::add-line:vertical {height: 0;}
-	QScrollBar:left-arrow:vertical, QScrollBar::right-arrow:vertical {
+	ChellyEditor QScrollBar::sub-line:vertical, QScrollBar::add-line:vertical {height: 0;}
+	ChellyEditor QScrollBar:left-arrow:vertical, QScrollBar::right-arrow:vertical {
 		height: 0;
 		width: 0;
 	}
-	QScrollBar::add-page:vertical, QScrollBar::sub-page:vertical {background: none;}
-	QScrollBar:horizontal {
+	ChellyEditor QScrollBar::add-page:vertical, QScrollBar::sub-page:vertical {background: none;}
+	ChellyEditor QScrollBar:horizontal {
 		border: none;
 		background: transparent;
 	}
-	QScrollBar::handle:horizontal {
+	ChellyEditor QScrollBar::handle:horizontal {
 		background:rgba(180, 180, 180, 70);
 	}
-	QScrollBar::sub-line:horizontal, QScrollBar::add-line:horizontal {width: 0;}
-	QScrollBar:left-arrow:horizontal, QScrollBar::right-arrow:horizontal {
+	ChellyEditor QScrollBar::sub-line:horizontal, QScrollBar::add-line:horizontal {width: 0;}
+	ChellyEditor QScrollBar:left-arrow:horizontal, QScrollBar::right-arrow:horizontal {
 		border: none;
 		width: 0;
 		height: 0;
 	}
-	QScrollBar::add-page:horizontal, QScrollBar::sub-page:horizontal {background: none;}
-	QScrollBar::handle:hover {background:rgba(200, 200, 200, 100)}
+	ChellyEditor QScrollBar::add-page:horizontal, QScrollBar::sub-page:horizontal {background: none;}
+	ChellyEditor QScrollBar::handle:hover {background:rgba(200, 200, 200, 100)}
 """
 )
 
