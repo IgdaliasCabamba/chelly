@@ -11,12 +11,11 @@ class DocumentMap(CodeEditor):
         self.editor:CodeEditor = parent.editor
         self._amount_of_blocks = TextEngine(self.editor).line_count
         
+        self.zoomOut(8)
         self.setTextInteractionFlags(Qt.NoTextInteraction)
         self.setMouseTracking(True)
         self.setTabStopDistance(QFontMetrics(
             self.font()).horizontalAdvance(Character.LARGEST.value))
-
-        self.zoomOut(8)
         self.setReadOnly(True)
         self.setVerticalScrollBarPolicy(
             Qt.ScrollBarPolicy.ScrollBarAlwaysOff)

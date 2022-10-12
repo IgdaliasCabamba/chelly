@@ -7,7 +7,9 @@ from qtpy.QtWidgets import QPlainTextEdit
 from ..core.utils import Character, FontEngine
 
 class Property:
+    
     class Default:
+        ZOOM_LEVEL = 0
         INDENT_SIZE = 4
         FONT = 'Source Code Pro' if sys.platform != 'darwin' else 'Monaco'
 
@@ -24,7 +26,7 @@ class Properties(object):
         self._show_whitespaces:bool = False
         self.__decorations:list = []
         self._font: QFont = None
-        self._font_size: int = 0
+        self._font_size: int = 0 #self._editor.font().pointSize()
         self._font_family: str = Property.Default.FONT
         self._zoom:int = 0
     
@@ -139,9 +141,25 @@ class Properties(object):
         return self._zoom
     
     @zoom.setter
-    def zoom(self, level:int) -> None:
+    def zoom(self, level: Union[int, float]) -> None:
         self._zoom = level
-        self._editor.setFont(QFont(self._font_family, self._font_size + self._zoom))
+        font_calc = self._font_size + self._zoom
+
+        new_font = QFont(self._font_family)
+
+        if isinstance(level, float):
+            if font_calc <= 0:
+                new_font.setPointSizeF(self._editor.font().pointSizeF())
+            else:
+                new_font.setPointSizeF(font_calc)
+        
+        elif isinstance(level, int):
+            if font_calc <= 0:
+                new_font.setPointSize(self._editor.font().pointSize())
+            else:
+                new_font.setPointSize(font_calc)
+
+        self._editor.setFont(new_font)
     
     def __set_tab_distance(self, char:str, indent_size:int):        
         char_width:float = FontEngine(self._editor.font()).real_horizontal_advance(char, min_zero=True)

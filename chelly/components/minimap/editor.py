@@ -10,7 +10,6 @@ class MiniMapEditor(DocumentMap):
         super().__init__(parent)
         
         self.__cached_height = self.height()
-        self.__cached_scroll_y = self.editor.verticalScrollBar().value()
         self.__cached_max_scroll_y = self.editor.verticalScrollBar().maximum()
         
         self.slider = SliderArea(self)
@@ -38,7 +37,7 @@ class MiniMapEditor(DocumentMap):
 
         if num_editor_visible_lines > lines_on_editor_screen:
             
-            self.verticalScrollBar().setValue(self.editor.verticalScrollBar().value())
+            self._move_scroll_bar()
             
             if not self.slider.is_pressed:
                 
@@ -46,7 +45,7 @@ class MiniMapEditor(DocumentMap):
                 current_scroll_y = self.editor.verticalScrollBar().value()
                 max_scroll_y = self.__cached_max_scroll_y
                 
-                delta_y = current_scroll_y
+                delta_y = current_scroll_y - (self.slider.height() // 2)
 
                 if max_scroll_y > max_height:
                     decimal_delta_y = max_scroll_y / max_height
@@ -56,7 +55,11 @@ class MiniMapEditor(DocumentMap):
                     else:
                         decimal_delta_y += 0.5
 
-                    delta_y = current_scroll_y // decimal_delta_y
+                    py = current_scroll_y // decimal_delta_y                    
+                    delta_y = py - (self.slider.height() // 2)
+                
+                if delta_y <0:
+                    delta_y = 0
 
                 self.slider.scroll_y(delta_y)
         
@@ -97,3 +100,12 @@ class MiniMapEditor(DocumentMap):
     def resizeEvent(self, event: QResizeEvent) -> None:
         self.__cached_height = self.height()
         return super().resizeEvent(event)
+    
+    def _move_scroll_bar(self):
+        max_scroll_y = self.__cached_max_scroll_y
+
+        dy = max_scroll_y / (self.editor.verticalScrollBar().value()+1)
+        if dy <= 0:
+            dy = 1
+
+        self.verticalScrollBar().setValue(self.editor.verticalScrollBar().value()//dy)

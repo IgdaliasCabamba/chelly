@@ -1,8 +1,6 @@
 from __future__ import annotations
 from typing import TYPE_CHECKING, Union, Any
-#from qtpy.QtGui import QTextCursor, QTextBlock, QFont, QFontMetrics
-#from qtpy.QtCore import QRect
-#import enum
+from .properties import Property
 
 if TYPE_CHECKING:
     from ..api import ChellyEditor
@@ -38,7 +36,11 @@ class BasicCommands:
     def zoom_out(self, range_:int):
         level = self.editor.properties.zoom
         level -= range_
+        
+        if level < 0:
+            level = 1
+            
         self.editor.properties.zoom = level
     
     def reset_zoom(self):
-        self.editor.properties.zoom = 0
+        self.editor.properties.zoom = Property.Default.ZOOM_LEVEL

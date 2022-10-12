@@ -289,14 +289,10 @@ def create_breadcrumbs():
 
 create_breadcrumbs()
 
-#editor.commands.zoom_in(100)
-#editor.commands.zoom_in(20) #120
-
-#editor.commands.zoom_out(100)
-#editor.commands.zoom_out(20)
-#editor.commands.zoom_out(10)
-# TODO editor.commands.zoom_out(10)
-editor.commands.reset_zoom()
+# TODO
+#editor.commands.zoom_in(15)
+#editor.commands.zoom_out(10) # -> 5
+#editor.commands.reset_zoom() # -> 0
 editor.style.theme.set_margin_style(LineNumberMargin)
 editor.style.theme.set_margin_highlight(LineNumberMargin, QColor("#72c3f0"))
 
