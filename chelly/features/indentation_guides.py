@@ -1,4 +1,5 @@
 from textwrap import indent
+from typing_extensions import Self
 from qtpy.QtGui import QPainter, QColor, QFontMetrics, QPen, QPaintEvent
 from qtpy.QtCore import Qt
 from ..core import Feature, TextEngine, Character
@@ -13,7 +14,7 @@ class IndentationGuides(Feature):
     class Guide:
         def __init__(self, line):
             self.__line: int = line
-            self.__active = False
+            self.__active_level = None
             self.__max_level = 0
 
         @property
@@ -25,15 +26,16 @@ class IndentationGuides(Feature):
             return self.__max_level
         
         @property
-        def active(self) -> bool:
-            return self.__active
+        def active_level(self) -> int:
+            return self.__active_level
 
-        def set_max_level(self, guide_level):
+        def set_max_level(self, guide_level) -> Self:
             self.__max_level = guide_level
             return self
 
-        def set_active(self, active: bool):
-            self.__active = active
+        def set_active_level(self, level: int) -> Self:
+            self.__active_level = level
+            return self
 
     @property
     def line_width(self) -> int:
@@ -47,7 +49,6 @@ class IndentationGuides(Feature):
 
     def __init__(self, editor):
         super().__init__(editor)
-        self.__cached_cursor_position:tuple = None
         self.editor.on_painted.connect(self._paint_lines)
 
     def __configure_painter(self, painter: QPainter) -> None:
@@ -58,26 +59,22 @@ class IndentationGuides(Feature):
         pen.setWidthF(self.line_width)
         painter.setPen(pen)
 
+
     def get_indentation_cords(self, char) -> List[Guide]:
         
-        def _append_guide(_line_num:int, _indent_count:int) -> None:
-            _guide = (IndentationGuides.Guide(_line_num)
-                .set_max_level(_indent_count))
-            if current_line == _line_num:
-                _guide.set_active(True)
+        def _append_guide(_line_num:int, _indent_count:int, active_level:int=None) -> None:
+            _guide:IndentationGuides.Guide = (IndentationGuides.Guide(_line_num)
+                .set_max_level(_indent_count)
+                .set_active_level(active_level))
             indentations_cords.append(_guide)
 
 
         current_line = TextEngine(self.editor).current_line_nbr
         indentations_cords = []
-        visible_text = []
-
-        for top, block_number, block in self.editor.visible_blocks:
-            visible_text.append(
-                (block.text(), block_number)
-            )
-
-        for text, line_num in visible_text:
+        active_level = None
+        
+        for _, line_num, block in self.editor.visible_blocks:
+            text = block.text()
 
             if char == Character.SPACE:
                 matches = self.SPACES_PATTERN.finditer(text)
@@ -85,13 +82,22 @@ class IndentationGuides(Feature):
                     match_end = match.end()
                     if match_end % self.editor.properties.indent_size == 0:
                         indent_count = match_end // self.editor.properties.indent_size
-                        _append_guide(line_num, indent_count)
+                    
+                        if active_level is None and current_line == line_num:
+                            active_level = match.end()-1
+                    
+                        _append_guide(line_num, indent_count, active_level)
 
             else:
                 matches = self.TABS_PATTERN.finditer(text)
                 for match in matches:
                     indent_count = match.end()
-                    _append_guide(line_num, indent_count)
+                    
+                    if active_level is None and current_line == line_num:
+                        active_level = match.end()-1
+                    
+                    _append_guide(line_num, indent_count, active_level)
+                    
 
         return indentations_cords
 
@@ -104,40 +110,41 @@ class IndentationGuides(Feature):
         return self.get_indentation_cords(Character.TAB)
 
     def _paint_lines(self, event:QPaintEvent) -> None:
-        current_cursor_position = TextEngine(self.editor).cursor_position
-
-        if self.__cached_cursor_position == current_cursor_position:
-            return None
-
-        self.__cached_cursor_position = current_cursor_position
-        
         with QPainter(self.editor.viewport()) as painter:
             font_metrics = QFontMetrics(self.editor.font())
             self.font_width = self.editor.properties.tab_stop_distance
             self.font_height = font_metrics.height()
 
             self.__configure_painter(painter)
+            pen = painter.pen()
+            normal_pen = painter.pen()
+            
 
             if self.editor.properties.indent_with_tabs:
                 for guide in self.indentation_guides_for_tabs:
-                    
-                    if guide.active:
-                        ...
-                        #pen = painter.pen()
-                        #pen.setColor(Qt.GlobalColor.darkBlue)
-                        #painter.setPen(pen)
 
                     for level in range(guide.max_level):
+                        
+                        if guide.active_level == level:
+                            pen.setColor(Qt.GlobalColor.darkBlue)
+                            painter.setPen(pen)
+                        else:
+                            painter.setPen(normal_pen)
+
                         rect = TextEngine(self.editor).cursor_rect(guide.line, level, offset=0)
                         painter.drawLine(rect.topLeft(), rect.bottomLeft())
 
             else:
                 for guide in self.indentation_guides_for_spaces:
-                    
-                    if guide.active:
-                        ...
 
-                    for level in range(guide.max_level):              
+                    for level in range(guide.max_level):
+                        
+                        if guide.active_level == level:
+                            pen.setColor(Qt.GlobalColor.darkBlue)
+                            painter.setPen(pen)
+                        else:
+                            painter.setPen(normal_pen)
+
                         spaces_level = level * self.editor.properties.indent_size          
                         rect = TextEngine(self.editor).cursor_rect(guide.line, spaces_level, offset=0)
                         painter.drawLine(rect.topLeft(), rect.bottomLeft())

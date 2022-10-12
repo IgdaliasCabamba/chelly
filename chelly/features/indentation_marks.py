@@ -22,7 +22,6 @@ class IndentationMarks(Feature):
 
     def __init__(self, editor):
         super().__init__(editor)
-        self.__cached_cursor_position:tuple = None
         self.editor.on_painted.connect(self._paint_indentation)
 
     def _choose_visible_whitespace(self, text:str) -> list:
@@ -45,13 +44,6 @@ class IndentationMarks(Feature):
         return result
     
     def _paint_indentation(self, event:QPaintEvent):    
-        current_cursor_position = TextEngine(self.editor).cursor_position
-
-        if self.__cached_cursor_position == current_cursor_position:
-            return None
-
-        self.__cached_cursor_position = current_cursor_position
-
         selection_range = TextEngine(self.editor).selection_range
         if selection_range is None:
             return None
