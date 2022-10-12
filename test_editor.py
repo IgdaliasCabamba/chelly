@@ -98,6 +98,7 @@ div.setStyleSheet(
 		background: transparent;
 	}
 	ChellyEditor QScrollBar::handle:vertical {
+		min-height: 24px;
 		background:rgba(180, 180, 180, 70);
 	}
 	ChellyEditor QScrollBar::sub-line:vertical, QScrollBar::add-line:vertical {height: 0;}
@@ -157,6 +158,9 @@ breadcrumbs: BreadcrumbNav = editor.panels.append(
 	BreadcrumbNav, Panel.Position.TOP, Panel.WidgetSettings(level = 2))
 
 editor1 = ChellyEditor(div)
+editor1.features.append(EdgeLine)
+editor1.features.append(AutoComplete)
+editor1.features.append(ZoomMode)
 editor1.features.append(CaretLineHighLighter)
 editor1.features.append(IndentationGuides)
 editor1.features.append(AutoIndent)
@@ -213,7 +217,7 @@ editor1.setHorizontalScrollBarPolicy(
 	Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
 
 def add_mark_at_line(sm:MarkerMargin, line: int):
-	if sm == symbol_margin:
+	"""if sm == symbol_margin:
 		sm.add_marker(
 			Marker(
 				line,
@@ -233,7 +237,7 @@ def add_mark_at_line(sm:MarkerMargin, line: int):
                 'active': 'fa5s.balance-scale',
 				'color': 'red'
             }])
-		sm.add_marker(Marker(line, mark_icon))
+		sm.add_marker(Marker(line, mark_icon))"""
 
 
 def rem_mark_at_line(sm:MarkerMargin, line: int):

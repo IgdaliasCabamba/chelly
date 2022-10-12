@@ -47,7 +47,8 @@ class IndentationGuides(Feature):
 
     def __init__(self, editor):
         super().__init__(editor)
-        self.editor.on_painted.connect(self.paint_lines)
+        self.__cached_cursor_position:tuple = None
+        self.editor.on_painted.connect(self._paint_lines)
 
     def __configure_painter(self, painter: QPainter) -> None:
         pen = QPen(self.editor.style.theme.indentation_guide.color)
@@ -102,7 +103,14 @@ class IndentationGuides(Feature):
     def indentation_guides_for_tabs(self) -> List[Guide]:
         return self.get_indentation_cords(Character.TAB)
 
-    def paint_lines(self, event:QPaintEvent) -> None:
+    def _paint_lines(self, event:QPaintEvent) -> None:
+        current_cursor_position = TextEngine(self.editor).cursor_position
+
+        if self.__cached_cursor_position == current_cursor_position:
+            return None
+
+        self.__cached_cursor_position = current_cursor_position
+        
         with QPainter(self.editor.viewport()) as painter:
             font_metrics = QFontMetrics(self.editor.font())
             self.font_width = self.editor.properties.tab_stop_distance

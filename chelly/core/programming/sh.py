@@ -1,4 +1,10 @@
-from typing import Union
+from __future__ import annotations
+
+from typing import TYPE_CHECKING, Type, Union
+
+if TYPE_CHECKING:
+    from ...api import ChellyEditor
+
 from qtpy.QtCore import Qt, Signal
 from qtpy.QtWidgets import QApplication
 from qtpy.QtCore import QRegularExpression
@@ -11,7 +17,7 @@ class Highlighter(QSyntaxHighlighter):
         pattern = QRegularExpression()
         format = QTextCharFormat()
 
-    def __init__(self, editor):
+    def __init__(self, editor:ChellyEditor):
         super().__init__(editor.document())
         self.__editor = editor
         
@@ -37,7 +43,7 @@ class SyntaxHighlighter(Highlighter):
             self._color_scheme = color_scheme
             self.rehighlight()
 
-    def __init__(self, editor, color_scheme:dict=None):
+    def __init__(self, editor:ChellyEditor, color_scheme:dict=None):
         super().__init__(editor)
 
         if color_scheme is None:
@@ -45,13 +51,14 @@ class SyntaxHighlighter(Highlighter):
 
         self._color_scheme = ColorScheme(color_scheme)
 
-    def highlightBlock(self, text):
+    def highlightBlock(self, text) -> None:
         current_block = self.currentBlock()
-        self.block_highlight_started.emit(self, current_block)
+        #if current_block.isVisible() and current_block.isValid():
+        #self.block_highlight_started.emit(self, current_block)
         self.highlight_block(text, current_block)
-        self.block_highlight_finished.emit(self, current_block)
+        #self.block_highlight_finished.emit(self, current_block)
 
-    def highlight_block(self, text, block):
+    def highlight_block(self, text, block) -> None:
         raise NotImplementedError()
 
     def rehighlight(self):

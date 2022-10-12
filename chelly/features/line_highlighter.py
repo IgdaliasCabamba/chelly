@@ -1,6 +1,4 @@
-from qtpy.QtWidgets import QTextEdit
-from qtpy.QtGui import QColor, QTextFormat, QBrush
-from qtpy.QtCore import Qt
+from qtpy.QtGui import QBrush
 from ..core import Feature, TextDecoration, drift_color
 
 class CaretLineHighLighter(Feature):

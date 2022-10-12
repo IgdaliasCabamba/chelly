@@ -63,12 +63,9 @@ class TextDecoration(QtWidgets.QTextEdit.ExtraSelection):
             self.cursor.movePosition(self.cursor.Down, self.cursor.KeepAnchor,
                                      end_line - start_line)
 
-    def contains_cursor(self, cursor):
+    def contains_cursor(self, cursor:QtGui.QTextCursor) -> bool:
         """
         Checks if the textCursor is in the decoration
-        :param cursor: The text cursor to test
-        :type cursor: QtGui.QTextCursor
-        :returns: True if the cursor is over the selection
         """
         start = self.cursor.selectionStart()
         end = self.cursor.selectionEnd()
@@ -76,7 +73,7 @@ class TextDecoration(QtWidgets.QTextEdit.ExtraSelection):
             end -= 1
         return start <= cursor.position() <= end
 
-    def set_as_bold(self):
+    def set_as_bold(self) -> None:
         """ Uses bold text """
         self.format.setFontWeight(QtGui.QFont.Bold)
         return self

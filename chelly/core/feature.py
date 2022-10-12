@@ -11,6 +11,8 @@ class Feature(object):
     
     class Settings:
 
+        # TODO transform this in cache
+
         def __setattr__(self, __name: str, __value: Any) -> None:
             self.__dict__[__name] = __value
         

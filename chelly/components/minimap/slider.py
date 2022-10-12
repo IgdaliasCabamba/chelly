@@ -49,7 +49,6 @@ class SliderArea(QFrame):
             pos = self.mapToParent(event.pos())
             y_pos = pos.y()
             self.scroll_with_cursor(y_pos)
-            #self.minimap.scroll_editor(y_pos)
             self.on_scroll_area.emit(y_pos)
 
     def leaveEvent(self, event):

@@ -12,6 +12,6 @@ class ZoomMode(Feature):
         delta = event.angleDelta().y()
         if int(event.modifiers()) & QtCore.Qt.ControlModifier > 0:
             if delta < self.prev_delta:
-                self.editor.properties.zoom_out()
+                self.editor.commands.zoom_out(delta)
             else:
-                self.editor.properties.zoom_in()
+                self.editor.commands.zoom_in(delta)
