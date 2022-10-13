@@ -35,8 +35,17 @@ class TextEngine:
         return self._editor.textCursor().selectedText()
     
     @property
-    def selection_range(self) -> tuple:
-        ...
+    def selected_lines(self) -> tuple:
+        range_ = self.selection_range
+        first_block = 0
+        last_block = 0
+        if range_ is not None:
+            start, end = range_
+            fb, lb = self.blocks_from_selection_range(start, end)
+            first_block = fb.blockNumber()
+            last_block = lb.blockNumber()
+
+        return first_block, last_block
     
     @property
     def selection_range(self) -> tuple:
@@ -85,6 +94,9 @@ class TextEngine:
     
     def block_from_line_number(self, line_number:int) -> QTextBlock:
         return self._editor.document().findBlockByLineNumber(line_number)
+    
+    def block_from_position(self, position:int) -> QTextBlock:
+        return self._editor.document().findBlock(position)
     
     def position_from_point(self, x_pos:int, y_pos:int) -> int:
         height = self._editor.fontMetrics().height()

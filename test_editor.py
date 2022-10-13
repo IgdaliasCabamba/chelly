@@ -199,8 +199,10 @@ with minimap as m:
 
 #editor1.language.lexer = (JavaScriptLanguage, "github-dark")
 editor1.language.lexer = (PythonLanguageNew, OneDarkStyle)
-PythonLanguageNew(editor1, OneDarkStyle)
+#PythonLanguageNew(editor1, OneDarkStyle)
 minimap1.chelly_editor.language.lexer = (PythonLanguage, DraculaStyle)
+
+#editor1.setDocument(editor.document())
 
 div.addWidget(editor)
 div.addWidget(editor1)
@@ -217,7 +219,7 @@ editor1.setHorizontalScrollBarPolicy(
 	Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
 
 def add_mark_at_line(sm:MarkerMargin, line: int):
-	"""if sm == symbol_margin:
+	if sm == symbol_margin:
 		sm.add_marker(
 			Marker(
 				line,
@@ -237,7 +239,7 @@ def add_mark_at_line(sm:MarkerMargin, line: int):
                 'active': 'fa5s.balance-scale',
 				'color': 'red'
             }])
-		sm.add_marker(Marker(line, mark_icon))"""
+		sm.add_marker(Marker(line, mark_icon))
 
 
 def rem_mark_at_line(sm:MarkerMargin, line: int):
@@ -304,7 +306,7 @@ editor.style.theme.set_margin_highlight(LineNumberMargin, QColor("#72c3f0"))
 #do: editor1.style.theme = editor.style.theme
 
 editor1.style.theme = editor.style.theme
-minimap.chelly_editor.style.theme = editor.style.theme
+#minimap.chelly_editor.style.theme = editor.style.theme
 editor1.style.theme.selection.foreground = QColor("#2b2b2b")
 
 

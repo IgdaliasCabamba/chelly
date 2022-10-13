@@ -32,8 +32,6 @@ class DocumentMap(CodeEditor):
         self.editor.wheelEvent(event)
     
     def _update_contents(self, pos:int=0, charsrem:int=0, charsadd:int=0):
-        #print(f"[{charsadd}] chars added [{charsrem}] removed at: {pos}")
-        
         line_number = TextEngine(self.editor).current_line_nbr
         TextEngine(self).move_cursor_to_line(line_number)
         line_count = TextEngine(self.editor).line_count
@@ -57,9 +55,30 @@ class DocumentMap(CodeEditor):
             self.setTextCursor(cursor)
 
         else:
-            self.document().setPlainText(
-                self.editor.document().toPlainText()
-            )
+            cursor = self.textCursor()
+            cursor.setPosition(pos)
+            
+            if charsrem:
+                for _ in range(charsrem):
+                    cursor.deleteChar()
+
+            if charsadd:
+                calc = pos + charsadd
+                start_block = TextEngine(self.editor).block_from_position(pos)
+                end_block = TextEngine(self.editor).block_from_position(calc)
+                
+                new_blocks = list(TextEngine(self.editor).iterate_blocks_from(start_block, end_block.blockNumber()))
+                for nb in new_blocks:
+                    cursor.beginEditBlock()
+                    cursor.insertText(nb.text())
+
+                    if nb.next().blockNumber() >= 0 and nb != end_block:
+                        cursor.insertText("\n")
+                    
+                    cursor.endEditBlock()
+            
+            self.setTextCursor(cursor)
+
             TextEngine(self).move_cursor_to_line(
                 TextEngine(self.editor).current_line_nbr
             )
