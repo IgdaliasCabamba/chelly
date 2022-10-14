@@ -18,7 +18,7 @@ class MiniMapEditor(DocumentMap):
         self.bind()
     
     def bind(self):
-        self.editor.document().contentsChange.connect(self._update_contents)
+        #self.editor.document().contentsChange.connect(self._update_contents)
         self.editor.on_painted.connect(self.update_ui)
         self.slider.on_scroll_area.connect(self.scroll_editor)
         self.editor.verticalScrollBar().rangeChanged.connect(self._update_scrollbar_cache)

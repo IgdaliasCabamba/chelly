@@ -1,10 +1,14 @@
-from typing import Type
+from typing import Any, Tuple, Type
 from typing_extensions import Self
 import weakref
 from qtpy.QtCore import QTimer
 
 class ChellyEvent:
-    def __init__(self, *emit_types:Type) -> None:
+    
+    class TypeError(Exception):
+        ...
+
+    def __init__(self, *emit_types:Tuple[Type]) -> None:
         self.__emit_types = emit_types
         self.__event_handlers = []
     
@@ -18,13 +22,14 @@ class ChellyEvent:
             self.__event_handlers.remove(callable_object)
         return self
     
-    def emit(self, callable_object:object) -> Self:
-        for _type in self.__emit_types:
-            if isinstance(callable_object, _type):
-                for handler in self.__event_handlers:
-                    handler(callable_object)
-                break
+    def emit(self, *callable_objects:Tuple[Any]) -> Self:
+        for i in range(len(callable_objects)):
+            if not isinstance(callable_objects[i], self.__emit_types[i]):
+                raise ChellyEvent.TypeError(f"Expected: {self.__emit_types[i]}, Got: {type(callable_objects[i])}")
 
+        for handler in self.__event_handlers:
+            handler(*callable_objects)
+        
         return self
 
 class DelayJobRunner:

@@ -7,7 +7,7 @@ from qtpy.QtWidgets import QPlainTextEdit, QLabel
 from ..core import (ChellyDocument, ChellyDocumentExceptions,
                     FeaturesExceptions, LexerExceptions, PanelsExceptions,
                     Properties, PropertiesExceptions, StyleExceptions,
-                    TextExceptions, BasicCommands)
+                    TextExceptions, BasicCommands, TextEngine)
 from ..managers import (ChellyStyleManager, FeaturesManager, LanguagesManager,
                         PanelsManager, TextDecorationsManager)
 
@@ -75,14 +75,15 @@ class ChellyEditor(QPlainTextEdit):
 
     @chelly_document.setter
     def chelly_document(self, new_document: ChellyDocument) -> ChellyDocument:
+        old_document = self._chelly_document
         if new_document is ChellyDocument:
-            self._chelly_document = new_document()
+            self._chelly_document = new_document(self)
         elif isinstance(new_document, ChellyDocument):
             self._chelly_document = new_document
         else:
             raise ChellyDocumentExceptions.ChellyDocumentValueError(
                 f"invalid type: {new_document} expected: {ChellyDocument}")
-        self._chelly_document.add_editor(self)
+        self.__setup_chelly_document(old_document, self._chelly_document)
 
     @property
     def language(self) -> LanguagesManager:
@@ -242,3 +243,64 @@ class ChellyEditor(QPlainTextEdit):
         self.on_text_setted.emit(text)
         self._update_visible_blocks()
         return super().setPlainText(text)
+    
+    def __setup_chelly_document(self, old_chelly_document:ChellyDocument, new_chelly_document:ChellyDocument):
+        new_chelly_document.on_contents_changed.connect(self._update_contents)
+        old_chelly_document.on_contents_changed.disconnect(self._update_contents)
+    
+    def _update_contents(self, editor:QPlainTextEdit, pos:int, charsrem:int, charsadd:int):
+        if editor is self or editor == self:
+            return None
+
+        line_number = TextEngine(editor).current_line_nbr
+        TextEngine(self).move_cursor_to_line(line_number)
+        line_count = TextEngine(editor).line_count
+
+        if self._amount_of_blocks == line_count:
+            text = TextEngine(editor).text_at_line(line_number)
+            TextEngine(self).set_text_at_line(
+                self.textCursor().blockNumber(), text)
+            TextEngine(self).move_cursor_to_line(line_number)
+        
+        elif self._amount_of_blocks == line_count-1:
+            cursor = self.textCursor()
+            cursor.setPosition(pos)
+            cursor.insertText("\n")
+            self.setTextCursor(cursor)
+        
+        elif self._amount_of_blocks == line_count+1:
+            TextEngine(self).move_cursor_to_line(line_number+1)
+            cursor = self.textCursor()
+            cursor.deletePreviousChar()
+            self.setTextCursor(cursor)
+
+        else:
+            cursor = self.textCursor()
+            cursor.setPosition(pos)
+            
+            if charsrem:
+                for _ in range(charsrem):
+                    cursor.deleteChar()
+
+            if charsadd:
+                calc = pos + charsadd
+                start_block = TextEngine(editor).block_from_position(pos)
+                end_block = TextEngine(editor).block_from_position(calc)
+                
+                new_blocks = list(TextEngine(editor).iterate_blocks_from(start_block, end_block.blockNumber()))
+                for nb in new_blocks:
+                    cursor.beginEditBlock()
+                    cursor.insertText(nb.text())
+
+                    if nb.next().blockNumber() >= 0 and nb != end_block:
+                        cursor.insertText("\n")
+                    
+                    cursor.endEditBlock()
+            
+            self.setTextCursor(cursor)
+
+            TextEngine(self).move_cursor_to_line(
+                TextEngine(editor).current_line_nbr
+            )
+
+        self._amount_of_blocks = TextEngine(editor).line_count 
