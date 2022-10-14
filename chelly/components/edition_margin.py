@@ -25,26 +25,30 @@ class EditionMargin(Panel):
         return space
                     
     def paintEvent(self, event) -> None:
-        # TODO: Optimize this
         super().paintEvent(event)
-        cached_lines_text_length = len(self.__cached_lines_text)
-        first_v_block = self.editor.firstVisibleBlock().blockNumber()
         
-        lines_text = []
         if self.editor.blockCount() <= 1:
             return None
-        
-        block = self.editor.document().firstBlock()
 
-        while block.isValid():
-            lines_text.append(block.text())
-            block = block.next()
-            #if block.blockNumber() >= cached_lines_text_length:
-                #break
+        cached_lines_text_length = len(self.__cached_lines_text)
+        if cached_lines_text_length >= 1000:
+            return None
+            
+        first_v_block = self.editor.firstVisibleBlock().blockNumber()
+        lines_text = []
+        
+        first_block = self.editor.document().firstBlock()
         
         if not self.__cached_lines_text:
+            for text_block in list(TextEngine(self.editor).iterate_blocks_from(first_block)):
+                lines_text.append(text_block.text())
+
             self.__cached_lines_text = lines_text.copy()
             return None
+        
+        else:
+            for text_block in list(TextEngine(self.editor).iterate_blocks_from(first_block, cached_lines_text_length)):
+                lines_text.append(text_block.text())
         
         pen = QPen()
         pen.setCosmetic(True)
