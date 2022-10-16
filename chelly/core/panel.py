@@ -12,27 +12,18 @@ import pprint
 
 class Panel(QFrame):
 
-    class Settings:
-        __settings = dict()
-
-        def __setattr__(self, __name: str, __value: Any) -> None:
-            self.__settings[__name] = __value
-        
-        def __getattr__(self, __name: str) -> Any:
-            return self.__settings.get(__name, False)
-        
-        def __delattr__(self, __name: str) -> None:
-            self.__settings.pop(__name, None)
-        
-        def __repr__(self) -> str:
-            return pprint.pformat(self.__settings)
-        
-        def __enter__(self) -> dict:
-            return self.__settings
-        
-        def __exit__(self, *args, **kvargs) -> Self:
-            return self
+    @dataclass(frozen=True)
+    class Defaults:
+        ...
     
+    class _Properties:
+        def __init__(self, panel_instance:Panel) -> None:
+            self._panel_instance = panel_instance
+        
+        @property
+        def panel(self):
+            return self._panel_instance
+
     @dataclass(frozen=True)
     class WidgetSettings:
         level:int = 0
@@ -65,11 +56,11 @@ class Panel(QFrame):
         self.__editor = editor
         self.editor.panels.refresh()
         self.setAutoFillBackground(False)
-        self.__settings = Panel.Settings()
+        self.__properties = Panel._Properties(self)
     
     @property
-    def settings(self) -> Settings:
-        return self.__settings
+    def properties(self) -> _Properties:
+        return self.__properties
 
     @property
     def enabled(self) -> bool:

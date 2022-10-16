@@ -1,48 +1,40 @@
 from __future__ import annotations
 
 from typing import TYPE_CHECKING, Type, Union, Any
-import pprint
-from typing_extensions import Self
+from dataclasses import dataclass
+from .chelly_cache import ChellyCache
 
 if TYPE_CHECKING:
     from ..api import ChellyEditor
 
 class Feature(object):
     
-    class Settings:
-
-        # TODO transform this in cache
-
-        def __setattr__(self, __name: str, __value: Any) -> None:
-            self.__dict__[__name] = __value
-        
-        def __getattr__(self, __name: str) -> Any:
-            self.__dict__.get(__name, False)
-        
-        def __delattr__(self, __name: str) -> None:
-            self.__dict__.pop(__name, None)
-        
-        def __repr__(self) -> str:
-            return pprint.pformat(self.__dict__)
-        
-        def __enter__(self) -> dict:
-            return self.__dict__
-        
-        def __exit__(self, *args, **kvargs) -> Self:
-            return self
+    @dataclass(frozen=True)
+    class Defaults:
+        ...
+    
+    class _Properties:
+        def __init__(self, feature_instance:Feature) -> None:
+            self._feature_instance = feature_instance
         
         @property
-        def as_dict(self):
-            return self.__dict__
-
+        def feature(self):
+            return self._feature_instance
+            
+    
     def __init__(self, editor:ChellyEditor):
         self.__editor:object = editor
         self.__enabled = True
-        self.__settings = Feature.Settings()
+        self.__cache = ChellyCache()
+        self.__properties = Feature._Properties(self)
     
     @property
-    def settings(self) -> Settings:
-        return self.__settings
+    def properties(self) -> _Properties:
+        return self.__properties
+    
+    @property
+    def cache(self) -> ChellyCache:
+        return self.__cache
 
     @property
     def enabled(self) -> bool:

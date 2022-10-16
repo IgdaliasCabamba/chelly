@@ -1,16 +1,61 @@
+from dataclasses import dataclass
 from qtpy.QtGui import QFont, QPainter, QPen, QColor
 from qtpy.QtCore import Qt, QSize
 from ..core import Panel, FontEngine, TextEngine
 import difflib
 
 class EditionMargin(Panel):
+    
+    @dataclass(frozen=True)
+    class Defaults:
+        SHOW_TEXT_HELP = False
+        MAX_LINES_COUNT = 1000
+
+    class Properties(Panel._Properties):
+
+        def __init__(self, panel:Panel):
+            super().__init__(panel)
+            self.__show_text_help = EditionMargin.Defaults.SHOW_TEXT_HELP
+            self.__max_lines_count = EditionMargin.Defaults.MAX_LINES_COUNT
+        
+        @property
+        def show_text_help(self) -> bool:
+            return self.__show_text_help
+        
+        @show_text_help.setter
+        def show_text_help(self, show:bool) -> None:
+            self.__show_text_help = show
+        
+        @property
+        def max_lines_count(self) -> int:
+            return self.__max_lines_count
+        
+        @max_lines_count.setter
+        def max_lines_count(self, limit:int) -> None:
+            self.__max_lines_count = limit
+    
+    @property
+    def properties(self) -> Properties:
+        return self.__properties
+    
+    @properties.setter
+    def properties(self, new_properties:Properties) -> Properties:
+        if new_properties is EditionMargin.Properties:
+            self.__properties = new_properties(self)
+
+        elif isinstance(new_properties, EditionMargin.Properties):
+            self.__properties = new_properties
+        
 
     def __init__(self, editor) -> None:
         super().__init__(editor)
         self.scrollable = True
         self.number_font = QFont()
+        self.__current_diffs = []
         self.__cached_lines_text = []
+        self.__cached_cursor_position:tuple = None
         self.differ = difflib.Differ()
+        self.__properties = EditionMargin.Properties(self)
     
     def sizeHint(self):
         """
@@ -19,7 +64,7 @@ class EditionMargin(Panel):
         """
         return QSize(self.lines_area_width, 0)
 
-    @property
+    @property                                                                                                                                                                                                                       
     def lines_area_width(self) -> int:
         space = (FontEngine(self.editor.font()).real_horizontal_advance('|', True))
         return space
@@ -31,7 +76,7 @@ class EditionMargin(Panel):
             return None
 
         cached_lines_text_length = len(self.__cached_lines_text)
-        if cached_lines_text_length >= 1000:
+        if cached_lines_text_length >= self.properties.max_lines_count:
             return None
             
         first_v_block = self.editor.firstVisibleBlock().blockNumber()
@@ -50,6 +95,15 @@ class EditionMargin(Panel):
             for text_block in list(TextEngine(self.editor).iterate_blocks_from(first_block, cached_lines_text_length)):
                 lines_text.append(text_block.text())
         
+        current_cursor_position = TextEngine(self.editor).cursor_position
+        
+        if self.__cached_cursor_position != current_cursor_position:
+            diffs = list(self.differ.compare(self.__cached_lines_text, lines_text))
+        else:
+            diffs = self.__current_diffs
+
+        self.__cached_cursor_position = current_cursor_position
+        
         pen = QPen()
         pen.setCosmetic(True)
         pen.setJoinStyle(Qt.RoundJoin)
@@ -58,31 +112,31 @@ class EditionMargin(Panel):
         height = self.editor.fontMetrics().height()
             
         if first_v_block <= cached_lines_text_length:
-    
-            diffs = list(self.differ.compare(self.__cached_lines_text, lines_text))
+            
+            self.__current_diffs = diffs
             
             with QPainter(self) as painter:
 
-                for idx, diff in enumerate(diffs):
+                for idx, diff in enumerate(self.__current_diffs):
                     if diff.startswith(("-", "+", "?")):
                         top = TextEngine(self.editor).point_y_from_line_number(idx)
 
                         if diff.startswith("-"):
                             pen.setBrush(Qt.GlobalColor.darkRed)
                             painter.setPen(pen)
-                            if self.settings.show_text_help:
+                            if self.properties.show_text_help:
                                 painter.drawText(6, top+height//1.5, "!")
 
                         elif diff.startswith("+"):
                             pen.setBrush(Qt.GlobalColor.darkGreen)
                             painter.setPen(pen)
-                            if self.settings.show_text_help:
+                            if self.properties.show_text_help:
                                 painter.drawText(6, top+height//1.5, "+")
 
                         elif diff.startswith("?"):
                             pen.setBrush(Qt.GlobalColor.darkCyan)
                             painter.setPen(pen)
-                            if self.settings.show_text_help:
+                            if self.properties.show_text_help:
                                 painter.drawText(6, top+height//1.5, "?")
                         
                         painter.drawLine(point_x, TextEngine(self.editor).point_y_from_line_number(idx), point_x, TextEngine(self.editor).point_y_from_line_number(idx) + height)
@@ -90,7 +144,7 @@ class EditionMargin(Panel):
             with QPainter(self) as painter:
                 pen.setBrush(Qt.GlobalColor.darkGreen)
                 painter.setPen(pen)
-                if self.settings.show_text_help:
+                if self.properties.show_text_help:
                     painter.drawText(6, top+height//1.5, "+")
                 
                 for _top, block_number, _block in self.editor.visible_blocks:

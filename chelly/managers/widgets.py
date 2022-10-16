@@ -65,14 +65,14 @@ class BasePanelManager(Manager):
 
         return None
 
-    def panel_settings(self, widget: Union[Panel, str]) -> Panel.Settings:
+    def panel_settings(self, widget: Union[Panel, str]) -> Panel.WidgetSettings:
         if not isinstance(widget, str):
             widget = widget.__class__.__name__
 
         if widget in self._settings.keys():
             return self._settings[widget]
 
-        return Panel.Settings()
+        return Panel.WidgetSettings()
     
     def _valid_panels_at(self, zone: Panel.Position, reverse: bool = False) -> list:
         panels = self.panels_located_at_zone(zone)
@@ -285,7 +285,7 @@ class PanelsManager(PanelsSizeHelpers):
             widget = panel
         return widget
 
-    def append(self, panel: Panel, zone=Panel.Position.LEFT, settings = Panel.Settings()) -> Panel:
+    def append(self, panel: Panel, zone=Panel.Position.LEFT, settings = Panel.WidgetSettings()) -> Panel:
         widget = self._call_panel(panel)
 
         if widget is not None:

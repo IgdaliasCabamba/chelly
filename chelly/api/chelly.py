@@ -33,7 +33,6 @@ class ChellyEditor(QPlainTextEdit):
 
     def __init__(self, parent):
         super().__init__(parent)
-        self.__is_view_only = False
         
         self._panels = PanelsManager(self)
         self._features = FeaturesManager(self)
@@ -59,15 +58,6 @@ class ChellyEditor(QPlainTextEdit):
     def update(self):
         self.update_state()
         return super().update()
-    
-    @property
-    def view_only(self) -> bool:
-        return self.__is_view_only
-    
-    @view_only.setter
-    def view_only(self, value:bool) -> None:
-        if isinstance(value, bool):
-            self.__is_view_only = value
 
     @property
     def chelly_document(self) -> ChellyDocument:

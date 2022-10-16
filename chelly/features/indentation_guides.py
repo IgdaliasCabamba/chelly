@@ -4,6 +4,7 @@ from qtpy.QtGui import QPainter, QColor, QFontMetrics, QPen, QPaintEvent
 from qtpy.QtCore import Qt
 from ..core import Feature, TextEngine, Character
 from typing import List
+from dataclasses import dataclass
 import re
 
 class IndentationGuides(Feature):
@@ -37,18 +38,38 @@ class IndentationGuides(Feature):
             self.__active_level = level
             return self
 
-    @property
-    def line_width(self) -> int:
-        if self.settings.line_width:
-            return self.settings.line_width
-        return 1
+    @dataclass(frozen=True)
+    class Defaults:
+        LINE_WIDTH = 1
 
-    @line_width.setter
-    def line_width(self, value: float) -> None:
-        self.settings.line_width = value
+    class Properties(Feature._Properties):
+        def __init__(self, feature:Feature) -> None:
+            super().__init__(feature)
+            self.__line_width = IndentationGuides.Defaults.LINE_WIDTH
+
+        @property
+        def line_width(self) -> float:
+            return self.__line_width
+
+        @line_width.setter
+        def line_width(self, value: float) -> None:
+            self.__line_width = value
+    
+    @property
+    def properties(self) -> Properties:
+        return self.__properties
+    
+    @properties.setter
+    def properties(self, new_properties:Properties) -> Properties:
+        if new_properties is IndentationGuides.Properties:
+            self.__properties = new_properties(self)
+
+        elif isinstance(new_properties, IndentationGuides.Properties):
+            self.__properties = new_properties
 
     def __init__(self, editor):
         super().__init__(editor)
+        self.__properties = IndentationGuides.Properties(self)
         self.editor.on_painted.connect(self._paint_lines)
 
     def __configure_painter(self, painter: QPainter) -> None:
@@ -56,7 +77,7 @@ class IndentationGuides(Feature):
         pen.setCosmetic(True)
         pen.setJoinStyle(Qt.RoundJoin)
         pen.setCapStyle(Qt.RoundCap)
-        pen.setWidthF(self.line_width)
+        pen.setWidthF(self.properties.line_width)
         painter.setPen(pen)
 
 

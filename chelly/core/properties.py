@@ -29,6 +29,8 @@ class Properties(object):
         self._font_size: int = 0 #self._editor.font().pointSize()
         self._font_family: str = Property.Default.FONT
         self._zoom:int = 0
+        self._view_only = False
+    
     
     @property
     def lines_text(self) -> list:
@@ -49,6 +51,15 @@ class Properties(object):
     @text.setter
     def text(self, text:Any) -> None:
         self._editor.setPlainText(str(text))
+    
+    @property
+    def view_only(self) -> bool:
+        return self._view_only
+    
+    @view_only.setter
+    def view_only(self, value:bool) -> None:
+        if isinstance(value, bool):
+            self._view_only = value
     
     @property
     def indent_type(self) -> int:

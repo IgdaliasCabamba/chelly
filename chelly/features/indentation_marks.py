@@ -3,22 +3,13 @@ from qtpy.QtGui import QPainter, QColor, QFontMetrics, QPen, QPaintEvent, QBrush
 from qtpy.QtCore import Qt, QRect
 from ..core import Feature, TextEngine, Character
 from typing import List
+from dataclasses import dataclass
 import re
 
 class IndentationMarks(Feature):
 
     SPACES_PATTERN = re.compile(r'\A[^\S\n\t]+')
     TABS_PATTERN = re.compile(r'\A[\t]+')
-
-    @property
-    def line_width(self) -> int:
-        if self.settings.line_width:
-            return self.settings.line_width
-        return 1
-
-    @line_width.setter
-    def line_width(self, value: float) -> None:
-        self.settings.line_width = value
 
     def __init__(self, editor):
         super().__init__(editor)

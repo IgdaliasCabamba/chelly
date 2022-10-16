@@ -1,6 +1,6 @@
 from typing import List
 from typing_extensions import Self
-from .utils import TextEngine, Character, ChellyEvent
+from ..utils import TextEngine, Character, ChellyEvent
 from qtpy.QtWidgets import QPlainTextEdit
 from qtpy.QtCore import Signal, QObject
 
