@@ -44,7 +44,6 @@ class ChellyEditor(QPlainTextEdit):
         self.__commands = BasicCommands(self)
 
         self._visible_blocks = list()
-        self._amount_of_blocks = TextEngine(self).line_count
         self.__build()
 
     def __build(self):
@@ -240,31 +239,29 @@ class ChellyEditor(QPlainTextEdit):
         return super().setPlainText(text)
     
     def __setup_chelly_document(self, old_chelly_document:ChellyDocument, new_chelly_document:ChellyDocument):
+        self.setPlainText(new_chelly_document.editor.toPlainText())
+        self.__cached_block_count = TextEngine(new_chelly_document.editor).line_count
         old_chelly_document.on_contents_changed.disconnect(self._update_contents)
         new_chelly_document.on_contents_changed.connect(self._update_contents)
     
     def _update_contents(self, editor:QPlainTextEdit, pos:int, charsrem:int, charsadd:int):
-        if editor is self:
-            print("HOW")
-            return None
-
         line_number = TextEngine(editor).current_line_nbr
         TextEngine(self).move_cursor_to_line(line_number)
         line_count = TextEngine(editor).line_count
 
-        if self._amount_of_blocks == line_count:
+        if self.__cached_block_count == line_count:
             text = TextEngine(editor).text_at_line(line_number)
             TextEngine(self).set_text_at_line(
                 self.textCursor().blockNumber(), text)
             TextEngine(self).move_cursor_to_line(line_number)
         
-        elif self._amount_of_blocks == line_count-1:
+        elif self.__cached_block_count == line_count-1:
             cursor = self.textCursor()
             cursor.setPosition(pos)
             cursor.insertText("\n")
             self.setTextCursor(cursor)
         
-        elif self._amount_of_blocks == line_count+1:
+        elif self.__cached_block_count == line_count+1:
             TextEngine(self).move_cursor_to_line(line_number+1)
             cursor = self.textCursor()
             cursor.deletePreviousChar()
@@ -299,4 +296,4 @@ class ChellyEditor(QPlainTextEdit):
                 TextEngine(editor).current_line_nbr
             )
 
-        self._amount_of_blocks = TextEngine(editor).line_count 
+        self.__cached_block_count = TextEngine(editor).line_count 

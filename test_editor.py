@@ -343,7 +343,6 @@ def test_load_file(benchmark):
 	editor.properties.text = content
 	assert editor.properties.text == content
 
-
 if __name__ == "__main__":
 	def fake_benchmark(any):
 		return any()
