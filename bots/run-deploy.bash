@@ -21,8 +21,8 @@ else
     git add .
     git commit -m "$1"
     git push
-    key=$(<~/Ideas/.private/gh-mkdocs-key)
-    export GH_TOKEN=$(echo "$key")
+    #key=$(<~/Ideas/.private/gh-mkdocs-key)
+    #export GH_TOKEN=$(echo "$key")
     #mike deploy --push --update-aliases "$2" latest
     mike deploy --push "$2"
 
