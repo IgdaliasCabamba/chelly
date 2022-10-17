@@ -44,6 +44,7 @@ class ChellyEditor(QPlainTextEdit):
         self.__commands = BasicCommands(self)
 
         self._visible_blocks = list()
+        self._amount_of_blocks = TextEngine(self).line_count
         self.__build()
 
     def __build(self):
@@ -66,6 +67,10 @@ class ChellyEditor(QPlainTextEdit):
     @chelly_document.setter
     def chelly_document(self, new_document: ChellyDocument) -> ChellyDocument:
         old_document = self._chelly_document
+        
+        if old_document is new_document:
+            return None
+
         if new_document is ChellyDocument:
             self._chelly_document = new_document(self)
         elif isinstance(new_document, ChellyDocument):
@@ -235,11 +240,12 @@ class ChellyEditor(QPlainTextEdit):
         return super().setPlainText(text)
     
     def __setup_chelly_document(self, old_chelly_document:ChellyDocument, new_chelly_document:ChellyDocument):
-        new_chelly_document.on_contents_changed.connect(self._update_contents)
         old_chelly_document.on_contents_changed.disconnect(self._update_contents)
+        new_chelly_document.on_contents_changed.connect(self._update_contents)
     
     def _update_contents(self, editor:QPlainTextEdit, pos:int, charsrem:int, charsadd:int):
-        if editor is self or editor == self:
+        if editor is self:
+            print("HOW")
             return None
 
         line_number = TextEngine(editor).current_line_nbr

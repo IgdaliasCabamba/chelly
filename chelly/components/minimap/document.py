@@ -9,7 +9,6 @@ class DocumentMap(CodeEditor):
     def __init__(self, parent):
         super().__init__(parent)
         self.editor:CodeEditor = parent.editor
-        self._amount_of_blocks = TextEngine(self.editor).line_count
         self.chelly_document = self.editor.chelly_document
         
         self.zoomOut(8)
@@ -24,10 +23,11 @@ class DocumentMap(CodeEditor):
             Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
     
     def mouseMoveEvent(self, event) -> None:
-        pass
+        return None
 
     def mouseReleaseEvent(self, event) -> None:
-        pass
+        return None
 
     def wheelEvent(self, event) -> None:
-        self.editor.wheelEvent(event)
+        return self.editor.wheelEvent(event)
+        

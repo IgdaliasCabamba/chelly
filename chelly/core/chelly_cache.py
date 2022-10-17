@@ -1,39 +1,30 @@
 import pprint
-from typing import Any
+from types import LambdaType
+from typing import Any, Callable
 from typing_extensions import Self
 
 class ChellyCache:
-
-    class NoneAttr:
-        ...
-
-    # TODO transform this in cache
-
-    def __setattr__(self, __name: str, __value: Any) -> None:
-        self.__dict__[__name] = __value
+    def __init__(self, inital_value:Any, default:Any=None, update_source:LambdaType=None) -> None:
+        self.value = inital_value
+        self.default = default
+        self.update_source = update_source
     
-    def __getattr__(self, __name: str) -> Any:
-        attr = self.__dict__.get(__name, ChellyCache.NoneAttr)
-        return None
-    
-    def __delattr__(self, __name: str) -> None:
-        self.__dict__.pop(__name, None)
+    @property
+    def changed(self) -> bool:
+        updated_value = self.update_source()
+
+        if self.value == updated_value:
+            return False
+
+        self.value = updated_value
+        
+        return True
     
     def __repr__(self) -> str:
-        return pprint.pformat(self.__dict__)
+        return pprint.pformat(self.value)
     
     def __enter__(self) -> dict:
-        return self.__dict__
+        return self.value
     
     def __exit__(self, *args, **kvargs) -> Self:
         return self
-    
-    def clear_all(self):
-        print(self.__dict__)
-    
-    def has(self, __name:str) -> bool:
-        return bool(__name in self.__dict__.keys())
-    
-    @property
-    def as_dict(self):
-        return self.__dict__

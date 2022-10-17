@@ -1,7 +1,9 @@
 from typing import Any, Union
-from ..core import TextEngine, Feature, FontEngine, Character
+
+from ..core import TextEngine, Feature, FontEngine, Character, ChellyCache
 from qtpy import QtGui
 from dataclasses import dataclass
+
 
 class EdgeLine(Feature):
 
@@ -56,19 +58,15 @@ class EdgeLine(Feature):
     def __init__(self, editor):
         super().__init__(editor)
         self.__properties = EdgeLine.Properties(self)
-        self.__cached_cursor_position:tuple = None
+        self.__cached_cursor_position = ChellyCache(None, None, lambda: TextEngine(self.editor).cursor_position)
         
         self.editor.on_painted.connect(self._paint_margin)
         self.editor.repaint()
 
-    def _paint_margin(self, event:QtGui.QPaintEvent):
-        current_cursor_position = TextEngine(self.editor).cursor_position
-
-        if self.__cached_cursor_position == current_cursor_position:
+    def _paint_margin(self, event:QtGui.QPaintEvent) -> None:
+        if not self.__cached_cursor_position.changed:
             return None
-
-        self.__cached_cursor_position = current_cursor_position
-
+            
         offset = self.editor.contentOffset().x() + self.editor.document().documentMargin()
         x80 = FontEngine(self.editor.font()).real_horizontal_advance(
             Character.LARGEST.value,

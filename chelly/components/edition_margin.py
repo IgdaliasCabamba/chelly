@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from qtpy.QtGui import QFont, QPainter, QPen, QColor
 from qtpy.QtCore import Qt, QSize
-from ..core import Panel, FontEngine, TextEngine
+from ..core import Panel, FontEngine, TextEngine, ChellyCache
 import difflib
 
 class EditionMargin(Panel):
@@ -53,7 +53,7 @@ class EditionMargin(Panel):
         self.number_font = QFont()
         self.__current_diffs = []
         self.__cached_lines_text = []
-        self.__cached_cursor_position:tuple = None
+        self.__cached_cursor_position = ChellyCache(None, None, lambda: TextEngine(self.editor).cursor_position)
         self.differ = difflib.Differ()
         self.__properties = EditionMargin.Properties(self)
     
@@ -64,7 +64,7 @@ class EditionMargin(Panel):
         """
         return QSize(self.lines_area_width, 0)
 
-    @property                                                                                                                                                                                                                       
+    @property
     def lines_area_width(self) -> int:
         space = (FontEngine(self.editor.font()).real_horizontal_advance('|', True))
         return space
@@ -85,6 +85,9 @@ class EditionMargin(Panel):
         first_block = self.editor.document().firstBlock()
         
         if not self.__cached_lines_text:
+            if self.editor.blockCount() > self.properties.max_lines_count:
+                return None
+                
             for text_block in list(TextEngine(self.editor).iterate_blocks_from(first_block)):
                 lines_text.append(text_block.text())
 
@@ -94,15 +97,11 @@ class EditionMargin(Panel):
         else:
             for text_block in list(TextEngine(self.editor).iterate_blocks_from(first_block, cached_lines_text_length)):
                 lines_text.append(text_block.text())
-        
-        current_cursor_position = TextEngine(self.editor).cursor_position
-        
-        if self.__cached_cursor_position != current_cursor_position:
+    
+        if self.__cached_cursor_position.changed:
             diffs = list(self.differ.compare(self.__cached_lines_text, lines_text))
         else:
             diffs = self.__current_diffs
-
-        self.__cached_cursor_position = current_cursor_position
         
         pen = QPen()
         pen.setCosmetic(True)
@@ -142,7 +141,7 @@ class EditionMargin(Panel):
                         painter.drawLine(point_x, TextEngine(self.editor).point_y_from_line_number(idx), point_x, TextEngine(self.editor).point_y_from_line_number(idx) + height)
         else:
             with QPainter(self) as painter:
-                pen.setBrush(Qt.GlobalColor.darkGreen)
+                pen.setBrush(Qt.GlobalColor.darkMagenta)
                 painter.setPen(pen)
                 if self.properties.show_text_help:
                     painter.drawText(6, top+height//1.5, "+")

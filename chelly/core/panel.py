@@ -13,10 +13,6 @@ import pprint
 
 class Panel(QFrame):
 
-    @dataclass(frozen=True)
-    class Defaults:
-        ...
-
     class _Properties(PanelProperties):
         ...
     
