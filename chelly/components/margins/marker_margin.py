@@ -104,6 +104,7 @@ class MarkerMargin(Panel):
         self._job_runner = DelayJobRunner(delay=100)
         self.setMouseTracking(True)
         self._to_remove = []
+        self.__styles = MarkerMargin.Styles(self)
 
     @property
     def markers(self) -> list:

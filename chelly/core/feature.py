@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any, List
 from .chelly_cache import ChellyCache
-from .__base__ import BaseElement
+from .base import BaseElement
 
 if TYPE_CHECKING:
     from ..api import ChellyEditor
@@ -46,3 +46,19 @@ class Feature(object):
     @property
     def editor(self) -> ChellyEditor:
         return self.__editor
+    
+    @property
+    def shared_reference(self) -> dict:
+        return {
+            "styles":self.styles,
+            "properties":self.properties
+        }
+
+    @shared_reference.setter
+    def shared_reference(self, panel_data:dict) -> None:
+        for key, value in panel_data.items():
+            if hasattr(self, key):
+                try:
+                    setattr(self, key, value)
+                except AttributeError:
+                    pass

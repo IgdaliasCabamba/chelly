@@ -1,4 +1,4 @@
-from .__base__ import BaseElement
+from .base import BaseElement
 from .exceptions import *
 from .chelly_cache import ChellyCache
 from .feature import Feature

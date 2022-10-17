@@ -1,4 +1,4 @@
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional, Union
 
 class BaseElement:
     """The lowest level for editor elements"""

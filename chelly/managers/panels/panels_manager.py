@@ -1,4 +1,4 @@
-from typing import Union
+from typing import Union, List
 from typing_extensions import Self
 from ...core import Panel, TextEngine
 from qtpy.QtCore import QRect
@@ -58,7 +58,7 @@ class PanelsManager(PanelsSizeHelpers):
         
         return self
 
-    def get(self, widget):
+    def get(self, widget) -> Panel:
         """
         Gets a specific panel instance.
         """
@@ -112,3 +112,16 @@ class PanelsManager(PanelsSizeHelpers):
 
         self._margin_sizes = (top, left, right, bottom)
         self.editor.setViewportMargins(left, top, right, bottom)  # pattern
+    
+    @property
+    def as_list(self) -> List[Panel]:
+        return list(self)
+    
+    def __shared_reference(self, other_manager:Self) -> Self:
+        for from_feature in other_manager.as_list:
+            to_feature = self.get(from_feature.__class__)
+            if to_feature is not None:
+                to_feature.shared_reference = from_feature.shared_reference
+    
+    shared_reference = property(fset=__shared_reference)
+    del __shared_reference

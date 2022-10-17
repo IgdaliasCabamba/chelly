@@ -8,7 +8,7 @@ if TYPE_CHECKING:
 
 from dataclasses import dataclass
 from qtpy.QtWidgets import QFrame
-from .__base__ import BaseElement
+from .base import BaseElement
 
 class Panel(QFrame):
     
@@ -105,3 +105,19 @@ class Panel(QFrame):
     @property
     def fixed_size_hint(self):
         return 0
+    
+    @property
+    def shared_reference(self) -> dict:
+        return {
+            "styles":self.styles,
+            "properties":self.properties
+        }
+
+    @shared_reference.setter
+    def shared_reference(self, panel_data:dict = None) -> None:
+        for key, value in panel_data.items():
+            if hasattr(self, key):
+                try:
+                    setattr(self, key, value)
+                except AttributeError:
+                    pass
