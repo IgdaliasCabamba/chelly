@@ -9,7 +9,8 @@ class DocumentMap(CodeEditor):
     def __init__(self, parent):
         super().__init__(parent)
         self.editor:CodeEditor = parent.editor
-        self.chelly_document = self.editor.chelly_document
+        self.update_document()
+        self.editor.on_chelly_document_changed.connect(self.update_document)
         
         self.zoomOut(8)
         self.setTextInteractionFlags(Qt.NoTextInteraction)
@@ -21,6 +22,9 @@ class DocumentMap(CodeEditor):
             Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
         self.setHorizontalScrollBarPolicy(
             Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+    
+    def update_document(self):
+        self.chelly_document = self.editor.chelly_document
     
     def mouseMoveEvent(self, event) -> None:
         return None

@@ -202,8 +202,6 @@ editor1.language.lexer = (PythonLanguageNew, OneDarkStyle)
 #PythonLanguageNew(editor1, OneDarkStyle)
 minimap1.chelly_editor.language.lexer = (PythonLanguage, DraculaStyle)
 
-#editor1.setDocument(editor.document())
-
 div.addWidget(editor)
 div.addWidget(editor1)
 
@@ -302,10 +300,10 @@ create_breadcrumbs()
 line_number_margin:LineNumberMargin = editor.panels.get(LineNumberMargin)
 line_number_margin.styles.highlight = QColor("#72c3f0")
 
-# Use to share references:
+# Use these functions to share references:
 #editor1.panels.get(LineNumberMargin).shared_reference = editor.panels.get(LineNumberMargin).shared_reference
-editor1.panels.shared_reference = editor.panels
-#editor1.shared_reference = editor
+#editor1.panels.shared_reference = editor.panels
+editor1.shared_reference = editor
 
 #dont: editor1.style = editor.style
 #do: editor1.style.theme = editor.style.theme

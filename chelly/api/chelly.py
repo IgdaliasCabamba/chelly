@@ -1,5 +1,5 @@
-from typing import Union
-
+from typing import Dict, Union
+from typing_extensions import Self
 from qtpy import QtGui
 from qtpy.QtCore import Qt, Signal, QSize
 from qtpy.QtWidgets import QPlainTextEdit, QLabel
@@ -21,6 +21,7 @@ class ChellyEditor(QPlainTextEdit):
     on_key_released = Signal(object)
     on_text_setted = Signal(str)
     on_mouse_wheel_activated = Signal(object)
+    on_chelly_document_changed = Signal(object)
     post_on_key_pressed = Signal(object)
 
     @property
@@ -78,6 +79,7 @@ class ChellyEditor(QPlainTextEdit):
             raise ChellyDocumentExceptions.ChellyDocumentValueError(
                 f"invalid type: {new_document} expected: {ChellyDocument}")
         self.__setup_chelly_document(old_document, self._chelly_document)
+        self.on_chelly_document_changed.emit(self._chelly_document)
 
     @property
     def language(self) -> LanguagesManager:
@@ -296,4 +298,35 @@ class ChellyEditor(QPlainTextEdit):
                 TextEngine(editor).current_line_nbr
             )
 
-        self.__cached_block_count = TextEngine(editor).line_count 
+        self.__cached_block_count = TextEngine(editor).line_count
+    
+    @property
+    def managers(self) -> dict:
+        return {
+            "panels":self.panels,
+            "features":self.features,
+        }
+    @property
+    def helpers(self) -> dict:
+        return {
+            "chelly_document":self.chelly_document
+        }
+    
+    def __shared_reference(self, other_editor:Self):
+        for key, value in other_editor.helpers.items():
+            if hasattr(self, key):
+                try:
+                    setattr(self, key, value)
+                except AttributeError as e:
+                    print(e)
+        
+        for key, from_manager in other_editor.managers.items():
+            if hasattr(self, key):
+                try:
+                    to_manager = getattr(self, key)
+                    to_manager.shared_reference = from_manager
+                except AttributeError as e:
+                    print(e)
+            
+    shared_reference = property(fset=__shared_reference)
+    del __shared_reference
