@@ -22,7 +22,7 @@ from chelly.features import (AutoIndent, CaretLineHighLighter, CursorHistory,
 							 IndentationGuides, SmartBackSpace, IndentationMarks, EdgeLine, AutoComplete, ZoomMode)
 from chelly.core import Panel
 from chelly.components import (NotificationPanel, HorizontalScrollBar,
-							   LineNumberMargin, Marker, MarkerMargin, MiniMap,
+							   LineNumberMargin, MarkerObject, MarkerMargin, MiniMap,
 							   VerticalScrollBar, BreadcrumbNav, EditionMargin)
 from chelly.api import ChellyEditor
 from qtpy.QtWidgets import *
@@ -221,7 +221,7 @@ editor1.setHorizontalScrollBarPolicy(
 def add_mark_at_line(sm:MarkerMargin, line: int):
 	if sm == symbol_margin:
 		sm.add_marker(
-			Marker(
+			MarkerObject(
 				line,
 				QIcon(
 					pathlib.Path.cwd()
@@ -239,7 +239,7 @@ def add_mark_at_line(sm:MarkerMargin, line: int):
                 'active': 'fa5s.balance-scale',
 				'color': 'red'
             }])
-		sm.add_marker(Marker(line, mark_icon))
+		sm.add_marker(MarkerObject(line, mark_icon))
 
 
 def rem_mark_at_line(sm:MarkerMargin, line: int):
@@ -299,8 +299,8 @@ create_breadcrumbs()
 #editor.commands.zoom_in(15)
 #editor.commands.zoom_out(10) # -> 5
 #editor.commands.reset_zoom() # -> 0
-editor.style.theme.set_margin_style(LineNumberMargin)
-editor.style.theme.set_margin_highlight(LineNumberMargin, QColor("#72c3f0"))
+line_number_margin:LineNumberMargin = editor.panels.get(LineNumberMargin)
+line_number_margin.styles.highlight = QColor("#72c3f0")
 
 #dont: editor1.style = editor.style
 #do: editor1.style.theme = editor.style.theme

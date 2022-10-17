@@ -60,7 +60,7 @@ class MiniMapEditor(DocumentMap):
                 if delta_y <0:
                     delta_y = 0
 
-                self.slider.scroll_y(delta_y)
+                self.slider.move_y(delta_y)
         
 
     def scroll_editor(self, y_pos) -> None:
@@ -89,11 +89,11 @@ class MiniMapEditor(DocumentMap):
         )
     
     def leaveEvent(self, event: QEvent) -> None:
-        self.slider.change_transparency(self.editor.style.theme.minimap.slider.no_state_color)
+        self.slider.change_transparency(self.slider.styles.no_state_color)
         return super().leaveEvent(event)
     
     def enterEvent(self, event: QEvent) -> None:
-        self.slider.change_transparency(self.editor.style.theme.minimap.slider.color)
+        self.slider.change_transparency(self.slider.styles.color)
         return super().enterEvent(event)
     
     def resizeEvent(self, event: QResizeEvent) -> None:

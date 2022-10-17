@@ -1,2 +1,2 @@
 class FoldingMargin:
-    pass
+    ...

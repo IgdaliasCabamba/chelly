@@ -1,4 +1,6 @@
-from qtpy.QtGui import QBrush
+from qtpy.QtGui import QBrush, QColor
+from qtpy.QtCore import Qt
+from typing import Any
 from dataclasses import dataclass
 from ..core import Feature, TextDecoration, drift_color
 
@@ -7,6 +9,30 @@ class CaretLineHighLighter(Feature):
     @dataclass(frozen=True)
     class Defaults:
         LINE_TEXT_COLOR = False
+    
+    class Styles(Feature._Styles):
+        def __init__(self, instance: Any) -> None:
+            super().__init__(instance)
+            self._background = QColor(Qt.GlobalColor.darkBlue)
+            self._background.setAlpha(70)
+            self._foreground = QColor(Qt.GlobalColor.white)
+        
+        @property
+        def foreground(self) -> QColor:
+            return self._foreground
+
+        @foreground.setter
+        def foreground(self, new_color: QColor) -> None:
+            self._foreground = new_color
+
+        @property
+        def background(self) -> QColor:
+            return self._background
+
+        @background.setter
+        def background(self, new_color: QColor) -> None:
+            self._background = new_color
+
 
     class Properties(Feature._Properties):
         def __init__(self, feature:Feature) -> None:
@@ -20,6 +46,18 @@ class CaretLineHighLighter(Feature):
         @line_text_color.setter
         def line_text_color(self, value:bool) -> None:
             self.__line_text_color = value
+    
+    @property
+    def styles(self) -> Styles:
+        return self.__styles
+    
+    @styles.setter
+    def styles(self, new_styles:Styles) -> Styles:
+        if new_styles is CaretLineHighLighter.Styles:
+            self.__styles = new_styles(self)
+
+        elif isinstance(new_styles, CaretLineHighLighter.Styles):
+            self.__styles = new_styles
     
     @property
     def properties(self) -> Properties:
@@ -37,28 +75,30 @@ class CaretLineHighLighter(Feature):
     def __init__(self, editor):
         super().__init__(editor)
         self.__properties = CaretLineHighLighter.Properties(self)
+        self.__styles = CaretLineHighLighter.Styles(self)
+
         self._decoration = None
         self.editor.cursorPositionChanged.connect(self.refresh)
         self.editor.on_text_setted.connect(self.refresh)
         self.refresh()
     
-    def _clear_current_deocration(self) -> None:
+    def _clear_current_decoration(self) -> None:
         if self._decoration is not None:
             self.editor.decorations.remove(self._decoration)
             self._decoration = None
 
     def refresh(self) -> None:
-        self._clear_current_deocration()
+        self._clear_current_decoration()
         
         if not self.editor.properties.view_only:
-            brush = QBrush(self.editor.style.theme.caret_line.background)
+            brush = QBrush(self.styles.background)
             self._decoration = TextDecoration(self.editor.textCursor())
             self._decoration.set_background(brush)
             self._decoration.set_full_width()
             
             if self.properties.line_text_color:
                 self._decoration.set_foreground(
-                    self.editor.style.theme.caret_line.foreground
+                    self.styles.foreground
                 )
 
             self.editor.decorations.append(self._decoration)

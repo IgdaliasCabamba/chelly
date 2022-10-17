@@ -13,6 +13,6 @@ Modules exported by this package:
 
 from .features import FeaturesManager
 from .language import LanguagesManager
-from .widgets import PanelsManager
+from .panels import PanelsManager
 from .decorations import TextDecorationsManager
 from .theme import ChellyStyleManager

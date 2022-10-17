@@ -2,15 +2,14 @@ from typing import Union
 from qtpy.QtGui import QBrush, QIcon, QColor, QPainter, QTextDocument, QFontMetricsF
 from qtpy.QtCore import Qt, QSize, QRect, QObject, Signal, QPoint
 from qtpy.QtWidgets import QToolTip, QStyle
-from ..core import Panel, FontEngine, DelayJobRunner, TextEngine, TextDecoration
+from ...core import Panel, FontEngine, DelayJobRunner, TextEngine, TextDecoration
 
 
-class Marker(QObject):
+class MarkerObject(QObject):
     """
     A marker is an icon draw on a marker panel at a specific line position and
     with a possible tooltip.
     """
-
     @property
     def position(self):
         """
@@ -61,22 +60,26 @@ class Marker(QObject):
 
 
 class MarkerMargin(Panel):
-    """
-    General purpose marker panel.
-    This panels takes care of drawing icons at a specific line number.
-    Use addMarker, removeMarker and clearMarkers to manage the collection of
-    displayed makers.
-    You can create a user editable panel (e.g. a breakpoints panel) by using
-    the following signals:
-      - :attr:`pyqode.core.panels.MarkerPanel.on_add_marker`
-      - :attr:`pyqode.core.panels.MarkerPanel.on_remove_marker`
-    """
-    #: Signal emitted when the user clicked in a place where there is no
-    #: marker.
+    class Styles(Panel._Styles):
+        ...
+
+    @property
+    def styles(self) -> Styles:
+        return self.__styles
+    
+    @styles.setter
+    def styles(self, new_styles:Styles) -> Styles:
+        if new_styles is MarkerMargin.Styles:
+            self.__styles = new_styles(self)
+
+        elif isinstance(new_styles, MarkerMargin.Styles):
+            self.__styles = new_styles
+    
+    
     on_add_marker = Signal(int)
-    #: Signal emitted when the user right clicked on an existing marker.
+    
     on_edit_marker = Signal(int)
-    #: Signal emitted when the user left clicked on an existing marker.
+    
     on_remove_marker = Signal(int)
 
     @property
@@ -109,7 +112,7 @@ class MarkerMargin(Panel):
         """
         return self._markers
 
-    def add_marker(self, marker: Marker):
+    def add_marker(self, marker: MarkerObject):
         """
         Adds the marker to the panel.
         :param marker: Marker to add
@@ -130,11 +133,11 @@ class MarkerMargin(Panel):
         #self.editor.decorations.append(block_decoration)
         self.repaint()
 
-    def __rem_marker(self, marker: Marker):
+    def __rem_marker(self, marker: MarkerObject):
         self._markers.remove(marker)
         self._to_remove.append(marker)
 
-    def remove_marker(self, markers: Union[list, Marker]):
+    def remove_marker(self, markers: Union[list, MarkerObject]):
         """
         Removes a marker from the panel
         :param marker: Marker to remove
@@ -144,7 +147,7 @@ class MarkerMargin(Panel):
             for marker in markers:
                 self.__rem_marker(marker)
 
-        elif isinstance(markers, Marker):
+        elif isinstance(markers, MarkerObject):
             self.__rem_marker(markers)
 
         #if hasattr(markers, 'decoration'):

@@ -8,18 +8,10 @@ if TYPE_CHECKING:
 
 from dataclasses import dataclass
 from qtpy.QtWidgets import QFrame
-from .properties import PanelProperties
-import pprint
+from .__base__ import BaseElement
 
 class Panel(QFrame):
-
-    class _Properties(PanelProperties):
-        ...
     
-    @property
-    def properties(self) -> _Properties:
-        return self.__properties
-
     @dataclass(frozen=True)
     class WidgetSettings:
         level:int = 0
@@ -43,6 +35,25 @@ class Panel(QFrame):
             """ Returns possible positions as an iterable (list) """
             return [cls.TOP, cls.LEFT, cls.RIGHT, cls.BOTTOM]
 
+    class _Properties(BaseElement):
+        
+        @property
+        def panel(self) -> Panel:
+            return self.instance
+    
+    class _Styles(BaseElement):
+        
+        @property
+        def panel(self) -> Panel:
+            return self.instance
+    
+    @property
+    def properties(self) -> _Properties:
+        return self.__properties
+    
+    @property
+    def styles(self) -> _Styles:
+        return self.__styles
 
     def __init__(self, editor:ChellyEditor) -> None:
         super().__init__(editor)
@@ -53,6 +64,7 @@ class Panel(QFrame):
         self.editor.panels.refresh()
         self.setAutoFillBackground(False)
         self.__properties = Panel._Properties(self)
+        self.__styles = Panel._Styles(self)
 
     @property
     def enabled(self) -> bool:

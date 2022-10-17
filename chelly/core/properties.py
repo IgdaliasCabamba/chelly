@@ -7,8 +7,8 @@ from typing import Any, Union
 from qtpy.QtGui import QFont, QTextOption
 from qtpy.QtWidgets import QPlainTextEdit
 
-from ..core.utils import Character, FontEngine
-
+from .utils import Character, FontEngine
+from .__base__ import BaseElement
 
 class PropertyCollections:
 
@@ -21,53 +21,7 @@ class PropertyCollections:
         spaces = 0
         tabs = 1
 
-
-class BaseProperties:
-    """The lowest level for properties"""
-
-    def __init__(self, instance: Any) -> None:
-        self._instance = instance
-
-    @property
-    def as_dict(self) -> Dict[Any:Any]:
-        res = {}
-        for key, value in self.__class__.__dict__.items():
-            if isinstance(value, property) and value not in {"as_dict", "as_list"}:
-                res[key] = value.fget(self)
-
-        return res
-
-    @property
-    def as_list(self) -> List[Any]:
-        return [
-            value.fget(self)
-            for value in self.__class__.__dict__.values()
-            if (
-                isinstance(value, property)
-                and value not in {"as_dict", "as_list"}
-            )
-        ]
-
-
-class FeatureProperties(BaseProperties):
-    def __init__(self, instance: Any) -> None:
-        super().__init__(instance)
-
-    @property
-    def feature(self):
-        return self._instance
-
-
-class PanelProperties(BaseProperties):
-    def __init__(self, instance: Any) -> None:
-        super().__init__(instance)
-
-    @property
-    def panel(self):
-        return self._instance
-
-
-class Properties(BaseProperties):
+class Properties(BaseElement):
     def __init__(self, editor: QPlainTextEdit) -> None:
         self._editor = editor
         self._indent_size: int = PropertyCollections.Default.INDENT_SIZE

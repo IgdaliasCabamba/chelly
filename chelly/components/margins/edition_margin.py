@@ -1,7 +1,8 @@
+from typing import Any
 from dataclasses import dataclass
 from qtpy.QtGui import QFont, QPainter, QPen, QColor
 from qtpy.QtCore import Qt, QSize
-from ..core import Panel, FontEngine, TextEngine, ChellyCache
+from ...core import Panel, FontEngine, TextEngine, ChellyCache
 import difflib
 
 class EditionMargin(Panel):
@@ -10,7 +11,38 @@ class EditionMargin(Panel):
     class Defaults:
         SHOW_TEXT_HELP = False
         MAX_LINES_COUNT = 1000
-
+    
+    class Styles(Panel._Styles):
+        def __init__(self, instance: Any) -> None:
+            super().__init__(instance)
+            self._unknow = Qt.GlobalColor.darkCyan
+            self._added = Qt.GlobalColor.darkGreen
+            self._removed = Qt.GlobalColor.darkRed
+        
+        @property
+        def unknow(self) -> QColor:
+            return self._unknow
+        
+        @unknow.setter
+        def unknow(self, color:QColor) -> None:
+            self._unknow = color
+        
+        @property
+        def added(self) -> QColor:
+            return self._added
+        
+        @added.setter
+        def added(self, color:QColor) -> None:
+            self._added = color
+        
+        @property
+        def removed(self) -> QColor:
+            return self._removed
+        
+        @removed.setter
+        def removed(self, color:QColor) -> None:
+            self._removed = color
+        
     class Properties(Panel._Properties):
 
         def __init__(self, panel:Panel):
@@ -35,6 +67,18 @@ class EditionMargin(Panel):
             self.__max_lines_count = limit
     
     @property
+    def styles(self) -> Styles:
+        return self.__styles
+    
+    @styles.setter
+    def styles(self, new_styles:Styles) -> Styles:
+        if new_styles is EditionMargin.Styles:
+            self.__styles = new_styles(self)
+
+        elif isinstance(new_styles, EditionMargin.Styles):
+            self.__styles = new_styles
+    
+    @property
     def properties(self) -> Properties:
         return self.__properties
     
@@ -56,6 +100,7 @@ class EditionMargin(Panel):
         self.__cached_cursor_position = ChellyCache(None, None, lambda: TextEngine(self.editor).cursor_position)
         self.differ = difflib.Differ()
         self.__properties = EditionMargin.Properties(self)
+        self.__styles = EditionMargin.Styles(self)
     
     def sizeHint(self):
         """
@@ -121,19 +166,19 @@ class EditionMargin(Panel):
                         top = TextEngine(self.editor).point_y_from_line_number(idx)
 
                         if diff.startswith("-"):
-                            pen.setBrush(Qt.GlobalColor.darkRed)
+                            pen.setBrush(self.styles.removed)
                             painter.setPen(pen)
                             if self.properties.show_text_help:
                                 painter.drawText(6, top+height//1.5, "!")
 
                         elif diff.startswith("+"):
-                            pen.setBrush(Qt.GlobalColor.darkGreen)
+                            pen.setBrush(self.styles.added)
                             painter.setPen(pen)
                             if self.properties.show_text_help:
                                 painter.drawText(6, top+height//1.5, "+")
 
                         elif diff.startswith("?"):
-                            pen.setBrush(Qt.GlobalColor.darkCyan)
+                            pen.setBrush(self.styles.unknow)
                             painter.setPen(pen)
                             if self.properties.show_text_help:
                                 painter.drawText(6, top+height//1.5, "?")

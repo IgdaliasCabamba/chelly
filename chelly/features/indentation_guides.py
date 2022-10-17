@@ -2,8 +2,8 @@ from textwrap import indent
 from typing_extensions import Self
 from qtpy.QtGui import QPainter, QColor, QFontMetrics, QPen, QPaintEvent
 from qtpy.QtCore import Qt
-from ..core import Feature, TextEngine, Character
-from typing import List
+from ..core import Feature, TextEngine, Character, BaseElement
+from typing import List, Any
 from dataclasses import dataclass
 import re
 
@@ -41,6 +41,38 @@ class IndentationGuides(Feature):
     @dataclass(frozen=True)
     class Defaults:
         LINE_WIDTH = 1
+    
+    class Styles(Feature._Styles):
+        def __init__(self, instance: Any) -> None:
+            super().__init__(instance)
+            self._color = QColor(Qt.GlobalColor.darkGray)
+            self._active_color = QColor(Qt.GlobalColor.gray)
+            self._pen = QPen(self.color)
+        
+        @property
+        def pen(self) -> QPen:
+            return self._pen
+
+        @property
+        def color(self) -> QColor:
+            return self._color
+
+        @color.setter
+        def color(self, new_color: QColor) -> None:
+            self._color = new_color
+            self._pen = QPen(self.color)
+            self._pen.setCosmetic(True)
+            self._pen.setJoinStyle(Qt.RoundJoin)
+            self._pen.setCapStyle(Qt.RoundCap)
+
+        @property
+        def active_color(self) -> QColor:
+            return self._active_color
+
+        @active_color.setter
+        def active_color(self, new_color: QColor) -> None:
+            self._active_color = new_color
+
 
     class Properties(Feature._Properties):
         def __init__(self, feature:Feature) -> None:
@@ -54,6 +86,18 @@ class IndentationGuides(Feature):
         @line_width.setter
         def line_width(self, value: float) -> None:
             self.__line_width = value
+    
+    @property
+    def styles(self) -> Styles:
+        return self.__styles
+    
+    @styles.setter
+    def styles(self, new_styles:Styles) -> Styles:
+        if new_styles is IndentationGuides.Styles:
+            self.__styles = new_styles(self)
+
+        elif isinstance(new_styles, IndentationGuides.Styles):
+            self.__styles = new_styles
     
     @property
     def properties(self) -> Properties:
@@ -70,13 +114,11 @@ class IndentationGuides(Feature):
     def __init__(self, editor):
         super().__init__(editor)
         self.__properties = IndentationGuides.Properties(self)
+        self.__styles = IndentationGuides.Styles(self)
         self.editor.on_painted.connect(self._paint_lines)
 
     def __configure_painter(self, painter: QPainter) -> None:
-        pen = QPen(self.editor.style.theme.indentation_guide.color)
-        pen.setCosmetic(True)
-        pen.setJoinStyle(Qt.RoundJoin)
-        pen.setCapStyle(Qt.RoundCap)
+        pen = self.styles.pen
         pen.setWidthF(self.properties.line_width)
         painter.setPen(pen)
 
