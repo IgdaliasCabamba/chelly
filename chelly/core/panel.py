@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, List
 from typing_extensions import Self
 
 if TYPE_CHECKING:
@@ -8,6 +8,7 @@ if TYPE_CHECKING:
 
 from dataclasses import dataclass
 from qtpy.QtWidgets import QFrame
+from .properties import PanelProperties
 import pprint
 
 class Panel(QFrame):
@@ -15,14 +16,13 @@ class Panel(QFrame):
     @dataclass(frozen=True)
     class Defaults:
         ...
+
+    class _Properties(PanelProperties):
+        ...
     
-    class _Properties:
-        def __init__(self, panel_instance:Panel) -> None:
-            self._panel_instance = panel_instance
-        
-        @property
-        def panel(self):
-            return self._panel_instance
+    @property
+    def properties(self) -> _Properties:
+        return self.__properties
 
     @dataclass(frozen=True)
     class WidgetSettings:
@@ -57,10 +57,6 @@ class Panel(QFrame):
         self.editor.panels.refresh()
         self.setAutoFillBackground(False)
         self.__properties = Panel._Properties(self)
-    
-    @property
-    def properties(self) -> _Properties:
-        return self.__properties
 
     @property
     def enabled(self) -> bool:

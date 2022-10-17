@@ -1,13 +1,13 @@
 from typing_extensions import Self
 from qtpy.QtCore import QSize
 from qtpy.QtWidgets import QGraphicsDropShadowEffect, QHBoxLayout
-from ...core import Panel, Properties
+from ...core import Panel, BaseProperties
 from .editor import MiniMapEditor
 
 
 class MiniMap(Panel):
     
-    class Properties:
+    class Properties(BaseProperties):
         def __init__(self, minimap_container) -> None:
             self.__minimap_container = minimap_container
             self.__max_width = 140
@@ -98,6 +98,19 @@ class MiniMap(Panel):
         def slider_fixed_heigth(self, size:QSize) -> None:
             self.__slider_fixed_heigth = size
             self.__minimap_container.chelly_editor.slider.setFixedHeight(self.__slider_fixed_heigth)
+    
+    @property
+    def properties(self) -> Properties:
+        return self.__properties
+    
+    @properties.setter
+    def properties(self, new_properties:Properties) -> None:
+        if isinstance(new_properties, MiniMap.Properties):
+            self.__properties = new_properties
+    
+    @property
+    def chelly_editor(self) -> MiniMapEditor:
+        return self._minimap
 
     def __init__(self, editor, properties:Properties = None):
         super().__init__(editor)
@@ -115,19 +128,6 @@ class MiniMap(Panel):
         self.editor.on_resized.connect(self.update_shadow)
         self.editor.on_text_setted.connect(self.update_shadow)
         self.update_shadow(True)
-    
-    @property
-    def chelly_editor(self) -> MiniMapEditor:
-        return self._minimap
-    
-    @property
-    def properties(self) -> Properties:
-        return self.__properties
-    
-    @properties.setter
-    def properties(self, new_properties:Properties) -> None:
-        if isinstance(new_properties, Properties):
-            self.__properties = new_properties
     
     def update_shadow(self, force:bool = False) -> Self:
         if len(self.editor.visible_blocks) == 1 and not force:

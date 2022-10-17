@@ -1,8 +1,9 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Type, Union, Any
+from typing import TYPE_CHECKING, Any, List
 from dataclasses import dataclass
 from .chelly_cache import ChellyCache
+from .properties import FeatureProperties
 
 if TYPE_CHECKING:
     from ..api import ChellyEditor
@@ -13,24 +14,19 @@ class Feature(object):
     class Defaults:
         ...
     
-    class _Properties:
-        def __init__(self, feature_instance:Feature) -> None:
-            self._feature_instance = feature_instance
-        
-        @property
-        def feature(self):
-            return self._feature_instance
+    class _Properties(FeatureProperties):
+        ...
+
             
+    @property
+    def properties(self) -> _Properties:
+        return self.__properties
     
     def __init__(self, editor:ChellyEditor):
         self.__editor:object = editor
         self.__enabled = True
         self.__cache = ChellyCache()
         self.__properties = Feature._Properties(self)
-    
-    @property
-    def properties(self) -> _Properties:
-        return self.__properties
     
     @property
     def cache(self) -> ChellyCache:
@@ -47,4 +43,3 @@ class Feature(object):
     @property
     def editor(self) -> ChellyEditor:
         return self.__editor
-    

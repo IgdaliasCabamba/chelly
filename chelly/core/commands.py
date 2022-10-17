@@ -1,6 +1,6 @@
 from __future__ import annotations
 from typing import TYPE_CHECKING, Union, Any
-from .properties import Property
+from .properties import PropertyCollections
 
 if TYPE_CHECKING:
     from ..api import ChellyEditor
@@ -43,4 +43,4 @@ class BasicCommands:
         self.editor.properties.zoom = level
     
     def reset_zoom(self):
-        self.editor.properties.zoom = Property.Default.ZOOM_LEVEL
+        self.editor.properties.zoom = PropertyCollections.Default.ZOOM_LEVEL
