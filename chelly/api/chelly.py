@@ -305,6 +305,8 @@ class ChellyEditor(QPlainTextEdit):
         return {
             "panels":self.panels,
             "features":self.features,
+            "style":self.style,
+            "decorations":self.decorations,
         }
     @property
     def helpers(self) -> dict:

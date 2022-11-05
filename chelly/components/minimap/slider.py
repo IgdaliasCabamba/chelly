@@ -147,4 +147,4 @@ class SliderArea(QFrame):
         self.move_y(virtual_y_point)
     
     def move_y(self, y_pos:int):
-        self.move(0, y_pos)
+        self.move(0, int(y_pos))

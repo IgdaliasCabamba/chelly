@@ -305,13 +305,16 @@ line_number_margin.styles.highlight = QColor("#72c3f0")
 #editor1.panels.shared_reference = editor.panels
 editor1.shared_reference = editor
 #editor.shared_reference = editor1 BUG: autocomplete change focus
+#editor1.style.shared_reference = editor.style
 
 #dont: editor1.style = editor.style
 #do: editor1.style.theme = editor.style.theme
 
-editor1.style.theme = editor.style.theme
-minimap.chelly_editor.style.theme = editor.style.theme
-editor1.style.theme.selection.foreground = QColor("#2b2b2b")
+#editor1.style.theme = editor.style.theme
+#minimap.chelly_editor.style.theme = editor.style.theme
+
+editor1.style.theme.selection_foreground = QColor("#2b2b2b")
+editor1.style.theme.selection_background = QColor(Qt.GlobalColor.red)
 
 modern_window.resize(1000, 600)
 modern_window.move(200, 100)
