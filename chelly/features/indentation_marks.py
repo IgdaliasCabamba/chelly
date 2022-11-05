@@ -65,6 +65,6 @@ class IndentationMarks(Feature):
                 xPos = (leftCursorRect.x() + rightCursorRect.x()) / 2
                 painter.drawRect(QRect(int(xPos), int(middleHeight), 2, 2))
             else:
-                painter.setPen(QColor(Qt.gray).lighter(f=120))
-                painter.drawLine(leftCursorRect.x() + 3, middleHeight,
-                                    rightCursorRect.x() - 3, middleHeight)
+                painter.setPen(QColor(Qt.gray).lighter(120))
+                painter.drawLine(int(leftCursorRect.x()) + 3, int(middleHeight),
+                                    int(rightCursorRect.x()) - 3, int(middleHeight))

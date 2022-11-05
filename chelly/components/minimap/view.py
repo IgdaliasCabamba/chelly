@@ -41,10 +41,10 @@ class MiniMap(Panel):
             self.__width_percentage = 40
             self.__resizable = True
             self.__chelly_editor:MiniMapEditor = self.instance.chelly_editor
-            self.__chelly_editor.slider.setFixedWidth(self.instance.size().width())
+            self.__chelly_editor.slider.setFixedWidth(self.__max_width)
         
         @property
-        def max_width(self) -> int:
+        def max_width_hint(self) -> int:
             if self.resizable:
                 editor_width = self.instance.editor.size().width()
                 
@@ -59,14 +59,18 @@ class MiniMap(Panel):
 
             else:
                 max_width = self.__max_width
-            
-            self.__chelly_editor.slider.setFixedWidth(max_width)
+
             return max_width
+        
+        @property
+        def max_width(self) -> int:
+            return self.__max_width
         
         @max_width.setter
         def max_width(self, width:int) -> None:
             if isinstance(width, int):
                 self.__max_width = width
+                self.__chelly_editor.slider.setFixedWidth(width)
         
         @property
         def min_width(self) -> int:
@@ -175,7 +179,7 @@ class MiniMap(Panel):
         Returns the panel size hint (as the panel is on the right, we only need
         to compute the width
         """
-        return QSize(self.properties.max_width, self.fixed_size_hint)
+        return QSize(self.properties.max_width_hint, self.fixed_size_hint)
     
     def __enter__(self):
         return self.chelly_editor

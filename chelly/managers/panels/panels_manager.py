@@ -118,10 +118,10 @@ class PanelsManager(PanelsSizeHelpers):
         return list(self)
     
     def __shared_reference(self, other_manager:Self) -> Self:
-        for from_feature in other_manager.as_list:
-            to_feature = self.get(from_feature.__class__)
+        for from_panel in other_manager.as_list:
+            to_feature = self.get(from_panel.__class__)
             if to_feature is not None:
-                to_feature.shared_reference = from_feature.shared_reference
+                to_feature.shared_reference = from_panel.shared_reference
     
     shared_reference = property(fset=__shared_reference)
     del __shared_reference
