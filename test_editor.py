@@ -134,7 +134,7 @@ editor.features.append(IndentationMarks)
 editor.features.append(EdgeLine)
 editor.features.append(AutoComplete)
 editor.features.append(ZoomMode)
-symbol_matcher = editor.features.append(SymbolMatcher)
+editor.features.append(SymbolMatcher)
 symbol_margin: MarkerMargin = editor.panels.append(MarkerMargin, Panel.Position.LEFT, Panel.WidgetSettings(level = 2))
 editor.panels.append(LineNumberMargin, Panel.Position.LEFT, Panel.WidgetSettings(level = 2))
 editor.panels.append(EditionMargin, Panel.Position.LEFT, Panel.WidgetSettings(level = 2))
@@ -168,6 +168,7 @@ editor1.features.append(AutoIndent)
 editor1.features.append(CursorHistory)
 editor1.features.append(SmartBackSpace)
 editor1.features.append(IndentationMarks)
+editor1.features.append(SymbolMatcher)
 editor1.panels.append(MarkerMargin, Panel.Position.LEFT)
 editor1.panels.append(LineNumberMargin, Panel.Position.LEFT)
 editor1.panels.append(EditionMargin, Panel.Position.LEFT, Panel.WidgetSettings(level = 2))
@@ -318,8 +319,9 @@ editor1.shared_reference = editor
 #editor1.style.theme = editor.style.theme
 #minimap.chelly_editor.style.theme = editor.style.theme
 
-#editor1.style.theme.selection_foreground = QColor("#2b2b2b")
-#editor.style.theme.selection_background = QColor(Qt.GlobalColor.red)
+editor1.style.theme.selection_foreground = QColor("#2b2b2b")
+editor.style.theme.selection_background = QColor(Qt.GlobalColor.red)
+print(editor.style.theme == editor1.style.theme)
 
 modern_window.resize(1000, 600)
 modern_window.move(200, 100)

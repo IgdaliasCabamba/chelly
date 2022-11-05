@@ -13,10 +13,7 @@ from typing_extensions import Self
 class ChellyStyleManager(Manager):
     def __init__(self, editor) -> None:
         super().__init__(editor)
-
-        self.__palette = editor.palette()
-        self.__theme = ChellyTheme(self.__palette)
-        self.__theme.on_palette_changed.connect(self.update_palette)
+        self.__theme = ChellyTheme()
     
     def __enter__(self) -> ChellyTheme:
         return self.__theme
@@ -38,17 +35,11 @@ class ChellyStyleManager(Manager):
             theme = new_theme()
         else:
             theme = new_theme
-        
-        theme.on_palette_changed.connect(self.update_palette)
 
         self.__theme = theme
     
-    def update_palette(self, *args, **kargs) -> None:
-        self.__palette.setBrush(*args, **kargs)
-        self.__palette.setColor(*args, **kargs)
-        self.editor.setPalette(self.__palette)
-    
     def __shared_reference(self, other_manager:Self) -> Self:
+        self.editor._setup_theme(self.theme, other_manager.theme)
         self.theme = other_manager.theme
         
     shared_reference = property(fset=__shared_reference)

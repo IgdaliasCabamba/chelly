@@ -15,3 +15,5 @@ class ZoomMode(Feature):
                 self.editor.commands.zoom_out(delta)
             else:
                 self.editor.commands.zoom_in(delta)
+            
+            self.prev_delta = delta

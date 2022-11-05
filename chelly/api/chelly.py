@@ -53,6 +53,9 @@ class ChellyEditor(QPlainTextEdit):
         self.setCenterOnScroll(True)
         self._update_visible_blocks(None)
 
+        # TODO:
+        self._style.theme.on_palette_changed.connect(self.update_palette)
+
     def update_state(self):
         self.on_updated.emit()
     
@@ -245,6 +248,15 @@ class ChellyEditor(QPlainTextEdit):
         self.__cached_block_count = TextEngine(new_chelly_document.editor).line_count
         old_chelly_document.on_contents_changed.disconnect(self._update_contents)
         new_chelly_document.on_contents_changed.connect(self._update_contents)
+    
+    def _setup_theme(self, old_theme: object, new_theme: object):
+        self._style.theme.on_palette_changed.connect(self.update_palette)
+    
+    def update_palette(self, *args, **kargs) -> None:
+        palette = self.palette()
+        palette.setBrush(*args, **kargs)
+        palette.setColor(*args, **kargs)
+        self.setPalette(palette)
     
     def _update_contents(self, editor:QPlainTextEdit, pos:int, charsrem:int, charsadd:int):
         line_number = TextEngine(editor).current_line_nbr
