@@ -36,10 +36,10 @@ class ChellyTheme:
             self.on_palette_changed.emit(QPalette.HighlightedText, color)
 
     def __init__(self, object):
-        self.on_palette_changed = ChellyEvent(int, QColor)
+        self.on_palette_changed = ChellyEvent(Any, QColor)
 
         self._selection_background = QColor(Qt.GlobalColor.darkBlue)
-        self._selection_background.setAlpha(50)
+        self._selection_background.setAlpha(70)
         self._selection_foreground = QColor(Qt.GlobalColor.white)
         self.__mount()
         

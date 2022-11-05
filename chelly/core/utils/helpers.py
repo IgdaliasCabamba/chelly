@@ -24,8 +24,9 @@ class ChellyEvent:
     
     def emit(self, *callable_objects:Tuple[Any]) -> Self:
         for i in range(len(callable_objects)):
-            if not isinstance(callable_objects[i], self.__emit_types[i]):
-                raise ChellyEvent.TypeError(f"Expected: {self.__emit_types[i]}, Got: {type(callable_objects[i])}")
+            if self.__emit_types[i] is not Any:
+                if not isinstance(callable_objects[i], self.__emit_types[i]):
+                    raise ChellyEvent.TypeError(f"Expected: {self.__emit_types[i]}, Got: {type(callable_objects[i])}")
 
         for handler in self.__event_handlers:
             handler(*callable_objects)

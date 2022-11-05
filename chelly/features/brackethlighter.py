@@ -1,147 +1,260 @@
-"""Bracket highlighter.
-Calculates list of QTextEdit.ExtraSelection
+# -*- coding: utf-8 -*-
 """
+This module contains the symbol matcher mode
+"""
+from pyqode.core.api import get_block_symbol_data
+from pyqode.core.api.decoration import TextDecoration
+from pyqode.core.api.mode import Mode
+from pyqode.qt import QtGui
 
-import time
 
-from qtpy.QtCore import Qt
-from qtpy.QtGui import QTextCursor
-from qtpy.QtWidgets import QTextEdit
+#: symbols indices in SymbolMatcherMode.SYMBOLS map
+PAREN = 0
+SQUARE = 1
+BRACE = 2
+
+#: character indices in SymbolMatcherMode.SYMBOLS map
+OPEN = 0
+CLOSE = 1
 
 
-class _TimeoutException(UserWarning):
-    """Operation timeout happened
+class SymbolMatcherMode(Mode):
+    """ Highlights matching symbols (parentheses, braces,...)
+    .. note:: This mode requires the document to be filled with
+        :class:`pyqode.core.api.TextBlockUserData`, i.e. a
+        :class:`pyqode.core.api.SyntaxHighlighter` must be installed on
+        the editor instance.
     """
-    pass
+    #: known symbols {SYMBOL: (OPEN, CLOSE)}, you can customise this map to
+    #: add support for other symbols
+    SYMBOLS = {
+        PAREN: ('(', ')'),
+        SQUARE: ('[', ']'),
+        BRACE: ('{', '}')
+    }
 
-
-class BracketHighlighter:
-    """Bracket highliter.
-    Calculates list of QTextEdit.ExtraSelection
-
-    Currently, this class might be just a set of functions.
-    Probably, it will contain instance specific selection colors later
-    """
-    _MAX_SEARCH_TIME_SEC = 0.02
-
-    _START_BRACKETS = '({['
-    _END_BRACKETS = ')}]'
-    _ALL_BRACKETS = _START_BRACKETS + _END_BRACKETS
-    _OPOSITE_BRACKET = dict( (bracket, oposite)
-                    for (bracket, oposite) in zip(_START_BRACKETS + _END_BRACKETS, _END_BRACKETS + _START_BRACKETS))
-
-    currentMatchedBrackets = None  # instance variable. None or ((block, columnIndex), (block, columnIndex))
-
-    def _iterateDocumentCharsForward(self, block, startColumnIndex):
-        """Traverse document forward. Yield (block, columnIndex, char)
-        Raise _TimeoutException if time is over
+    @property
+    def match_background(self):
         """
-        # Chars in the start line
-        endTime = time.time() + self._MAX_SEARCH_TIME_SEC
-        for columnIndex, char in list(enumerate(block.text()))[startColumnIndex:]:
-            yield block, columnIndex, char
-        block = block.next()
-
-        # Next lines
-        while block.isValid():
-            for columnIndex, char in enumerate(block.text()):
-                yield block, columnIndex, char
-
-            if time.time() > endTime:
-                raise _TimeoutException('Time is over')
-
-            block = block.next()
-
-    def _iterateDocumentCharsBackward(self, block, startColumnIndex):
-        """Traverse document forward. Yield (block, columnIndex, char)
-        Raise _TimeoutException if time is over
+        Background color of matching symbols.
         """
-        # Chars in the start line
-        endTime = time.time() + self._MAX_SEARCH_TIME_SEC
-        for columnIndex, char in reversed(list(enumerate(block.text()[:startColumnIndex]))):
-            yield block, columnIndex, char
-        block = block.previous()
+        return self._match_background
 
-        # Next lines
-        while block.isValid():
-            for columnIndex, char in reversed(list(enumerate(block.text()))):
-                yield block, columnIndex, char
+    @match_background.setter
+    def match_background(self, value):
+        self._match_background = value
+        self._refresh_decorations()
+        if self.editor:
+            for clone in self.editor.clones:
+                try:
+                    clone.modes.get(self.__class__).match_background = value
+                except KeyError:
+                    # this should never happen since we're working with clones
+                    pass
 
-            if time.time() > endTime:
-                raise _TimeoutException('Time is over')
-
-            block = block.previous()
-
-    def _findMatchingBracket(self, bracket, qpart, block, columnIndex):
-        """Find matching bracket for the bracket.
-        Return (block, columnIndex) or (None, None)
-        Raise _TimeoutException, if time is over
+    @property
+    def match_foreground(self):
         """
-        if bracket in self._START_BRACKETS:
-            charsGenerator = self._iterateDocumentCharsForward(block, columnIndex + 1)
+        Foreground color of matching symbols.
+        """
+        return self._match_foreground
+
+    @match_foreground.setter
+    def match_foreground(self, value):
+        self._match_foreground = value
+        self._refresh_decorations()
+        if self.editor:
+            for clone in self.editor.clones:
+                try:
+                    clone.modes.get(self.__class__).match_foreground = value
+                except KeyError:
+                    # this should never happen since we're working with clones
+                    pass
+
+    @property
+    def unmatch_background(self):
+        """
+        Background color of non-matching symbols.
+        """
+        return self._unmatch_background
+
+    @unmatch_background.setter
+    def unmatch_background(self, value):
+        self._unmatch_background = value
+        self._refresh_decorations()
+        if self.editor:
+            for clone in self.editor.clones:
+                try:
+                    clone.modes.get(self.__class__).unmatch_background = value
+                except KeyError:
+                    # this should never happen since we're working with clones
+                    pass
+
+    @property
+    def unmatch_foreground(self):
+        """
+        Foreground color of matching symbols.
+        """
+        return self._unmatch_foreground
+
+    @unmatch_foreground.setter
+    def unmatch_foreground(self, value):
+        self._unmatch_foreground = value
+        self._refresh_decorations()
+        if self.editor:
+            for clone in self.editor.clones:
+                try:
+                    clone.modes.get(self.__class__).unmatch_foreground = value
+                except KeyError:
+                    # this should never happen since we're working with clones
+                    pass
+
+    def __init__(self):
+        super(SymbolMatcherMode, self).__init__()
+        self._decorations = []
+        self._match_background = QtGui.QBrush(QtGui.QColor('#B4EEB4'))
+        self._match_foreground = QtGui.QColor('red')
+        self._unmatch_background = QtGui.QBrush(QtGui.QColor('transparent'))
+        self._unmatch_foreground = QtGui.QColor('red')
+
+    def _clear_decorations(self):
+        for deco in self._decorations:
+            self.editor.decorations.remove(deco)
+        self._decorations[:] = []
+
+    def symbol_pos(self, cursor, character_type=OPEN, symbol_type=PAREN):
+        """
+        Find the corresponding symbol position (line, column) of the specified
+        symbol. If symbol type is PAREN and character_type is OPEN, the
+        function will look for '('.
+        :param cursor: QTextCursor
+        :param character_type: character type to look for (open or close char)
+        :param symbol_type: symbol type (index in the SYMBOLS map).
+        """
+        retval = None, None
+        original_cursor = self.editor.textCursor()
+        self.editor.setTextCursor(cursor)
+        block = cursor.block()
+        data = get_block_symbol_data(self.editor, block)
+        self._match(symbol_type, data, block.position())
+        for deco in self._decorations:
+            if deco.character == self.SYMBOLS[symbol_type][character_type]:
+                retval = deco.line, deco.column
+                break
+        self.editor.setTextCursor(original_cursor)
+        self._clear_decorations()
+        return retval
+
+    def _refresh_decorations(self):
+        for deco in self._decorations:
+            self.editor.decorations.remove(deco)
+            if deco.match:
+                deco.set_foreground(self._match_foreground)
+                deco.set_background(self._match_background)
+            else:
+                deco.set_foreground(self._unmatch_foreground)
+                deco.set_background(self._unmatch_background)
+            self.editor.decorations.append(deco)
+
+    def on_state_changed(self, state):
+        if state:
+            self.editor.cursorPositionChanged.connect(self.do_symbols_matching)
         else:
-            charsGenerator = self._iterateDocumentCharsBackward(block, columnIndex)
+            self.editor.cursorPositionChanged.disconnect(
+                self.do_symbols_matching)
 
-        depth = 1
-        oposite = self._OPOSITE_BRACKET[bracket]
-        for block, columnIndex, char in charsGenerator:
-            if qpart.isCode(block, columnIndex):
-                if char == oposite:
-                    depth -= 1
-                    if depth == 0:
-                        return block, columnIndex
-                elif char == bracket:
-                    depth += 1
-        else:
-            return None, None
+    def _match(self, symbol, data, cursor_pos):
+        symbols = data[symbol]
+        for i, info in enumerate(symbols):
+            pos = (self.editor.textCursor().position() -
+                   self.editor.textCursor().block().position())
+            if info.character == self.SYMBOLS[symbol][OPEN] and \
+                    info.position == pos:
+                self._create_decoration(
+                    cursor_pos + info.position,
+                    self._match_left(
+                        symbol, self.editor.textCursor().block(), i + 1, 0))
+            elif info.character == self.SYMBOLS[symbol][CLOSE] and \
+                    info.position == pos - 1:
+                self._create_decoration(
+                    cursor_pos + info.position,
+                    self._match_right(
+                        symbol, self.editor.textCursor().block(), i - 1, 0))
 
-    def _makeMatchSelection(self, block, columnIndex, matched):
-        """Make matched or unmatched QTextEdit.ExtraSelection
+    def _match_left(self, symbol, current_block, i, cpt):
+        while current_block.isValid():
+            data = get_block_symbol_data(self.editor, current_block)
+            parentheses = data[symbol]
+            for j in range(i, len(parentheses)):
+                info = parentheses[j]
+                if info.character == self.SYMBOLS[symbol][OPEN]:
+                    cpt += 1
+                    continue
+                if info.character == self.SYMBOLS[symbol][CLOSE] and cpt == 0:
+                    self._create_decoration(current_block.position() +
+                                            info.position)
+                    return True
+                elif info.character == self.SYMBOLS[symbol][CLOSE]:
+                    cpt -= 1
+            current_block = current_block.next()
+            i = 0
+        return False
+
+    def _match_right(self, symbol, current_block, i, nb_right_paren):
+        while current_block.isValid():
+            data = get_block_symbol_data(self.editor, current_block)
+            parentheses = data[symbol]
+            for j in range(i, -1, -1):
+                if j >= 0:
+                    info = parentheses[j]
+                if info.character == self.SYMBOLS[symbol][CLOSE]:
+                    nb_right_paren += 1
+                    continue
+                if info.character == self.SYMBOLS[symbol][OPEN]:
+                    if nb_right_paren == 0:
+                        self._create_decoration(
+                            current_block.position() + info.position)
+                        return True
+                    else:
+                        nb_right_paren -= 1
+            current_block = current_block.previous()
+            data = get_block_symbol_data(self.editor, current_block)
+            parentheses = data[symbol]
+            i = len(parentheses) - 1
+        return False
+
+    def do_symbols_matching(self):
         """
-        selection = QTextEdit.ExtraSelection()
-
-        if matched:
-            bgColor = Qt.green
-        else:
-            bgColor = Qt.red
-
-        selection.format.setBackground(bgColor)
-        selection.cursor = QTextCursor(block)
-        selection.cursor.setPosition(block.position() + columnIndex)
-        selection.cursor.movePosition(QTextCursor.Right, QTextCursor.KeepAnchor)
-
-        return selection
-
-    def _highlightBracket(self, bracket, qpart, block, columnIndex):
-        """Highlight bracket and matching bracket
-        Return tuple of QTextEdit.ExtraSelection's
+        Performs symbols matching.
         """
-        try:
-            matchedBlock, matchedColumnIndex = self._findMatchingBracket(bracket, qpart, block, columnIndex)
-        except _TimeoutException:  # not found, time is over
-            return[] # highlight nothing
+        self._clear_decorations()
+        current_block = self.editor.textCursor().block()
+        data = get_block_symbol_data(self.editor, current_block)
+        pos = self.editor.textCursor().block().position()
+        for symbol in [PAREN, SQUARE, BRACE]:
+            self._match(symbol, data, pos)
 
-        if matchedBlock is not None:
-            self.currentMatchedBrackets = ((block, columnIndex), (matchedBlock, matchedColumnIndex))
-            return [self._makeMatchSelection(block, columnIndex, True),
-                    self._makeMatchSelection(matchedBlock, matchedColumnIndex, True)]
+    def _create_decoration(self, pos, match=True):
+        cursor = self.editor.textCursor()
+        cursor.setPosition(pos)
+        cursor.movePosition(cursor.NextCharacter, cursor.KeepAnchor)
+        deco = TextDecoration(cursor, draw_order=10)
+        deco.line = cursor.blockNumber()
+        deco.column = cursor.columnNumber()
+        deco.character = cursor.selectedText()
+        deco.match = match
+        if match:
+            deco.set_foreground(self._match_foreground)
+            deco.set_background(self._match_background)
         else:
-            self.currentMatchedBrackets = None
-            return [self._makeMatchSelection(block, columnIndex, False)]
+            deco.set_foreground(self._unmatch_foreground)
+            deco.set_background(self._unmatch_background)
+        self._decorations.append(deco)
+        self.editor.decorations.append(deco)
+        return cursor
 
-    def extraSelections(self, qpart, block, columnIndex):
-        """List of QTextEdit.ExtraSelection's, which highlighte brackets
-        """
-        blockText = block.text()
-
-        if columnIndex < len(blockText) and \
-             blockText[columnIndex] in self._ALL_BRACKETS and \
-             qpart.isCode(block, columnIndex):
-            return self._highlightBracket(blockText[columnIndex], qpart, block, columnIndex)
-        elif columnIndex > 0 and \
-           blockText[columnIndex - 1] in self._ALL_BRACKETS and \
-           qpart.isCode(block, columnIndex - 1):
-            return self._highlightBracket(blockText[columnIndex - 1], qpart, block, columnIndex - 1)
-        else:
-            self.currentMatchedBrackets = None
-            return []
+    def clone_settings(self, original):
+        self.match_background = original.match_background
+        self.match_foreground = original.match_foreground
+        self.unmatch_background = original.unmatch_background
+        self.unmatch_foreground = original.unmatch_foreground
