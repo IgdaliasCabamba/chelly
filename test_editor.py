@@ -5,7 +5,8 @@ from chelly.components.externals.chelly_completer.text_completer import Complete
 sys.dont_write_bytecode = True
 
 import os
-#os.environ["QT_API"] = "PySide6"
+os.environ["QT_API"] = "PySide6"
+os.environ["QT_QPA_PLATFORM"] = "xcb"
 
 from pygments.styles.dracula import DraculaStyle
 from pygments.styles.monokai import MonokaiStyle
@@ -41,7 +42,6 @@ logging.basicConfig(filename=DEBUG_OUTPUT_FILE, filemode='a',
 					format='%(name)s - %(levelname)s - %(message)s')
 
 app = QApplication(sys.argv)
-
 qtmodern_styles.dark(app)
 
 div = QSplitter()
@@ -303,20 +303,24 @@ line_number_margin.styles.highlight = QColor("#72c3f0")
 # Use these functions to share references:
 #editor1.panels.get(LineNumberMargin).shared_reference = editor.panels.get(LineNumberMargin).shared_reference
 #editor1.panels.shared_reference = editor.panels
-editor1.shared_reference = editor
+#editor1.shared_reference = editor
 
 #dont: editor1.style = editor.style
 #do: editor1.style.theme = editor.style.theme
 
-editor1.style.theme = editor.style.theme
+#editor1.style.theme = editor.style.theme
 #minimap.chelly_editor.style.theme = editor.style.theme
-editor1.style.theme.selection.foreground = QColor("#2b2b2b")
+#editor1.style.theme.selection.foreground = QColor("#2b2b2b")
 
 
 modern_window.resize(1000, 600)
 modern_window.move(200, 100)
 modern_window.setWindowTitle("ChellyEditor Preview")
 modern_window.show()
+#div.resize(1000, 600)
+#div.move(200, 100)
+#div.setWindowTitle("ChellyEditor Preview")
+#div.show()
 
 x = CompleterManager(editor)
 y: Completer = x.set_completion_list(Completer)

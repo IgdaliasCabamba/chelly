@@ -2,6 +2,8 @@ import weakref
 from qtpy import QtCore, QtWidgets, QtGui
 from ..core import Feature, TextEngine
 
+# BUG: qtpy bug, QUndoCommand not recognized with PyQt5 installed
+
 class MoveCursorCommand(QtGui.QUndoCommand):
     def __init__(self, new_pos, prev_pos, editor):
         super(MoveCursorCommand, self).__init__(
