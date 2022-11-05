@@ -39,7 +39,7 @@ class ChellyTheme:
         self.on_palette_changed = ChellyEvent(Any, QColor)
 
         self._selection_background = QColor(Qt.GlobalColor.darkBlue)
-        self._selection_background.setAlpha(70)
+        self._selection_background.setAlpha(180)
         self._selection_foreground = QColor(Qt.GlobalColor.white)
         self.__mount()
         

@@ -2,10 +2,62 @@
 """
 This module contains the symbol matcher mode
 """
-from pyqode.core.api import get_block_symbol_data
-from pyqode.core.api.decoration import TextDecoration
-from pyqode.core.api.mode import Mode
-from pyqode.qt import QtGui
+from ..core import Feature, TextDecoration
+from qtpy import QtGui
+
+class ParenthesisInfo(object):
+    """
+    Stores information about a parenthesis in a line of code.
+    """
+
+    def __init__(self, pos, char):
+        #: Position of the parenthesis, expressed as a number of character
+        self.position = pos
+        #: The parenthesis character, one of "(", ")", "{", "}", "[", "]"
+        self.character = char
+
+def get_block_symbol_data(editor, block):
+    """
+    Gets the list of ParenthesisInfo for specific text block.
+    :param editor: Code edit instance
+    :param block: block to parse
+    """
+    def list_symbols(editor, block, character):
+        """
+        Retuns  a list of symbols found in the block text
+        :param editor: code edit instance
+        :param block: block to parse
+        :param character: character to look for.
+        """
+        text = block.text()
+        symbols = []
+        cursor = QtGui.QTextCursor(block)
+        cursor.movePosition(cursor.StartOfBlock)
+        pos = text.find(character, 0)
+        cursor.movePosition(cursor.Right, cursor.MoveAnchor, pos)
+
+        while pos != -1:
+            
+            # skips symbols in string literal or comment
+            info = ParenthesisInfo(pos, character)
+            symbols.append(info)
+
+            pos = text.find(character, pos + 1)
+            cursor.movePosition(cursor.StartOfBlock)
+            cursor.movePosition(cursor.Right, cursor.MoveAnchor, pos)
+        return symbols
+
+    parentheses = sorted(
+        list_symbols(editor, block, '(') + list_symbols(editor, block, ')'),
+        key=lambda x: x.position)
+    square_brackets = sorted(
+        list_symbols(editor, block, '[') + list_symbols(editor, block, ']'),
+        key=lambda x: x.position)
+    braces = sorted(
+        list_symbols(editor, block, '{') + list_symbols(editor, block, '}'),
+        key=lambda x: x.position)
+    return parentheses, square_brackets, braces
+
 
 
 #: symbols indices in SymbolMatcherMode.SYMBOLS map
@@ -18,7 +70,7 @@ OPEN = 0
 CLOSE = 1
 
 
-class SymbolMatcherMode(Mode):
+class SymbolMatcher(Feature):
     """ Highlights matching symbols (parentheses, braces,...)
     .. note:: This mode requires the document to be filled with
         :class:`pyqode.core.api.TextBlockUserData`, i.e. a
@@ -44,13 +96,6 @@ class SymbolMatcherMode(Mode):
     def match_background(self, value):
         self._match_background = value
         self._refresh_decorations()
-        if self.editor:
-            for clone in self.editor.clones:
-                try:
-                    clone.modes.get(self.__class__).match_background = value
-                except KeyError:
-                    # this should never happen since we're working with clones
-                    pass
 
     @property
     def match_foreground(self):
@@ -63,13 +108,7 @@ class SymbolMatcherMode(Mode):
     def match_foreground(self, value):
         self._match_foreground = value
         self._refresh_decorations()
-        if self.editor:
-            for clone in self.editor.clones:
-                try:
-                    clone.modes.get(self.__class__).match_foreground = value
-                except KeyError:
-                    # this should never happen since we're working with clones
-                    pass
+
 
     @property
     def unmatch_background(self):
@@ -82,13 +121,6 @@ class SymbolMatcherMode(Mode):
     def unmatch_background(self, value):
         self._unmatch_background = value
         self._refresh_decorations()
-        if self.editor:
-            for clone in self.editor.clones:
-                try:
-                    clone.modes.get(self.__class__).unmatch_background = value
-                except KeyError:
-                    # this should never happen since we're working with clones
-                    pass
 
     @property
     def unmatch_foreground(self):
@@ -101,21 +133,15 @@ class SymbolMatcherMode(Mode):
     def unmatch_foreground(self, value):
         self._unmatch_foreground = value
         self._refresh_decorations()
-        if self.editor:
-            for clone in self.editor.clones:
-                try:
-                    clone.modes.get(self.__class__).unmatch_foreground = value
-                except KeyError:
-                    # this should never happen since we're working with clones
-                    pass
 
-    def __init__(self):
-        super(SymbolMatcherMode, self).__init__()
+    def __init__(self, editor):
+        super().__init__(editor)
         self._decorations = []
         self._match_background = QtGui.QBrush(QtGui.QColor('#B4EEB4'))
         self._match_foreground = QtGui.QColor('red')
         self._unmatch_background = QtGui.QBrush(QtGui.QColor('transparent'))
         self._unmatch_foreground = QtGui.QColor('red')
+        self.editor.cursorPositionChanged.connect(self.do_symbols_matching)
 
     def _clear_decorations(self):
         for deco in self._decorations:
@@ -155,13 +181,6 @@ class SymbolMatcherMode(Mode):
                 deco.set_foreground(self._unmatch_foreground)
                 deco.set_background(self._unmatch_background)
             self.editor.decorations.append(deco)
-
-    def on_state_changed(self, state):
-        if state:
-            self.editor.cursorPositionChanged.connect(self.do_symbols_matching)
-        else:
-            self.editor.cursorPositionChanged.disconnect(
-                self.do_symbols_matching)
 
     def _match(self, symbol, data, cursor_pos):
         symbols = data[symbol]

@@ -44,12 +44,12 @@ class ChellyStyleManager(Manager):
         self.__theme = theme
     
     def update_palette(self, *args, **kargs) -> None:
+        self.__palette.setBrush(*args, **kargs)
         self.__palette.setColor(*args, **kargs)
         self.editor.setPalette(self.__palette)
     
     def __shared_reference(self, other_manager:Self) -> Self:
-        from_theme = other_manager.theme
-        self.theme = from_theme
+        self.theme = other_manager.theme
         
     shared_reference = property(fset=__shared_reference)
     del __shared_reference

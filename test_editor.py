@@ -20,7 +20,7 @@ from chelly.managers import FeaturesManager, LanguagesManager, PanelsManager
 from chelly.languages import PythonLanguage, JavaScriptLanguage
 from chelly.languages.sh.python_test import PythonLanguageNew
 from chelly.features import (AutoIndent, CaretLineHighLighter, CursorHistory,
-							 IndentationGuides, SmartBackSpace, IndentationMarks, EdgeLine, AutoComplete, ZoomMode)
+							 IndentationGuides, SmartBackSpace, IndentationMarks, EdgeLine, AutoComplete, ZoomMode, SymbolMatcher)
 from chelly.core import Panel
 from chelly.components import (NotificationPanel, HorizontalScrollBar,
 							   LineNumberMargin, MarkerObject, MarkerMargin, MiniMap,
@@ -134,6 +134,7 @@ editor.features.append(IndentationMarks)
 editor.features.append(EdgeLine)
 editor.features.append(AutoComplete)
 editor.features.append(ZoomMode)
+symbol_matcher = editor.features.append(SymbolMatcher)
 symbol_margin: MarkerMargin = editor.panels.append(MarkerMargin, Panel.Position.LEFT, Panel.WidgetSettings(level = 2))
 editor.panels.append(LineNumberMargin, Panel.Position.LEFT, Panel.WidgetSettings(level = 2))
 editor.panels.append(EditionMargin, Panel.Position.LEFT, Panel.WidgetSettings(level = 2))
@@ -304,9 +305,10 @@ line_number_margin.styles.highlight = QColor("#72c3f0")
 #editor1.panels.get(LineNumberMargin).shared_reference = editor.panels.get(LineNumberMargin).shared_reference
 #editor1.panels.shared_reference = editor.panels
 
-editor1.style.theme.selection_background = QColor(Qt.GlobalColor.red)
-
 editor1.shared_reference = editor
+
+# TODO: fix style shared reference
+
 #editor.shared_reference = editor1 BUG: autocomplete change focus
 #editor1.style.shared_reference = editor.style
 
@@ -316,7 +318,8 @@ editor1.shared_reference = editor
 #editor1.style.theme = editor.style.theme
 #minimap.chelly_editor.style.theme = editor.style.theme
 
-editor1.style.theme.selection_foreground = QColor("#2b2b2b")
+#editor1.style.theme.selection_foreground = QColor("#2b2b2b")
+#editor.style.theme.selection_background = QColor(Qt.GlobalColor.red)
 
 modern_window.resize(1000, 600)
 modern_window.move(200, 100)

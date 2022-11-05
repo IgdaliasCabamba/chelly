@@ -1,3 +1,4 @@
+from .brackethlighter import SymbolMatcher
 from .line_highlighter import CaretLineHighLighter
 from .indentation_guides import IndentationGuides
 from .indentation_marks import IndentationMarks
