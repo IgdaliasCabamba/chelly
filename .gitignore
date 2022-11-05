@@ -1,5 +1,5 @@
 **/__pycache__
-cenv/
+pyenv/
 .dev*
 dev/*
 !dev/local_resources

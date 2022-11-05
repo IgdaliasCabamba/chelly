@@ -106,5 +106,5 @@ class MiniMapEditor(DocumentMap):
         dy = max_scroll_y / (self.editor.verticalScrollBar().value()+1)
         if dy <= 0:
             dy = 1
-
-        self.verticalScrollBar().setValue(self.editor.verticalScrollBar().value()//dy)
+        
+        self.verticalScrollBar().setValue(int(self.editor.verticalScrollBar().value()/dy))

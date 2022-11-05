@@ -56,7 +56,7 @@ class HorizontalScrollBar(Panel):
         """
         Returns the panel size hint
         """
-        size_hint = QSize(w=14, h=14)
+        size_hint = QSize(14, 14)
         size_hint.setWidth(14)
         size_hint.setHeight(14)
         return size_hint
@@ -110,7 +110,7 @@ class VerticalScrollBar(Panel):
         """
         Returns the panel size hint
         """
-        size_hint = QSize(w=14, h=14)
+        size_hint = QSize(14, 14)
         size_hint.setWidth(14)
         size_hint.setHeight(14)
         return size_hint

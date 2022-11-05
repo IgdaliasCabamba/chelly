@@ -6,7 +6,7 @@ sys.dont_write_bytecode = True
 
 import os
 os.environ["QT_API"] = "PySide6"
-os.environ["QT_QPA_PLATFORM"] = "xcb"
+os.environ["QT_QPA_PLATFORM"] = "xcb" # Wayland scale issue
 
 from pygments.styles.dracula import DraculaStyle
 from pygments.styles.monokai import MonokaiStyle
@@ -303,15 +303,15 @@ line_number_margin.styles.highlight = QColor("#72c3f0")
 # Use these functions to share references:
 #editor1.panels.get(LineNumberMargin).shared_reference = editor.panels.get(LineNumberMargin).shared_reference
 #editor1.panels.shared_reference = editor.panels
-#editor1.shared_reference = editor
+editor1.shared_reference = editor
+#editor.shared_reference = editor1 BUG: autocomplete change focus
 
 #dont: editor1.style = editor.style
 #do: editor1.style.theme = editor.style.theme
 
-#editor1.style.theme = editor.style.theme
-#minimap.chelly_editor.style.theme = editor.style.theme
-#editor1.style.theme.selection.foreground = QColor("#2b2b2b")
-
+editor1.style.theme = editor.style.theme
+minimap.chelly_editor.style.theme = editor.style.theme
+editor1.style.theme.selection.foreground = QColor("#2b2b2b")
 
 modern_window.resize(1000, 600)
 modern_window.move(200, 100)

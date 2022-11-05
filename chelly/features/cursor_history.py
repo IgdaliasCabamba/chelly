@@ -2,9 +2,18 @@ import weakref
 from qtpy import QtCore, QtWidgets, QtGui
 from ..core import Feature, TextEngine
 
+try:
+    #PySide6 (lol)
+    from qtpy.QtGui import QUndoCommand, QUndoStack
+
+except ImportError:
+    
+    #PyQt5 (lol)
+    from qtpy.QtWidgets import QUndoCommand, QUndoStack
+
 # BUG: qtpy bug, QUndoCommand not recognized with PyQt5 installed
 
-class MoveCursorCommand(QtGui.QUndoCommand):
+class MoveCursorCommand(QUndoCommand):
     def __init__(self, new_pos, prev_pos, editor):
         super(MoveCursorCommand, self).__init__(
             '(Goto line %d)' % (new_pos[0] + 1))
@@ -29,7 +38,7 @@ class CursorHistory(Feature):
     def __init__(self, editor):
         super().__init__(editor)
         self._prev_pos = 0, 0
-        self.undo_stack = QtGui.QUndoStack()
+        self.undo_stack = QUndoStack()
         self.undo_stack.setUndoLimit(100)
 
         self.action_undo = self.undo_stack.createUndoAction(self.editor)

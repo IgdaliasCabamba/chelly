@@ -181,7 +181,7 @@ class MarkerMargin(Panel):
         metrics = QFontMetricsF(self.editor.font())
         size_hint = QSize()
         size_hint.setWidth(16)
-        size_hint.setHeight(metrics.height())
+        size_hint.setHeight(int(metrics.height()))
         return size_hint
 
     def paintEvent(self, event):

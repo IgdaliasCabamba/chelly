@@ -85,11 +85,12 @@ class EdgeLine(Feature):
             return None
             
         offset = self.editor.contentOffset().x() + self.editor.document().documentMargin()
-        x80 = FontEngine(self.editor.font()).real_horizontal_advance(
+        line_x_point = FontEngine(self.editor.font()).real_horizontal_advance(
             Character.LARGEST.value,
             min_zero=True) * self.properties.position
-        x80 += offset
+        line_x_point += offset
+        int_line_x_point = int(line_x_point)
         
         with QtGui.QPainter(self.editor.viewport()) as painter:
             painter.setPen(self.styles.pen)
-            painter.drawLine(x80, 0, x80, EdgeLine.Defaults.LINE_COVER_VIEW_SIZE)
+            painter.drawLine(int_line_x_point, 0, int_line_x_point, EdgeLine.Defaults.LINE_COVER_VIEW_SIZE)
