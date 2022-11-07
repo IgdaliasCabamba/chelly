@@ -8,7 +8,7 @@ from qtpy.QtGui import QFont, QTextOption
 from qtpy.QtWidgets import QPlainTextEdit
 
 from .utils import Character, FontEngine
-from .base import BaseElement
+from ..internal import BaseElement
 
 class PropertyCollections:
 

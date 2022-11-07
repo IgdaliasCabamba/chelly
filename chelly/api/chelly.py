@@ -1,15 +1,18 @@
 from typing import Dict, Union
-from typing_extensions import Self
-from qtpy import QtGui
-from qtpy.QtCore import Qt, Signal, QSize, QPoint
-from qtpy.QtWidgets import QPlainTextEdit, QLabel
 
-from ..core import (ChellyStyle, ChellyDocument, ChellyDocumentExceptions,
-                    FeaturesExceptions, LexerExceptions, PanelsExceptions,
-                    Properties, PropertiesExceptions, StyleExceptions,
-                    TextExceptions, BasicCommands, TextEngine)
-from ..managers import (FeaturesManager, LanguagesManager,
-                        PanelsManager, TextDecorationsManager)
+from qtpy import QtGui
+from qtpy.QtCore import QPoint, QSize, Qt, Signal
+from qtpy.QtWidgets import QLabel, QPlainTextEdit
+from typing_extensions import Self
+
+from ..core import (BasicCommands, ChellyDocument, ChellyStyle, Properties,
+                    TextEngine)
+from ..internal import (ChellyDocumentExceptions, FeaturesExceptions,
+                        LexerExceptions, PanelsExceptions,
+                        PropertiesExceptions, StyleExceptions, TextExceptions)
+from ..managers import (FeaturesManager, LanguagesManager, PanelsManager,
+                        TextDecorationsManager)
+
 
 class ChellyEditor(QPlainTextEdit):
 

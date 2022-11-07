@@ -1,9 +1,4 @@
-from .base import BaseElement
-from .exceptions import *
 from .chelly_cache import ChellyCache
-from .feature import Feature
-from .manager import Manager
-from .panel import *
 from .properties import Properties
 from .ui import ChellyTheme, ChellyStyle
 from .utils import (Character, DelayJobRunner, FontEngine, TextBlockHelper, ChellyEvent,
@@ -12,3 +7,4 @@ from .programming import (ColorScheme, Highlighter, Language, SyntaxHighlighter,
                     TextBlockUserData, ChellyDocument)
 
 from .commands import BasicCommands
+from .dev import Feature, Panel, Manager

@@ -2,7 +2,7 @@ from textwrap import indent
 from typing_extensions import Self
 from qtpy.QtGui import QPainter, QColor, QFontMetrics, QPen, QPaintEvent
 from qtpy.QtCore import Qt
-from ..core import Feature, TextEngine, Character, BaseElement
+from ..core import Feature, TextEngine, Character
 from typing import List, Any
 from dataclasses import dataclass
 import re

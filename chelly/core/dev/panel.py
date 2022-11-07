@@ -4,11 +4,11 @@ from typing import TYPE_CHECKING, Any, List
 from typing_extensions import Self
 
 if TYPE_CHECKING:
-    from ..api import ChellyEditor
+    from ...api import ChellyEditor
 
 from dataclasses import dataclass
 from qtpy.QtWidgets import QFrame
-from .base import BaseElement
+from ...internal import BaseElement
 
 class Panel(QFrame):
     

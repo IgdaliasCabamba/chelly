@@ -35,7 +35,7 @@ from chelly.managers import FeaturesManager, LanguagesManager, PanelsManager
 from dev.libs.qtmodern import styles as qtmodern_styles
 from dev.libs.qtmodern import windows as qtmodern_windows
 
-os.environ["QT_API"] = "PySide6"
+os.environ["QT_API"] = "pyside6"
 os.environ["QT_QPA_PLATFORM"] = "xcb"  # Wayland scale issue
 
 

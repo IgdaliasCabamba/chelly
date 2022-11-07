@@ -14,7 +14,7 @@ The module contains the following classes:
 
 from typing import Dict, List
 from typing_extensions import Self
-from ..core.manager import Manager
+from ..core.dev import Manager
 from ..core import Feature
 
 class FeaturesManager(Manager):

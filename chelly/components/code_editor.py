@@ -4,10 +4,11 @@ from qtpy import QtGui
 from qtpy.QtCore import Qt, Signal, QSize
 from qtpy.QtWidgets import QPlainTextEdit, QLabel
 
-from ..core import (ChellyDocument, ChellyStyle, ChellyDocumentExceptions,
-                    FeaturesExceptions, LexerExceptions, PanelsExceptions,
-                    Properties, PropertiesExceptions, StyleExceptions,
-                    TextExceptions, BasicCommands, TextEngine)
+from ..core import (BasicCommands, ChellyDocument, ChellyStyle, Properties,
+                    TextEngine)
+from ..internal import (ChellyDocumentExceptions, FeaturesExceptions,
+                        LexerExceptions, PanelsExceptions,
+                        PropertiesExceptions, StyleExceptions, TextExceptions)
 from ..managers import (FeaturesManager, LanguagesManager,
                         PanelsManager, TextDecorationsManager)
 

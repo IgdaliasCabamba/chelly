@@ -1,11 +1,11 @@
 from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any, List
-from .chelly_cache import ChellyCache
-from .base import BaseElement
+from ..chelly_cache import ChellyCache
+from ...internal import BaseElement
 
 if TYPE_CHECKING:
-    from ..api import ChellyEditor
+    from ...api import ChellyEditor
 
 class Feature(object):
     
