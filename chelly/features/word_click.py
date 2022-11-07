@@ -2,10 +2,10 @@
 """
 This module contains the WordClickMode
 """
-from ..core import Feature, TextHelper, DelayJobRunner, TextDecoration
+from ..core import Feature, TextEngine, DelayJobRunner, TextDecoration, ChellyEvent
 from qtpy import QtCore, QtGui
 
-class WordClickMode(Feature, QtCore.QObject):
+class WordClick(Feature):
     """ Adds support for word click events.
     It will highlight the click-able word when the user press control and move
     the mouse over a word.
@@ -18,32 +18,20 @@ class WordClickMode(Feature, QtCore.QObject):
     """
     #: Signal emitted when a word is clicked. The parameter is a
     #: QTextCursor with the clicked word set as the selected text.
-    word_clicked = QtCore.Signal(QtGui.QTextCursor)
+    word_clicked = ChellyEvent(QtGui.QTextCursor)
 
-    def __init__(self):
-        
-        Feature.__init__()
-        QtCore.QObject.__init__()
-
+    def __init__(self, editor):
+        super().__init__(editor)
         self._previous_cursor_start = -1
         self._previous_cursor_end = -1
         self._deco = None
         self._cursor = None
         self._timer = DelayJobRunner(delay=200)
 
-    def on_state_changed(self, state):
-        if state:
-            self.editor.mouse_moved.connect(self._on_mouse_moved)
-            self.editor.mouse_released.connect(self._on_mouse_released)
-            self.editor.key_released.connect(self._on_key_released)
-            self.editor.mouse_double_clicked.connect(
-                self._on_mouse_double_clicked)
-        else:
-            self.editor.mouse_moved.disconnect(self._on_mouse_moved)
-            self.editor.mouse_released.disconnect(self._on_mouse_released)
-            self.editor.key_released.disconnect(self._on_key_released)
-            self.editor.mouse_double_clicked.disconnect(
-                self._on_mouse_double_clicked)
+        self.editor.on_mouse_moved.connect(self._on_mouse_moved)
+        self.editor.on_mouse_released.connect(self._on_mouse_released)
+        self.editor.on_key_released.connect(self._on_key_released)
+        self.editor.on_mouse_double_clicked.connect(self._on_mouse_double_clicked)
 
     def _on_mouse_double_clicked(self):
         self._timer.cancel_requests()
@@ -55,7 +43,7 @@ class WordClickMode(Feature, QtCore.QObject):
 
     def _select_word_cursor(self):
         """ Selects the word under the mouse cursor. """
-        cursor = TextHelper(self.editor).word_under_mouse_cursor()
+        cursor = TextEngine(self.editor).word_under_mouse_cursor()
         if (self._previous_cursor_start != cursor.selectionStart() and
                 self._previous_cursor_end != cursor.selectionEnd()):
             self._remove_decoration()
@@ -75,7 +63,7 @@ class WordClickMode(Feature, QtCore.QObject):
     def _on_mouse_moved(self, event):
         """ mouse moved callback """
         if event.modifiers() & QtCore.Qt.ControlModifier:
-            cursor = TextHelper(self.editor).word_under_mouse_cursor()
+            cursor = TextEngine(self.editor).word_under_mouse_cursor()
             if (not self._cursor or
                     cursor.position() != self._cursor.position()):
                 self._check_word_cursor(cursor)
@@ -85,12 +73,12 @@ class WordClickMode(Feature, QtCore.QObject):
             self._clear_selection()
 
     def _check_word_cursor(self, cursor):
-        pass
+        print(cursor.selectedText())
 
     def _on_mouse_released(self, event):
         """ mouse pressed callback """
         if event.button() == 1 and self._deco:
-            cursor = TextHelper(self.editor).word_under_mouse_cursor()
+            cursor = TextEngine(self.editor).word_under_mouse_cursor()
             if cursor and cursor.selectedText():
                 self._timer.request_job(
                     self.word_clicked.emit, cursor)

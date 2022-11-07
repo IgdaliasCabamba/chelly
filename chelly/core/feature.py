@@ -55,8 +55,8 @@ class Feature(object):
         }
 
     @shared_reference.setter
-    def shared_reference(self, panel_data:dict) -> None:
-        for key, value in panel_data.items():
+    def shared_reference(self, feature_data:dict) -> None:
+        for key, value in feature_data.items():
             if hasattr(self, key):
                 try:
                     setattr(self, key, value)

@@ -1,7 +1,7 @@
 from __future__ import annotations
 from typing import TYPE_CHECKING, Tuple, Union, Any
 from qtpy.QtGui import QTextCursor, QTextBlock, QFont, QFontMetrics
-from qtpy.QtCore import QRect
+from qtpy.QtCore import QRect, QPoint
 import enum
 
 if TYPE_CHECKING:
@@ -222,6 +222,70 @@ class TextEngine:
         while (previous_block and previous_block.blockNumber() and previous_block.text().strip() == ''):
             previous_block = previous_block.previous()
         return previous_block
+    
+    def word_under_cursor(self, select_whole_word=False, text_cursor=None):
+        """
+        Gets the word under cursor using the separators defined by
+        :attr:`pyqode.core.api.CodeEdit.word_separators`.
+        .. note: Instead of returning the word string, this function returns
+            a QTextCursor, that way you may get more information than just the
+            string. To get the word, just call ``selectedText`` on the returned
+            value.
+        :param select_whole_word: If set to true the whole word is selected,
+         else the selection stops at the cursor position.
+        :param text_cursor: Optional custom text cursor (e.g. from a
+            QTextDocument clone)
+        :returns: The QTextCursor that contains the selected word.
+        """
+        editor = self._editor
+        if not text_cursor:
+            text_cursor = editor.textCursor()
+        word_separators = [" ", ".", "," ,"?", "<", ">", "=", "/", "(", ")"]
+        end_pos = start_pos = text_cursor.position()
+        # select char by char until we are at the original cursor position.
+        while not text_cursor.atStart():
+            text_cursor.movePosition(
+                text_cursor.Left, text_cursor.KeepAnchor, 1)
+            try:
+                char = text_cursor.selectedText()[0]
+                word_separators = [" ", ".", "," ,"?", "<", ">", "=", "/", "(", ")"]
+                selected_txt = text_cursor.selectedText()
+                if (selected_txt in word_separators and
+                        (selected_txt != "n" and selected_txt != "t") or
+                        char.isspace()):
+                    break  # start boundary found
+            except IndexError:
+                break  # nothing selectable
+            start_pos = text_cursor.position()
+            text_cursor.setPosition(start_pos)
+        if select_whole_word:
+            # select the resot of the word
+            text_cursor.setPosition(end_pos)
+            while not text_cursor.atEnd():
+                text_cursor.movePosition(text_cursor.Right,
+                                         text_cursor.KeepAnchor, 1)
+                char = text_cursor.selectedText()[0]
+                selected_txt = text_cursor.selectedText()
+                if (selected_txt in word_separators and
+                        (selected_txt != "n" and selected_txt != "t") or
+                        char.isspace()):
+                    break  # end boundary found
+                end_pos = text_cursor.position()
+                text_cursor.setPosition(end_pos)
+        # now that we habe the boundaries, we can select the text
+        text_cursor.setPosition(start_pos)
+        text_cursor.setPosition(end_pos, text_cursor.KeepAnchor)
+        return text_cursor
+
+    def word_under_mouse_cursor(self):
+        """
+        Selects the word under the **mouse** cursor.
+        :return: A QTextCursor with the word under mouse cursor selected.
+        """
+        editor = self._editor
+        text_cursor = editor.cursorForPosition(editor._last_mouse_pos)
+        text_cursor = self.word_under_cursor(True, text_cursor)
+        return text_cursor
 
     # Cursor
     

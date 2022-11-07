@@ -4,11 +4,11 @@ from qtpy import QtGui
 from qtpy.QtCore import Qt, Signal, QSize
 from qtpy.QtWidgets import QPlainTextEdit, QLabel
 
-from ..core import (ChellyDocument, ChellyDocumentExceptions,
+from ..core import (ChellyDocument, ChellyStyle, ChellyDocumentExceptions,
                     FeaturesExceptions, LexerExceptions, PanelsExceptions,
                     Properties, PropertiesExceptions, StyleExceptions,
                     TextExceptions, BasicCommands, TextEngine)
-from ..managers import (ChellyStyleManager, FeaturesManager, LanguagesManager,
+from ..managers import (FeaturesManager, LanguagesManager,
                         PanelsManager, TextDecorationsManager)
 
 class __CodeEditorCopy(QPlainTextEdit):
@@ -41,7 +41,7 @@ class __CodeEditorCopy(QPlainTextEdit):
         self._language = LanguagesManager(self)
         self._properties = Properties(self)
         self._chelly_document = ChellyDocument(self)
-        self._style = ChellyStyleManager(self)
+        self._style = ChellyStyle(self)
         self._decorations = TextDecorationsManager(self)
         self.__commands = BasicCommands(self)
 
@@ -139,18 +139,18 @@ class __CodeEditorCopy(QPlainTextEdit):
                 f"invalid type: {new_manager} expected: {FeaturesManager}")
 
     @property
-    def style(self) -> ChellyStyleManager:
+    def style(self) -> ChellyStyle:
         return self._style
 
     @style.setter
-    def style(self, new_style: ChellyStyleManager) -> None:
-        if new_style is ChellyStyleManager:
+    def style(self, new_style: ChellyStyle) -> None:
+        if new_style is ChellyStyle:
             self._style = new_style(self)
-        elif isinstance(new_style, ChellyStyleManager):
+        elif isinstance(new_style, ChellyStyle):
             self._style = new_style
         else:
             raise StyleExceptions.StyleValueError(
-                f"invalid type: {new_style} expected: {ChellyStyleManager}")
+                f"invalid type: {new_style} expected: {ChellyStyle}")
 
     @property
     def decorations(self) -> TextDecorationsManager:

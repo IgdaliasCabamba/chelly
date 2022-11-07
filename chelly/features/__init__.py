@@ -7,4 +7,5 @@ from .smart_backspace import SmartBackSpace
 from .cursor_history import CursorHistory
 from .edge_line import EdgeLine
 from .autocomplete import AutoComplete
+from .word_click import WordClick
 from .zoom import ZoomMode

@@ -1,16 +1,15 @@
 from typing import Dict, Union
 from typing_extensions import Self
 from qtpy import QtGui
-from qtpy.QtCore import Qt, Signal, QSize
+from qtpy.QtCore import Qt, Signal, QSize, QPoint
 from qtpy.QtWidgets import QPlainTextEdit, QLabel
 
-from ..core import (ChellyDocument, ChellyDocumentExceptions,
+from ..core import (ChellyStyle, ChellyDocument, ChellyDocumentExceptions,
                     FeaturesExceptions, LexerExceptions, PanelsExceptions,
                     Properties, PropertiesExceptions, StyleExceptions,
                     TextExceptions, BasicCommands, TextEngine)
-from ..managers import (ChellyStyleManager, FeaturesManager, LanguagesManager,
+from ..managers import (FeaturesManager, LanguagesManager,
                         PanelsManager, TextDecorationsManager)
-
 
 class ChellyEditor(QPlainTextEdit):
 
@@ -19,6 +18,9 @@ class ChellyEditor(QPlainTextEdit):
     on_updated = Signal()
     on_key_pressed = Signal(object)
     on_key_released = Signal(object)
+    on_mouse_moved = Signal(object)
+    on_mouse_released = Signal(object)
+    on_mouse_double_clicked = Signal(object)
     on_text_setted = Signal(str)
     on_mouse_wheel_activated = Signal(object)
     on_chelly_document_changed = Signal(object)
@@ -40,21 +42,20 @@ class ChellyEditor(QPlainTextEdit):
         self._language = LanguagesManager(self)
         self._properties = Properties(self)
         self._chelly_document = ChellyDocument(self)
-        self._style = ChellyStyleManager(self)
+        self._style = ChellyStyle(self)
         self._decorations = TextDecorationsManager(self)
         self.__commands = BasicCommands(self)
 
         self._visible_blocks = list()
+        self._last_mouse_pos = QPoint(0,0)
         self.__build()
 
     def __build(self):
         self._properties.default()
         self.setLineWrapMode(self.NoWrap)
         self.setCenterOnScroll(True)
+        self.setMouseTracking(True)
         self._update_visible_blocks(None)
-
-        # TODO:
-        self._style.theme.on_palette_changed.connect(self.update_palette)
 
     def update_state(self):
         self.on_updated.emit()
@@ -141,18 +142,18 @@ class ChellyEditor(QPlainTextEdit):
                 f"invalid type: {new_manager} expected: {FeaturesManager}")
 
     @property
-    def style(self) -> ChellyStyleManager:
+    def style(self) -> ChellyStyle:
         return self._style
 
     @style.setter
-    def style(self, new_style: ChellyStyleManager) -> None:
-        if new_style is ChellyStyleManager:
+    def style(self, new_style: ChellyStyle) -> None:
+        if new_style is ChellyStyle:
             self._style = new_style(self)
-        elif isinstance(new_style, ChellyStyleManager):
+        elif isinstance(new_style, ChellyStyle):
             self._style = new_style
         else:
             raise StyleExceptions.StyleValueError(
-                f"invalid type: {new_style} expected: {ChellyStyleManager}")
+                f"invalid type: {new_style} expected: {ChellyStyle}")
 
     @property
     def decorations(self) -> TextDecorationsManager:
@@ -238,6 +239,19 @@ class ChellyEditor(QPlainTextEdit):
         self.on_mouse_wheel_activated.emit(event)
         return super().wheelEvent(event)
     
+    def mouseMoveEvent(self, event: QtGui.QMouseEvent) -> None:
+        self.on_mouse_moved.emit(event)
+        self._last_mouse_pos = event.pos()
+        return super().mouseMoveEvent(event)
+    
+    def mouseReleaseEvent(self, event: QtGui.QMouseEvent) -> None:
+        self.on_mouse_released.emit(event)
+        return super().mouseReleaseEvent(event)
+    
+    def mouseDoubleClickEvent(self, event: QtGui.QMouseEvent) -> None:
+        self.on_mouse_double_clicked.emit(event)
+        return super().mouseDoubleClickEvent(event)
+    
     def setPlainText(self, text: str) -> None:
         self.on_text_setted.emit(text)
         self._update_visible_blocks()
@@ -248,15 +262,7 @@ class ChellyEditor(QPlainTextEdit):
         self.__cached_block_count = TextEngine(new_chelly_document.editor).line_count
         old_chelly_document.on_contents_changed.disconnect(self._update_contents)
         new_chelly_document.on_contents_changed.connect(self._update_contents)
-    
-    def _setup_theme(self, old_theme: object, new_theme: object):
-        self._style.theme.on_palette_changed.connect(self.update_palette)
-    
-    def update_palette(self, *args, **kargs) -> None:
-        palette = self.palette()
-        palette.setBrush(*args, **kargs)
-        palette.setColor(*args, **kargs)
-        self.setPalette(palette)
+        
     
     def _update_contents(self, editor:QPlainTextEdit, pos:int, charsrem:int, charsadd:int):
         line_number = TextEngine(editor).current_line_nbr
@@ -317,14 +323,12 @@ class ChellyEditor(QPlainTextEdit):
         return {
             "panels":self.panels,
             "features":self.features,
-            "style":self.style,
             "decorations":self.decorations,
+            "style":self.style,
         }
     @property
     def helpers(self) -> dict:
-        return {
-            "chelly_document":self.chelly_document
-        }
+        return {"chelly_document":self.chelly_document,}
     
     def __shared_reference(self, other_editor:Self):
         for key, value in other_editor.helpers.items():
@@ -344,3 +348,12 @@ class ChellyEditor(QPlainTextEdit):
             
     shared_reference = property(fset=__shared_reference)
     del __shared_reference
+
+    #TODO: Move this:
+    def set_mouse_cursor(self, cursor):
+        """
+        Changes the viewport's cursor
+        :param cursor: the mouse cursor to set.
+        :type cursor: QtWidgets.QCursor
+        """
+        self.viewport().setCursor(cursor)
