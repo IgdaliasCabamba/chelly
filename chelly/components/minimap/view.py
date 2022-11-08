@@ -7,11 +7,16 @@ from ...core import Panel
 from .editor import MiniMapEditor
 
 class MiniMap(Panel):
-
-    class Styles(Panel._Styles):
-
-        def __init__(self, instance: Any) -> None:
-            super().__init__(instance)
+            
+    class Properties(Panel._Properties):
+        def __init__(self, minimap_instance) -> None:
+            super().__init__(minimap_instance)
+            self.__max_width = 140
+            self.__min_width = 40
+            self.__width_percentage = 40
+            self.__resizable = True
+            self.__chelly_editor:MiniMapEditor = self.instance.chelly_editor
+            self.__chelly_editor.slider.setFixedWidth(self.__max_width)
             self.__drop_shadow = None
             self.default()
         
@@ -32,16 +37,6 @@ class MiniMap(Panel):
             if isinstance(new_shadow, QGraphicsDropShadowEffect):
                 self.__drop_shadow = new_shadow
                 self.instance.setGraphicsEffect(self.__drop_shadow)
-    
-    class Properties(Panel._Properties):
-        def __init__(self, minimap_instance) -> None:
-            super().__init__(minimap_instance)
-            self.__max_width = 140
-            self.__min_width = 40
-            self.__width_percentage = 40
-            self.__resizable = True
-            self.__chelly_editor:MiniMapEditor = self.instance.chelly_editor
-            self.__chelly_editor.slider.setFixedWidth(self.__max_width)
         
         @property
         def max_width_hint(self) -> int:
@@ -109,15 +104,6 @@ class MiniMap(Panel):
             self.__properties = new_properties
     
     @property
-    def styles(self) -> Styles:
-        return self.__styles
-    
-    @styles.setter
-    def styles(self, new_styles:Styles) -> None:
-        if isinstance(new_styles, MiniMap.Styles):
-            self.__styles = new_styles
-    
-    @property
     def chelly_editor(self) -> MiniMapEditor:
         return self._minimap
 
@@ -133,7 +119,6 @@ class MiniMap(Panel):
         self.setLayout(self.box)
 
         self.__properties = MiniMap.Properties(self)
-        self.__styles = MiniMap.Styles(self)
 
         self.editor.blockCountChanged.connect(self.update_shadow)
         self.editor.on_resized.connect(self.update_shadow)
@@ -142,10 +127,10 @@ class MiniMap(Panel):
     
     def update_shadow(self, force:bool = False) -> Self:
         if len(self.editor.visible_blocks) == 1 and not force:
-            self.styles.shadow.setEnabled(False)
+            self.properties.shadow.setEnabled(False)
         
         elif len(self.editor.visible_blocks) == 1 and force and len(self.editor.toPlainText()) > 0:
-            self.styles.shadow.setEnabled(True)
+            self.properties.shadow.setEnabled(True)
         
         else:
             for top, block_number, block in self.editor.visible_blocks:
@@ -157,10 +142,10 @@ class MiniMap(Panel):
 
                 line_width = (self.editor.geometry().width() - self.geometry().width()) - width
                 if line_width < 0:
-                    self.styles.shadow.setEnabled(True)
+                    self.properties.shadow.setEnabled(True)
                     break
                 else:
-                    self.styles.shadow.setEnabled(False)
+                    self.properties.shadow.setEnabled(False)
 
         return self
 
@@ -169,7 +154,7 @@ class MiniMap(Panel):
         return self
 
     def activate_shadow(self):
-        self._minimap.setGraphicsEffect(self.styles.shadow)
+        self._minimap.setGraphicsEffect(self.properties.shadow)
 
     def disable_shadow(self):
         self._minimap.setGraphicsEffect(None)

@@ -41,10 +41,13 @@ class IndentationGuides(Feature):
     @dataclass(frozen=True)
     class Defaults:
         LINE_WIDTH = 1
-    
-    class Styles(Feature._Styles):
-        def __init__(self, instance: Any) -> None:
-            super().__init__(instance)
+            
+
+    class Properties(Feature._Properties):
+        def __init__(self, feature:Feature) -> None:
+            super().__init__(feature)
+            self.__line_width = IndentationGuides.Defaults.LINE_WIDTH
+
             self._color = QColor(Qt.GlobalColor.darkGray)
             self._active_color = QColor(Qt.GlobalColor.gray)
             self._pen = QPen(self.color)
@@ -73,12 +76,6 @@ class IndentationGuides(Feature):
         def active_color(self, new_color: QColor) -> None:
             self._active_color = new_color
 
-
-    class Properties(Feature._Properties):
-        def __init__(self, feature:Feature) -> None:
-            super().__init__(feature)
-            self.__line_width = IndentationGuides.Defaults.LINE_WIDTH
-
         @property
         def line_width(self) -> float:
             return self.__line_width
@@ -86,18 +83,6 @@ class IndentationGuides(Feature):
         @line_width.setter
         def line_width(self, value: float) -> None:
             self.__line_width = value
-    
-    @property
-    def styles(self) -> Styles:
-        return self.__styles
-    
-    @styles.setter
-    def styles(self, new_styles:Styles) -> Styles:
-        if new_styles is IndentationGuides.Styles:
-            self.__styles = new_styles(self)
-
-        elif isinstance(new_styles, IndentationGuides.Styles):
-            self.__styles = new_styles
     
     @property
     def properties(self) -> Properties:
@@ -114,11 +99,10 @@ class IndentationGuides(Feature):
     def __init__(self, editor):
         super().__init__(editor)
         self.__properties = IndentationGuides.Properties(self)
-        self.__styles = IndentationGuides.Styles(self)
         self.editor.on_painted.connect(self._paint_lines)
 
     def __configure_painter(self, painter: QPainter) -> None:
-        pen = self.styles.pen
+        pen = self.properties.pen
         pen.setWidthF(self.properties.line_width)
         painter.setPen(pen)
 

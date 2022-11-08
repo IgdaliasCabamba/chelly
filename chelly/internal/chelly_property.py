@@ -116,4 +116,4 @@ if __name__ == "__main__":
     del test.val
     assert test.val is None
 
-    test.val1 = "Chelly (rightly)"
+    test.val1 = "Icode"

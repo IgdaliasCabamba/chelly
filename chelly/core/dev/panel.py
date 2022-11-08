@@ -41,19 +41,9 @@ class Panel(QFrame):
         def panel(self) -> Panel:
             return self.instance
     
-    class _Styles(BaseElement):
-        
-        @property
-        def panel(self) -> Panel:
-            return self.instance
-    
     @property
     def properties(self) -> _Properties:
         return self.__properties
-    
-    @property
-    def styles(self) -> _Styles:
-        return self.__styles
 
     def __init__(self, editor:ChellyEditor) -> None:
         super().__init__(editor)
@@ -64,7 +54,6 @@ class Panel(QFrame):
         self.editor.panels.refresh()
         self.setAutoFillBackground(False)
         self.__properties = Panel._Properties(self)
-        self.__styles = Panel._Styles(self)
 
     @property
     def enabled(self) -> bool:
@@ -108,10 +97,7 @@ class Panel(QFrame):
     
     @property
     def shared_reference(self) -> dict:
-        return {
-            "styles":self.styles,
-            "properties":self.properties
-        }
+        return {"properties":self.properties}
 
     @shared_reference.setter
     def shared_reference(self, panel_data:dict = None) -> None:

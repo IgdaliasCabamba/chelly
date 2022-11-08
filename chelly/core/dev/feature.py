@@ -14,26 +14,15 @@ class Feature(object):
         @property
         def feature(self) -> Feature:
             return self.instance
-    
-    class _Styles(BaseElement):
-        
-        @property
-        def feature(self) -> Feature:
-            return self.instance
             
     @property
     def properties(self) -> _Properties:
         return self.__properties
     
-    @property
-    def styles(self) -> _Styles:
-        return self.__styles
-    
     def __init__(self, editor:ChellyEditor):
         self.__editor:object = editor
         self.__enabled = True
         self.__properties = Feature._Properties(self)
-        self.__styles = Feature._Styles(self)
 
     @property
     def enabled(self) -> bool:
@@ -49,10 +38,7 @@ class Feature(object):
     
     @property
     def shared_reference(self) -> dict:
-        return {
-            "styles":self.styles,
-            "properties":self.properties
-        }
+        return {"properties":self.properties}
 
     @shared_reference.setter
     def shared_reference(self, feature_data:dict) -> None:

@@ -5,11 +5,14 @@ from ...core import Panel
 import string
 from typing import Any
     
-class SliderArea(QFrame):
-
-    class Styles(Panel._Styles):
+class SliderArea(QFrame):            
+        
+    class Properties(Panel._Properties):
         def __init__(self, instance: Any) -> None:
             super().__init__(instance)
+            self.__slider_fixed_heigth = 80
+            self.instance.setFixedHeight(self.__slider_fixed_heigth)
+            
             self._hover_color:tuple = (255, 255, 255, 30)
             self._color:tuple = (255, 255, 255, 15)
             self._no_state_color:tuple = (255, 255, 255, 0)
@@ -37,12 +40,7 @@ class SliderArea(QFrame):
         @hover_color.setter
         def hover_color(self, new_color:QColor) -> None:
             self._hover_color = new_color
-        
-    class Properties(Panel._Properties):
-        def __init__(self, instance: Any) -> None:
-            super().__init__(instance)
-            self.__slider_fixed_heigth = 80
-            self.instance.setFixedHeight(self.__slider_fixed_heigth)
+
 
         @property
         def slider_heigth(self) -> int:
@@ -52,14 +50,6 @@ class SliderArea(QFrame):
         def slider_fixed_heigth(self, size:int) -> None:
             self.__slider_fixed_heigth = size
             self.instance.setFixedHeight(self.__slider_fixed_heigth)
-
-    @property
-    def styles(self) -> Styles:
-        return self.__styles
-        
-    @styles.setter
-    def styles(self, new_styles:Styles) -> None:
-        self.__styles = new_styles
     
     @property
     def properties(self) -> Properties:
@@ -78,13 +68,12 @@ class SliderArea(QFrame):
         self.minimap = minimap
         self.__pressed = False
         self.__properties = SliderArea.Properties(self)
-        self.__styles = SliderArea.Styles(self)
         self.__cached_height = self.height()
         self.__cached_minimap_height = self.minimap.height()
         
         self.setMouseTracking(True)
         self.setCursor(Qt.OpenHandCursor)
-        self.change_transparency(self.styles.no_state_color)
+        self.change_transparency(self.properties.no_state_color)
     
     @property
     def is_pressed(self) -> bool:
@@ -119,11 +108,11 @@ class SliderArea(QFrame):
 
     def leaveEvent(self, event):
         super().leaveEvent(event)
-        self.change_transparency(self.styles.color)
+        self.change_transparency(self.properties.color)
 
     def enterEvent(self, event):
         super().enterEvent(event)
-        self.change_transparency(self.styles.hover_color)
+        self.change_transparency(self.properties.hover_color)
     
     def resizeEvent(self, event: QResizeEvent) -> None:
         self.__cached_height = self.height()

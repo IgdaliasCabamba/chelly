@@ -60,20 +60,36 @@ class MarkerObject(QObject):
 
 
 class MarkerMargin(Panel):
-    class Styles(Panel._Styles):
-        ...
+    
+    class Properties(Panel._Properties):
+        def __init__(self, panel:Panel):
+            super().__init__(panel)
+            self._background = QColor('#FFC8C8')
+            
+        @property
+        def background(self):
+            """
+            Marker background color in editor. Use None if no text decoration
+            should be used.
+            """
+            return self._background
+
+        @background.setter
+        def background(self, value):
+            self._background = value
+
 
     @property
-    def styles(self) -> Styles:
-        return self.__styles
+    def properties(self) -> Properties:
+        return self.__properties
     
-    @styles.setter
-    def styles(self, new_styles:Styles) -> Styles:
-        if new_styles is MarkerMargin.Styles:
-            self.__styles = new_styles(self)
+    @properties.setter
+    def properties(self, new_properties:Properties) -> Properties:
+        if new_properties is MarkerMargin.Properties:
+            self.__properties = new_properties(self)
 
-        elif isinstance(new_styles, MarkerMargin.Styles):
-            self.__styles = new_styles
+        elif isinstance(new_properties, MarkerMargin.Properties):
+            self.__properties = new_properties
     
     
     on_add_marker = Signal(int)
@@ -82,21 +98,8 @@ class MarkerMargin(Panel):
     
     on_remove_marker = Signal(int)
 
-    @property
-    def background(self):
-        """
-        Marker background color in editor. Use None if no text decoration
-        should be used.
-        """
-        return self._background
-
-    @background.setter
-    def background(self, value):
-        self._background = value
-
     def __init__(self, editor) -> None:
         super().__init__(editor)
-        self._background = QColor('#FFC8C8')
         self._markers = []
         self._icons = {}
         self._previous_line = -1
@@ -104,7 +107,7 @@ class MarkerMargin(Panel):
         self._job_runner = DelayJobRunner(delay=100)
         self.setMouseTracking(True)
         self._to_remove = []
-        self.__styles = MarkerMargin.Styles(self)
+        self.__properties = MarkerMargin.Properties(self)
 
     @property
     def markers(self) -> list:

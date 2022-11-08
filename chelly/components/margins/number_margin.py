@@ -13,7 +13,7 @@ class LineNumberMargin(Panel):
     class Defaults:
         ...
 
-    class Styles(Panel._Styles):
+    class Properties(Panel._Properties):
         def __init__(self, instance: Any) -> None:
             super().__init__(instance)
             self._background = QColor(Qt.GlobalColor.transparent)
@@ -45,20 +45,20 @@ class LineNumberMargin(Panel):
             self._highlight = new_color
 
     @property
-    def styles(self) -> Styles:
-        return self.__styles
+    def properties(self) -> Properties:
+        return self.__properties
     
-    @styles.setter
-    def styles(self, new_styles:Styles) -> Styles:
-        if new_styles is LineNumberMargin.Styles:
-            self.__styles = new_styles(self)
+    @properties.setter
+    def properties(self, new_properties:Properties) -> Properties:
+        if new_properties is LineNumberMargin.Properties:
+            self.__properties = new_properties(self)
 
-        elif isinstance(new_styles, LineNumberMargin.Styles):
-            self.__styles = new_styles
+        elif isinstance(new_properties, LineNumberMargin.Properties):
+            self.__properties = new_properties
 
     def __init__(self, editor) -> None:
         super().__init__(editor)
-        self.__styles = LineNumberMargin.Styles(self)
+        self.__properties = LineNumberMargin.Properties(self)
         self.scrollable = True
         self.number_font = QFont()
     
@@ -88,10 +88,10 @@ class LineNumberMargin(Panel):
                     
                 if block_number == self.editor.textCursor().blockNumber():
                     self.number_font.setBold(True)
-                    painter.setPen(self.styles.highlight)
+                    painter.setPen(self.properties.highlight)
                 else:
                     self.number_font.setBold(False)
-                    painter.setPen(self.styles.foreground)
+                    painter.setPen(self.properties.foreground)
             
                 painter.setFont(self.number_font)
                 width = self.width()

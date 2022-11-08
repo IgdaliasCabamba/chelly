@@ -13,9 +13,11 @@ class EdgeLine(Feature):
         LINE_POS = 80
         LINE_COLOR = QtGui.QColor('#72c3f0')
     
-    class Styles(Feature._Styles):
-        def __init__(self, instance: Any) -> None:
-            super().__init__(instance)
+    class Properties(Feature._Properties):
+        def __init__(self, feature:Feature) -> None:
+            super().__init__(feature)
+            self.__margin_pos = EdgeLine.Defaults.LINE_POS
+            
             self.__color = EdgeLine.Defaults.LINE_COLOR
             self._pen = QtGui.QPen(self.color)
         
@@ -33,11 +35,6 @@ class EdgeLine(Feature):
             self._pen = QtGui.QPen(self.__color)
             TextEngine(self.feature.editor).mark_whole_doc_dirty() # TODO
             self.feature.editor.repaint()
-    
-    class Properties(Feature._Properties):
-        def __init__(self, feature:Feature) -> None:
-            super().__init__(feature)
-            self.__margin_pos = EdgeLine.Defaults.LINE_POS
         
         @property
         def position(self) -> int:
@@ -46,18 +43,6 @@ class EdgeLine(Feature):
         @position.setter
         def position(self, value:int) -> None:
             self.__margin_pos = value
-    
-    @property
-    def styles(self) -> Styles:
-        return self.__styles
-    
-    @styles.setter
-    def styles(self, new_styles:Styles) -> Styles:
-        if new_styles is EdgeLine.Styles:
-            self.__styles = new_styles(self)
-
-        elif isinstance(new_styles, EdgeLine.Styles):
-            self.__styles = new_styles
     
     @property
     def properties(self) -> Properties:
@@ -74,7 +59,6 @@ class EdgeLine(Feature):
     def __init__(self, editor):
         super().__init__(editor)
         self.__properties = EdgeLine.Properties(self)
-        self.__styles = EdgeLine.Styles(self)
         self.__cached_cursor_position = ChellyCache(None, None, lambda: TextEngine(self.editor).cursor_position)
         
         self.editor.on_painted.connect(self._paint_margin)
@@ -92,5 +76,5 @@ class EdgeLine(Feature):
         int_line_x_point = int(line_x_point)
         
         with QtGui.QPainter(self.editor.viewport()) as painter:
-            painter.setPen(self.styles.pen)
+            painter.setPen(self.properties.pen)
             painter.drawLine(int_line_x_point, 0, int_line_x_point, EdgeLine.Defaults.LINE_COVER_VIEW_SIZE)

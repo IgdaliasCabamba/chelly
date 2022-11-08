@@ -11,13 +11,34 @@ class EditionMargin(Panel):
     class Defaults:
         SHOW_TEXT_HELP = False
         MAX_LINES_COUNT = 1000
-    
-    class Styles(Panel._Styles):
-        def __init__(self, instance: Any) -> None:
-            super().__init__(instance)
+        
+    class Properties(Panel._Properties):
+
+        def __init__(self, panel:Panel):
+            super().__init__(panel)
+            
             self._unknow = Qt.GlobalColor.darkCyan
             self._added = Qt.GlobalColor.darkGreen
             self._removed = Qt.GlobalColor.darkRed
+
+            self.__show_text_help = EditionMargin.Defaults.SHOW_TEXT_HELP
+            self.__max_lines_count = EditionMargin.Defaults.MAX_LINES_COUNT
+        
+        @property
+        def show_text_help(self) -> bool:
+            return self.__show_text_help
+        
+        @show_text_help.setter
+        def show_text_help(self, show:bool) -> None:
+            self.__show_text_help = show
+        
+        @property
+        def max_lines_count(self) -> int:
+            return self.__max_lines_count
+        
+        @max_lines_count.setter
+        def max_lines_count(self, limit:int) -> None:
+            self.__max_lines_count = limit
         
         @property
         def unknow(self) -> QColor:
@@ -42,42 +63,7 @@ class EditionMargin(Panel):
         @removed.setter
         def removed(self, color:QColor) -> None:
             self._removed = color
-        
-    class Properties(Panel._Properties):
 
-        def __init__(self, panel:Panel):
-            super().__init__(panel)
-            self.__show_text_help = EditionMargin.Defaults.SHOW_TEXT_HELP
-            self.__max_lines_count = EditionMargin.Defaults.MAX_LINES_COUNT
-        
-        @property
-        def show_text_help(self) -> bool:
-            return self.__show_text_help
-        
-        @show_text_help.setter
-        def show_text_help(self, show:bool) -> None:
-            self.__show_text_help = show
-        
-        @property
-        def max_lines_count(self) -> int:
-            return self.__max_lines_count
-        
-        @max_lines_count.setter
-        def max_lines_count(self, limit:int) -> None:
-            self.__max_lines_count = limit
-    
-    @property
-    def styles(self) -> Styles:
-        return self.__styles
-    
-    @styles.setter
-    def styles(self, new_styles:Styles) -> Styles:
-        if new_styles is EditionMargin.Styles:
-            self.__styles = new_styles(self)
-
-        elif isinstance(new_styles, EditionMargin.Styles):
-            self.__styles = new_styles
-    
     @property
     def properties(self) -> Properties:
         return self.__properties
@@ -100,7 +86,6 @@ class EditionMargin(Panel):
         self.__cached_cursor_position = ChellyCache(None, None, lambda: TextEngine(self.editor).cursor_position)
         self.differ = difflib.Differ()
         self.__properties = EditionMargin.Properties(self)
-        self.__styles = EditionMargin.Styles(self)
     
     def sizeHint(self):
         """
@@ -166,19 +151,19 @@ class EditionMargin(Panel):
                         top = TextEngine(self.editor).point_y_from_line_number(idx)
 
                         if diff.startswith("-"):
-                            pen.setBrush(self.styles.removed)
+                            pen.setBrush(self.properties.removed)
                             painter.setPen(pen)
                             if self.properties.show_text_help:
                                 painter.drawText(6, top+height//1.5, "!")
 
                         elif diff.startswith("+"):
-                            pen.setBrush(self.styles.added)
+                            pen.setBrush(self.properties.added)
                             painter.setPen(pen)
                             if self.properties.show_text_help:
                                 painter.drawText(6, top+height//1.5, "+")
 
                         elif diff.startswith("?"):
-                            pen.setBrush(self.styles.unknow)
+                            pen.setBrush(self.properties.unknow)
                             painter.setPen(pen)
                             if self.properties.show_text_help:
                                 painter.drawText(6, top+height//1.5, "?")

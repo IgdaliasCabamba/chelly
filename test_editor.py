@@ -321,7 +321,7 @@ create_breadcrumbs()
 # editor.commands.zoom_out(10) # -> 5
 # editor.commands.reset_zoom() # -> 0
 line_number_margin: LineNumberMargin = editor.panels.get(LineNumberMargin)
-line_number_margin.styles.highlight = QColor("#72c3f0")
+line_number_margin.properties.highlight = QColor("#72c3f0")
 
 # Use these functions to share references:
 #editor1.panels.get(LineNumberMargin).shared_reference = editor.panels.get(LineNumberMargin).shared_reference

@@ -89,11 +89,11 @@ class MiniMapEditor(DocumentMap):
         )
     
     def leaveEvent(self, event: QEvent) -> None:
-        self.slider.change_transparency(self.slider.styles.no_state_color)
+        self.slider.change_transparency(self.slider.properties.no_state_color)
         return super().leaveEvent(event)
     
     def enterEvent(self, event: QEvent) -> None:
-        self.slider.change_transparency(self.slider.styles.color)
+        self.slider.change_transparency(self.slider.properties.color)
         return super().enterEvent(event)
     
     def resizeEvent(self, event: QResizeEvent) -> None:
