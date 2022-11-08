@@ -1,4 +1,5 @@
 from typing import Any, Dict, List, Optional, Union
+from .chelly_property import chelly_property
 
 class BaseElement:
     """The lowest level for editor elements"""
@@ -14,7 +15,7 @@ class BaseElement:
     def as_dict(self) -> Dict[str, Any]:
         res = {}
         for key, value in self.__class__.__dict__.items():
-            if isinstance(value, property) and value not in {"as_dict"}:
+            if isinstance(value, chelly_property) and value not in {"as_dict"}:
                 res[key] = value.fget(self)
 
         return res
