@@ -6,4 +6,4 @@ if [[ -z "${VIRTUAL_ENV}" ]]; then
   source pyenv/bin/activate
 fi
 
-python test_editor.py
+python tests/latest.py

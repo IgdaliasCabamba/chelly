@@ -5,7 +5,6 @@ import logging
 import os
 import pathlib
 
-import pytest
 import qtawesome
 from pygments.styles.dracula import DraculaStyle
 from pygments.styles.monokai import MonokaiStyle
@@ -36,7 +35,7 @@ from dev.libs.qtmodern import styles as qtmodern_styles
 from dev.libs.qtmodern import windows as qtmodern_windows
 
 os.environ["QT_API"] = "pyside6"
-os.environ["QT_QPA_PLATFORM"] = "xcb"  # Wayland scale issue
+os.environ["QT_QPA_PLATFORM"] = "xcb"  # Gnome Wayland scale issue
 
 
 DEBUG_OUTPUT_FILE = os.path.join("dev", "chelly.log")
@@ -148,16 +147,6 @@ editor.panels.append(LineNumberMargin, Panel.Position.LEFT,
 editor.panels.append(EditionMargin, Panel.Position.LEFT,
                      Panel.WidgetSettings(level=2))
 
-# dont:
-#	editor.panels.append(LineNumberMargin, Panel.Position.LEFT)
-#	editor.panels.append(LineNumberMargin, Panel.Position.LEFT)
-
-# do:
-#	editor.panels.append(LineNumberMargin, Panel.Position.LEFT)
-#	class LNM(LineNumberMargin):
-#		pass
-#	editor.panels.append(LNM, Panel.Position.LEFT)
-
 h_scrollbar = editor.panels.append(HorizontalScrollBar, Panel.Position.BOTTOM)
 v_scrollbar = editor.panels.append(VerticalScrollBar, Panel.Position.RIGHT)
 editor.setCursorWidth(2)
@@ -214,9 +203,7 @@ editor.language.lexer = {"language": PythonLanguage, "style": ParaisoDarkStyle}
 with minimap as m:
     m.language.lexer = [PythonLanguage, MonokaiStyle]
 
-#editor1.language.lexer = (JavaScriptLanguage, "github-dark")
 editor1.language.lexer = (PythonLanguageNew, OneDarkStyle)
-#PythonLanguageNew(editor1, OneDarkStyle)
 minimap1.chelly_editor.language.lexer = (PythonLanguage, DraculaStyle)
 
 div.addWidget(editor)
@@ -308,33 +295,16 @@ def create_breadcrumbs():
     breadcrumbs.update_breadcrumb(foobar_block, {"content": "foobar"})
 
     breadcrumbs.remove_breadcrumb(bad_block)
-    # breadcrumbs.remove_breadcrumb(foo_block)
 
     breadcrumbs.insert_breadcrumb(bad_block, 0)
-    # breadcrumbs.clear_all_breadcrumbs()
 
 
 create_breadcrumbs()
 
-# TODO
-# editor.commands.zoom_in(15)
-# editor.commands.zoom_out(10) # -> 5
-# editor.commands.reset_zoom() # -> 0
 line_number_margin: LineNumberMargin = editor.panels.get(LineNumberMargin)
 line_number_margin.properties.highlight = QColor("#72c3f0")
 
-# Use these functions to share references:
-#editor1.panels.get(LineNumberMargin).shared_reference = editor.panels.get(LineNumberMargin).shared_reference
-#editor1.panels.shared_reference = editor.panels
 editor1.shared_reference = editor
-
-# TODO: fix style shared reference
-
-# editor.shared_reference = editor1 BUG: autocomplete change focus
-#editor1.style.shared_reference = editor.style
-
-#editor1.style = editor.style
-#minimap.chelly_editor.style = editor.style
 
 editor.style.selection_foreground = QColor("#2b2b2b")
 editor.style.selection_background = QColor(Qt.GlobalColor.red)
@@ -343,44 +313,13 @@ modern_window.resize(1000, 600)
 modern_window.move(200, 100)
 modern_window.setWindowTitle("ChellyEditor Preview")
 modern_window.show()
-#div.resize(1000, 600)
-#div.move(200, 100)
-#div.setWindowTitle("ChellyEditor Preview")
-# div.show()
 
 x = CompleterManager(editor)
 y: Completer = x.set_completion_list(Completer)
 y.setCustomCompletions({"ola", "hello", "hi", "thanks", "more", "love"})
 
+def run():
+    app.exec()
 
-def test_lexer_set(benchmark):
-    new_lexer = benchmark(LanguagesManager, editor)
-    editor.lexer = new_lexer
-    assert editor.lexer == new_lexer
-
-
-def test_singleton_panel(benchmark):
-    minimap = benchmark(editor.panels.get, MiniMap)
-    assert minimap == editor.panels.append(MiniMap, Panel.Position.RIGHT)
-
-
-def test_feature_set(benchmark):
-    new_features = benchmark(FeaturesManager, editor)
-    editor.features = new_features
-    assert editor.features == new_features
-
-
-def test_load_file(benchmark):
-    with open(__file__, "r") as infile:
-        content = benchmark(infile.read)
-
-    editor.properties.text = content
-    assert editor.properties.text == content
-
-
-if __name__ == "__main__":
-    def fake_benchmark(any):
-        return any()
-    test_load_file(fake_benchmark)
-
-app.exec()
+if __name__=="__main__":
+    run()

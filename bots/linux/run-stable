@@ -1,0 +1,9 @@
+#!/usr/bin/bash
+
+cd ~/Ideas/Chelly
+
+if [[ -z "${VIRTUAL_ENV}" ]]; then
+  source pyenv/bin/activate
+fi
+
+python stable.py
