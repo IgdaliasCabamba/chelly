@@ -3,6 +3,7 @@ from typing_extensions import Self
 from qtpy.QtGui import QPainter, QColor, QFontMetrics, QPen, QPaintEvent
 from qtpy.QtCore import Qt
 from ..core import Feature, TextEngine, Character
+from ..internal import chelly_property, ChellyShareableSetting, ChellyShareableStyle
 from typing import List, Any
 from dataclasses import dataclass
 import re
@@ -52,12 +53,12 @@ class IndentationGuides(Feature):
             self._active_color = QColor(Qt.GlobalColor.gray)
             self._pen = QPen(self.color)
         
-        @property
-        def pen(self) -> QPen:
+        @chelly_property(value_type=QPen)
+        def pen(self) -> ChellyShareableStyle:
             return self._pen
 
-        @property
-        def color(self) -> QColor:
+        @chelly_property(value_type=QColor)
+        def color(self) -> ChellyShareableStyle:
             return self._color
 
         @color.setter
@@ -68,16 +69,16 @@ class IndentationGuides(Feature):
             self._pen.setJoinStyle(Qt.RoundJoin)
             self._pen.setCapStyle(Qt.RoundCap)
 
-        @property
-        def active_color(self) -> QColor:
+        @chelly_property(value_type=QColor)
+        def active_color(self) -> ChellyShareableStyle:
             return self._active_color
 
         @active_color.setter
         def active_color(self, new_color: QColor) -> None:
             self._active_color = new_color
 
-        @property
-        def line_width(self) -> float:
+        @chelly_property(value_type=float)
+        def line_width(self) -> ChellyShareableSetting:
             return self.__line_width
 
         @line_width.setter

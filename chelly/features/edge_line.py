@@ -1,7 +1,8 @@
 from typing import Any, Union
 
 from ..core import TextEngine, Feature, FontEngine, Character, ChellyCache
-from qtpy import QtGui
+from ..internal import chelly_property, ChellyShareableSetting, ChellyShareableStyle
+from qtpy.QtGui import QPen, QColor, QPaintEvent, QPainter
 from dataclasses import dataclass
 
 
@@ -11,7 +12,7 @@ class EdgeLine(Feature):
     class Defaults:
         LINE_COVER_VIEW_SIZE = 2 ** 16
         LINE_POS = 80
-        LINE_COLOR = QtGui.QColor('#72c3f0')
+        LINE_COLOR = QColor('#72c3f0')
     
     class Properties(Feature._Properties):
         def __init__(self, feature:Feature) -> None:
@@ -19,25 +20,25 @@ class EdgeLine(Feature):
             self.__margin_pos = EdgeLine.Defaults.LINE_POS
             
             self.__color = EdgeLine.Defaults.LINE_COLOR
-            self._pen = QtGui.QPen(self.color)
+            self._pen = QPen(self.color)
         
-        @property
-        def pen(self) -> QtGui.QPen:
+        @chelly_property(value_type=QPen)
+        def pen(self) -> ChellyShareableStyle:
             return self._pen
 
-        @property
-        def color(self) -> QtGui.QColor:
+        @chelly_property(value_type=QColor)
+        def color(self) -> ChellyShareableStyle:
             return self.__color
 
         @color.setter
-        def color(self, value:QtGui.QColor) -> None:
+        def color(self, value:QColor) -> None:
             self.__color = value
-            self._pen = QtGui.QPen(self.__color)
+            self._pen = QPen(self.__color)
             TextEngine(self.feature.editor).mark_whole_doc_dirty() # TODO
             self.feature.editor.repaint()
         
-        @property
-        def position(self) -> int:
+        @chelly_property(value_type=int)
+        def position(self) -> ChellyShareableSetting:
             return self.__margin_pos
 
         @position.setter
@@ -64,7 +65,7 @@ class EdgeLine(Feature):
         self.editor.on_painted.connect(self._paint_margin)
         self.editor.repaint()
 
-    def _paint_margin(self, event:QtGui.QPaintEvent) -> None:
+    def _paint_margin(self, event:QPaintEvent) -> None:
         if not self.__cached_cursor_position.changed:
             return None
             
@@ -75,6 +76,6 @@ class EdgeLine(Feature):
         line_x_point += offset
         int_line_x_point = int(line_x_point)
         
-        with QtGui.QPainter(self.editor.viewport()) as painter:
+        with QPainter(self.editor.viewport()) as painter:
             painter.setPen(self.properties.pen)
             painter.drawLine(int_line_x_point, 0, int_line_x_point, EdgeLine.Defaults.LINE_COVER_VIEW_SIZE)

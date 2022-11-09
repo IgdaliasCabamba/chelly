@@ -2,6 +2,7 @@ from qtpy.QtCore import Qt, Signal
 from qtpy.QtGui import QResizeEvent, QColor
 from qtpy.QtWidgets import QFrame
 from ...core import Panel
+from ...internal import chelly_property, ChellyShareableSetting, ChellyShareableStyle
 import string
 from typing import Any
     
@@ -17,33 +18,32 @@ class SliderArea(QFrame):
             self._color:tuple = (255, 255, 255, 15)
             self._no_state_color:tuple = (255, 255, 255, 0)
 
-        @property
-        def color(self) -> tuple:
+        @chelly_property(value_type=tuple)
+        def color(self) -> ChellyShareableStyle:
             return self._color
     
         @color.setter
         def color(self, new_color:tuple) -> None:
             self._color = new_color
 
-        @property
-        def no_state_color(self) -> tuple:
+        @chelly_property(value_type=tuple)
+        def no_state_color(self) -> ChellyShareableStyle:
             return self._no_state_color
         
         @no_state_color.setter
         def no_state_color(self, new_color:QColor) -> None:
             self._no_state_color = new_color
         
-        @property
-        def hover_color(self) -> tuple:
+        @chelly_property(value_type=tuple)
+        def hover_color(self) -> ChellyShareableStyle:
             return self._hover_color
     
         @hover_color.setter
         def hover_color(self, new_color:QColor) -> None:
             self._hover_color = new_color
 
-
-        @property
-        def slider_heigth(self) -> int:
+        @chelly_property(value_type=int)
+        def slider_heigth(self) -> ChellyShareableSetting:
             return self.__slider_fixed_heigth
         
         @slider_heigth.setter
@@ -59,6 +59,9 @@ class SliderArea(QFrame):
     def properties(self, new_properties:Properties) -> None:
         if isinstance(new_properties, SliderArea.Properties):
             self.__properties = new_properties
+        
+        else:
+            self.__properties = new_properties(self)
 
     on_scroll_area = Signal(int)
     style_template = string.Template("SliderArea{background-color:rgba($r,$g,$b,$a)}")

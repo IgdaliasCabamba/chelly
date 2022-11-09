@@ -3,5 +3,7 @@
 cd ~/Ideas/Chelly
 
 if [[ -z "${VIRTUAL_ENV}" ]]; then
-  source cenv/bin/activate
+  source pyenv/bin/activate
 fi
+
+python test_editor.py

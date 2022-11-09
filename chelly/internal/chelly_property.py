@@ -1,66 +1,61 @@
-from inspect import signature
-from typing import Any, Type, Union, Optional, _SpecialForm, _UnionGenericAlias, _remove_dups_flatten
+from inspect import signature, Signature
+from typing import Any, Type, Union, Optional, Type
 from typing_extensions import Self, get_origin, get_args, types
 from types import UnionType, NoneType
 
 from types import FunctionType
 
-class ChellyShareableType(type):
+class ChellyShareableType(Type):
     ...
 
 class ChellyShareableStyle(ChellyShareableType):
     ...
 
-class ChellyShareableProperty(ChellyShareableType):
+class ChellyShareableSetting(ChellyShareableType):
     ...
-
-@_SpecialForm
-def ChellyShareable(self, parameters):
-    """Union type emulation"""
-    if parameters == ():
-        parameters = (ChellyShareableProperty)
-    
-    if not isinstance(parameters, tuple):
-        parameters = (parameters,)
-    
-    for param in parameters:
-        if param not in {ChellyShareableStyle, ChellyShareableProperty}:
-            raise TypeError("ChellyShareable[arg, ...]: each arg must be a ChellyShareableType.")
-        
-    parameters = _remove_dups_flatten(parameters)
-    
-    if len(parameters) == 1:
-        return parameters[0]
-    
-    if len(parameters) == 2 and type(None) in parameters:
-        return _UnionGenericAlias(self, parameters, name="Optional")
-    return _UnionGenericAlias(self, parameters)
 
 class chelly_property:
     """
     Chelly property is a shareable object among chelly components
     """
-    @staticmethod
-    def is_shareable(klass: Any, c_property_name: str) -> Optional[bool]:
-        __shareable_types = [ChellyShareableStyle, ChellyShareableProperty]
 
+    @staticmethod
+    def get_signature(klass: Any, c_property_name: str) -> Optional[Signature]:
         c_property = getattr(klass.__class__, c_property_name, None)
+        
         if c_property is None:
             return None
 
-        method_sig = signature(c_property.fget)
-        
-        if get_origin(method_sig.return_annotation) is ChellyShareable:
-            args_types = get_args(method_sig.return_annotation)
-            for shareable_type in __shareable_types:
-                if shareable_type in args_types:
-                    return True
+        return signature(c_property.fget)
 
-        for shareable_type in __shareable_types:
-            if method_sig.return_annotation == ChellyShareable[shareable_type]:
-                return True
+    @staticmethod
+    def is_shareable(klass: Any, c_property_name: str) -> Optional[bool]:
+        method_sig = chelly_property.get_signature(klass, c_property_name)
+
+        if method_sig is None:
+            return None
+        
+        if method_sig.return_annotation.__base__ is ChellyShareableType:
+            return True
 
         return False
+    
+    def check_type(klass: Any, c_property_name: str, expected_type:Union[ChellyShareableStyle, ChellyShareableSetting]) -> Optional[bool]:
+        method_sig = chelly_property.get_signature(klass, c_property_name)
+        
+        if method_sig is None:
+            return None
+        
+        if method_sig.return_annotation is expected_type:
+            return True
+        
+        return False
+
+    def is_style(klass: Any, c_property_name: str) -> Optional[bool]:
+        return chelly_property.check_type(ChellyShareableStyle)
+
+    def is_setting(klass: Any, c_property_name: str) -> Optional[bool]:
+        return chelly_property.check_type(ChellyShareableSetting)
 
     __slots__ = ("fget","fset","fdel", "_doc", "value_type", "args", "kwargs")
 
@@ -125,7 +120,7 @@ if __name__ == "__main__":
         # python >= 3.10: @chelly_property(value_type=int|str|float)
         # python >= 3.7:
         @chelly_property(value_type=Union[int,str,float])
-        def val(self) -> ChellyShareable[ChellyShareableStyle, ChellyShareableProperty, ChellyShareableStyle]:
+        def val(self) -> ChellyShareableStyle:
             return self._val
         
         @val.setter
@@ -144,8 +139,6 @@ if __name__ == "__main__":
         del __set_val1
     
     test = Test(18)
-    fget_sig = signature(test.__class__.val.fget)
-    assert len(get_args(fget_sig.return_annotation)) == 2
     assert chelly_property.is_shareable(test, "val")
     assert test.val == 18
     

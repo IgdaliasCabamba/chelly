@@ -1,6 +1,7 @@
 from qtpy.QtGui import QFont, QTextCursor, QColor, QPainter
 from qtpy.QtCore import Qt, QSize, QRect
 from ...core import Panel, FontEngine
+from ...internal import chelly_property, ChellyShareableSetting, ChellyShareableStyle
 from typing import Any
 from dataclasses import dataclass
 
@@ -20,24 +21,24 @@ class LineNumberMargin(Panel):
             self._foreground = QColor(Qt.GlobalColor.darkGray)
             self._highlight = QColor(Qt.GlobalColor.lightGray)
         
-        @property
-        def foreground(self) -> QColor:
+        @chelly_property(value_type=QColor)
+        def foreground(self) -> ChellyShareableStyle:
             return self._foreground
 
         @foreground.setter
         def foreground(self, new_color: QColor) -> None:
             self._foreground = new_color
 
-        @property
-        def background(self) -> QColor:
+        @chelly_property(value_type=QColor)
+        def background(self) -> ChellyShareableStyle:
             return self._background
 
         @background.setter
         def background(self, new_color: QColor) -> None:
             self._background = new_color
         
-        @property
-        def highlight(self) -> QColor:
+        @chelly_property(value_type=QColor)
+        def highlight(self) -> ChellyShareableStyle:
             return self._highlight
 
         @highlight.setter
