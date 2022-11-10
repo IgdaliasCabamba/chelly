@@ -325,18 +325,19 @@ line_number_margin.properties.highlight = QColor("#72c3f0")
 # Use these functions to share references:
 #editor1.panels.get(LineNumberMargin).shared_reference = editor.panels.get(LineNumberMargin).shared_reference
 #editor1.panels.shared_reference = editor.panels
+
 editor1.shared_reference = editor
+editor1.follow(editor, follow_back=True)
 
 # TODO: fix style shared reference
 
-# editor.shared_reference = editor1 BUG: autocomplete change focus
-#editor1.style.shared_reference = editor.style
-
-#editor1.style = editor.style
-#minimap.chelly_editor.style = editor.style
-
 editor.style.selection_foreground = QColor("#2b2b2b")
 editor.style.selection_background = QColor(Qt.GlobalColor.red)
+
+print(editor.style.selection_background)
+print(editor1.style.selection_background)
+print(minimap.chelly_editor.style.selection_background)
+print(minimap1.chelly_editor.style.selection_background)
 
 #div.resize(1000, 600)
 #div.move(200, 100)
@@ -358,4 +359,7 @@ if __name__ == '__main__':
     modern_window.move(200, 100)
     modern_window.setWindowTitle("ChellyEditor Preview")
     modern_window.show()
+    
+    editor.style.selection_background = QColor(Qt.GlobalColor.red)
+
     app.exec()

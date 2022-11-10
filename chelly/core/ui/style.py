@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Union
+from typing import TYPE_CHECKING, Union, Any
 
 if TYPE_CHECKING:
     from ..api import ChellyEditor
@@ -8,11 +8,16 @@ if TYPE_CHECKING:
 from qtpy.QtCore import Qt
 from qtpy.QtGui import QPalette, QBrush, QColor
 from .themes import ChellyTheme
+from ...internal import ChellyFollowable, chelly_imitable, ChellyTracked
 from typing_extensions import Self
 
-class ChellyStyle:
-    
+class ChellyStyle(ChellyFollowable):
+
     @property
+    def name(self):
+        return None
+
+    @chelly_imitable
     def selection_background(self) -> QColor:
         return self._selection_background
     
@@ -25,46 +30,39 @@ class ChellyStyle:
             self._selection_background = color
             self.update_palette_brush(QPalette.Highlight, self._selection_background)
     
-    @property
+    @selection_background.tracker
+    def selection_background(self, origin:Self, value:Any):
+        for editor in self.editor.followers:
+            editor.style.selection_background = ChellyTracked(value)
+    
+    @chelly_imitable
     def selection_foreground(self) -> QColor:
         return self._selection_foreground
     
     @selection_foreground.setter
     def selection_foreground(self, color:QColor) -> None:
+
         if isinstance(color, QColor):
             self._selection_foreground = color
             self.update_palette_color(QPalette.HighlightedText, self._selection_foreground)
 
+    @selection_foreground.tracker
+    def selection_foreground(self, origin:Self, value:Any):
+        for editor in self.editor.followers:
+            editor.style.selection_foreground = ChellyTracked(value)
+
+
     def __init__(self, editor) -> None:
-        self.editor = editor
+        super().__init__(editor)
         
-        _selection_background = QColor(Qt.GlobalColor.darkBlue)
-        _selection_background.setAlpha(180)
+        _sel_bg = QColor(Qt.GlobalColor.darkBlue)
+        _sel_bg.setAlpha(180)
 
-        self._selection_background = QBrush(_selection_background)
+        self._selection_background = QBrush(_sel_bg)
         self._selection_foreground = QColor(Qt.GlobalColor.white)
-        self.__mount()
-        
-    def __mount(self) -> None:
-        self.selection_foreground = self._selection_foreground
-        self.selection_background = self._selection_background
-    
-    @property
-    def shared_reference(self) -> dict:
-        return{
-            "selection_background":self.selection_background,
-            "selection_foreground":self.selection_foreground,
-        }
 
-    def shared_reference(self, other_style:dict) -> Self:
-        for key, value in other_style.items():
-            if hasattr(self, key):
-                try:
-                    setattr(self, key, value)
-                except AttributeError:
-                    pass
-    
-    # TODO: update all palette
+        self.selection_background = self._selection_background
+        self.selection_foreground = self._selection_foreground
 
     def update_palette_brush(self, *args, **kargs) -> None:
         palette = self.editor.palette()
@@ -75,9 +73,3 @@ class ChellyStyle:
         palette = self.editor.palette()
         palette.setColor(*args, **kargs)
         self.editor.setPalette(palette)
-    
-    def imitate(self, other_style:Self):
-        self.mirror = other_style
-    
-    def remove_imitation(self, other_style:Self):
-        ...

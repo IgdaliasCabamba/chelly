@@ -39,7 +39,10 @@ class ChellyEditor(QPlainTextEdit):
 
     @property
     def followers(self) -> List[Self]:
-        return self.__followers_references
+        try:
+            return self.__followers_references # not initialized
+        except AttributeError:
+            return []
     
     @property
     def followed(self) -> bool:
@@ -341,18 +344,17 @@ class ChellyEditor(QPlainTextEdit):
     
     def follow(self, other_editor:Self, follow_back:bool=False):
         other_editor.followers.append(self)
+        self.chelly_document = other_editor.chelly_document
 
         for key, value in other_editor.imitables.items():
-            if hasattr(self, key):
-                try:
-                    setattr(self, key, value)
-                except AttributeError as e:
-                    print(e)
-        
+            imitable = getattr(self, key, None)
+            imitable.imitate(value)
+                
         if follow_back:
-            self.followers.append(self.editor)
+            self.followers.append(other_editor)
     
     def unfollow(self, other_editor:Self, unfollow_back: bool=False):
+
         if self.following(other_editor):
             other_editor.followers.remove(self)
             ...
@@ -370,7 +372,6 @@ class ChellyEditor(QPlainTextEdit):
     @shared_reference.setter
     def shared_reference(self, other_editor:Self):
         self.__shared_reference = other_editor 
-        self.chelly_document = other_editor.chelly_document
         
         for key, from_manager in other_editor.shareables.items():
             if hasattr(self, key):
@@ -379,8 +380,6 @@ class ChellyEditor(QPlainTextEdit):
                     to_manager.shared_reference = from_manager
                 except AttributeError as e:
                     print(e)
-        
-        self.follow(self.shared_reference) #TODO: follow_back = True
     
     @shared_reference.deleter
     def shared_reference(self):
