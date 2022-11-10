@@ -6,4 +6,4 @@ if [[ -z "${VIRTUAL_ENV}" ]]; then
   source pyenv/bin/activate
 fi
 
-python tests/latest.py
+python latest.py

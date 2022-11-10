@@ -1,3 +1,13 @@
+import sys
+sys.dont_write_bytecode = True
+
+import os
+ 
+# Setup path
+current = os.path.dirname(os.path.realpath(__file__))
+parent = os.path.dirname(current)
+sys.path.append(parent)
+
 import pytest
 from latest import *
 

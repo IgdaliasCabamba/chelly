@@ -1,4 +1,4 @@
-from typing import Dict, Union
+from typing import Dict, Union, List
 
 from qtpy import QtGui
 from qtpy.QtCore import QPoint, QSize, Qt, Signal
@@ -37,6 +37,22 @@ class ChellyEditor(QPlainTextEdit):
     def commands(self) -> BasicCommands:
         return self.__commands
 
+    @property
+    def followers(self) -> List[Self]:
+        return self.__followers_references
+    
+    @property
+    def followed(self) -> bool:
+        return bool(self.followers)
+    
+    @property
+    def shareables(self) -> dict:
+        return {"panels":self.panels,"features":self.features}
+
+    @property
+    def imitables(self) -> dict:
+        return {"style":self.style,}
+
     def __init__(self, parent):
         super().__init__(parent)
         
@@ -51,6 +67,8 @@ class ChellyEditor(QPlainTextEdit):
 
         self._visible_blocks = list()
         self._last_mouse_pos = QPoint(0,0)
+        self.__followers_references = []
+        self._shared_reference = None
         self.__build()
 
     def __build(self):
@@ -153,7 +171,8 @@ class ChellyEditor(QPlainTextEdit):
         if new_style is ChellyStyle:
             self._style = new_style(self)
         elif isinstance(new_style, ChellyStyle):
-            self._style = new_style
+            self._style.imitate(new_style)
+
         else:
             raise StyleExceptions.StyleValueError(
                 f"invalid type: {new_style} expected: {ChellyStyle}")
@@ -265,7 +284,6 @@ class ChellyEditor(QPlainTextEdit):
         self.__cached_block_count = TextEngine(new_chelly_document.editor).line_count
         old_chelly_document.on_contents_changed.disconnect(self._update_contents)
         new_chelly_document.on_contents_changed.connect(self._update_contents)
-        
     
     def _update_contents(self, editor:QPlainTextEdit, pos:int, charsrem:int, charsadd:int):
         line_number = TextEngine(editor).current_line_nbr
@@ -321,36 +339,53 @@ class ChellyEditor(QPlainTextEdit):
 
         self.__cached_block_count = TextEngine(editor).line_count
     
-    @property
-    def managers(self) -> dict:
-        return {
-            "panels":self.panels,
-            "features":self.features,
-            "decorations":self.decorations,
-            "style":self.style,
-        }
-    @property
-    def helpers(self) -> dict:
-        return {"chelly_document":self.chelly_document,}
-    
-    def __shared_reference(self, other_editor:Self):
-        for key, value in other_editor.helpers.items():
+    def follow(self, other_editor:Self, follow_back:bool=False):
+        other_editor.followers.append(self)
+
+        for key, value in other_editor.imitables.items():
             if hasattr(self, key):
                 try:
                     setattr(self, key, value)
                 except AttributeError as e:
                     print(e)
         
-        for key, from_manager in other_editor.managers.items():
+        if follow_back:
+            self.followers.append(self.editor)
+    
+    def unfollow(self, other_editor:Self, unfollow_back: bool=False):
+        if self.following(other_editor):
+            other_editor.followers.remove(self)
+            ...
+        if unfollow_back:
+            if other_editor.following(self):
+                self.followers.remove(other_editor)
+    
+    def following(self, other_editor:Self) -> bool:
+        return self in other_editor.followers
+    
+    @property
+    def shared_reference(self) -> list:
+        return self.__shared_reference
+    
+    @shared_reference.setter
+    def shared_reference(self, other_editor:Self):
+        self.__shared_reference = other_editor 
+        self.chelly_document = other_editor.chelly_document
+        
+        for key, from_manager in other_editor.shareables.items():
             if hasattr(self, key):
                 try:
                     to_manager = getattr(self, key)
                     to_manager.shared_reference = from_manager
                 except AttributeError as e:
                     print(e)
-            
-    shared_reference = property(fset=__shared_reference)
-    del __shared_reference
+        
+        self.follow(self.shared_reference) #TODO: follow_back = True
+    
+    @shared_reference.deleter
+    def shared_reference(self):
+        self.unfollow(self.shared_reference)
+        self.__shared_reference = None
 
     #TODO: Move this:
     def set_mouse_cursor(self, cursor):

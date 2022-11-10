@@ -75,3 +75,9 @@ class ChellyStyle:
         palette = self.editor.palette()
         palette.setColor(*args, **kargs)
         self.editor.setPalette(palette)
+    
+    def imitate(self, other_style:Self):
+        self.mirror = other_style
+    
+    def remove_imitation(self, other_style:Self):
+        ...

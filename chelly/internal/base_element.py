@@ -19,9 +19,15 @@ class BaseElement:
                     setattr(self, key, value)
                 except AttributeError:
                     pass
+    
+    def to_dict(self, excludes:list=[]):
+        res_dict = self.as_dict
+        for exclude in excludes:
+            if exclude in res_dict.keys():
+                res_dict.pop(exclude, None)
 
     @property
-    def to_dict(self) -> Dict[str, Any]:
+    def as_dict(self) -> Dict[str, Any]:
         res = {}
         for key, value in self.__class__.__dict__.items():
             if isinstance(value, chelly_property) and value not in {"as_dict"}:

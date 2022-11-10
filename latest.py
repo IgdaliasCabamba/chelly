@@ -2,16 +2,9 @@ import sys
 sys.dont_write_bytecode = True
 
 import os
- 
-# Setup path
-current = os.path.dirname(os.path.realpath(__file__))
-parent = os.path.dirname(current)
-sys.path.append(parent)
-
 import logging
 import pathlib
 
-import pytest
 import qtawesome
 from pygments.styles.dracula import DraculaStyle
 from pygments.styles.monokai import MonokaiStyle
@@ -355,6 +348,12 @@ y: Completer = x.set_completion_list(Completer)
 y.setCustomCompletions({"ola", "hello", "hi", "thanks", "more", "love"})
 
 if __name__ == '__main__':
+    with open(__file__, "r") as infile:
+        content = infile.read()
+
+    editor.properties.text = content
+    assert editor.properties.text == content
+
     modern_window.resize(1000, 600)
     modern_window.move(200, 100)
     modern_window.setWindowTitle("ChellyEditor Preview")
