@@ -1,5 +1,5 @@
 from typing import Union
-from qtpy.QtGui import QColor, QIcon
+from qtpy.QtGui import QColor, QIcon, QImage
 from qtpy.QtCore import QSize, QByteArray, QBuffer
 from bs4 import BeautifulSoup
 
@@ -31,9 +31,14 @@ def drift_color(base_color, factor=110):
         else:
             return base_color.lighter(factor + 10)
 
-def icon_to_base64(icon: QIcon, size: Union[int, QSize], format: str = "PNG") -> str:
-    image = icon.pixmap(size).toImage()
+def qimage_to_base64(image:QImage, format: str = "PNG") -> str:
     byte_array = QByteArray()
     buffer = QBuffer(byte_array)
     image.save(buffer, format)
     return byte_array.toBase64().data().decode("utf-8")
+
+def icon_to_base64(icon: QIcon, size: Union[int, QSize], format: str = "PNG") -> str:
+    return qimage_to_base64(icon.pixmap(size).toImage(), format)
+
+def image_to_base64(image:QImage, size: Union[int, QSize], format: str = "PNG") -> str:
+    return qimage_to_base64(image.scaled(size), format)

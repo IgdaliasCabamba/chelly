@@ -25,7 +25,7 @@ from chelly.components.externals.chelly_completer.text_completer import \
     Completer
 from chelly.core import Panel
 from chelly.features import (AutoComplete, AutoIndent, CaretLineHighLighter,
-                             CursorHistory, EdgeLine, IndentationGuides,
+                             CursorHistory, EdgeLine, ImageDrawer, IndentationGuides,
                              IndentationMarks, SmartBackSpace, SymbolMatcher,
                              WordClick, ZoomMode)
 from chelly.languages import JavaScriptLanguage, PythonLanguage
@@ -184,6 +184,7 @@ editor1.features.append(CursorHistory)
 editor1.features.append(SmartBackSpace)
 editor1.features.append(IndentationMarks)
 editor1.features.append(SymbolMatcher)
+image_drawer1 = editor1.features.append(ImageDrawer)
 word_click1 = editor1.features.append(WordClick)
 editor1.panels.append(MarkerMargin, Panel.Position.LEFT)
 editor1.panels.append(LineNumberMargin, Panel.Position.LEFT)
@@ -320,6 +321,9 @@ def create_breadcrumbs():
 
 create_breadcrumbs()
 
+editor1.shared_reference = editor
+editor1.follow(editor, follow_back=True)
+
 # TODO
 # editor.commands.zoom_in(15)
 # editor.commands.zoom_out(10) # -> 5
@@ -331,13 +335,18 @@ line_number_margin.properties.highlight = QColor("#72c3f0")
 #editor1.panels.get(LineNumberMargin).shared_reference = editor.panels.get(LineNumberMargin).shared_reference
 #editor1.panels.shared_reference = editor.panels
 
-editor1.shared_reference = editor
-editor1.follow(editor, follow_back=True)
-
-# TODO: fix style shared reference
-
 editor.style.selection_foreground = QColor("#2b2b2b")
 editor.style.selection_background = QColor(Qt.GlobalColor.red)
+
+image_drawer1.draw = QImage(
+    pathlib.Path.cwd()
+        .joinpath("dev")
+        .joinpath("local_resources")
+        .joinpath("wp6559353-juice-wrld-art-wallpapers.jpg")
+        .as_posix()
+)
+
+del image_drawer1.draw
 
 #div.resize(1000, 600)
 #div.move(200, 100)
