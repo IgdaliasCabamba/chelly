@@ -51,6 +51,11 @@ div = QSplitter()
 
 modern_window = qtmodern_windows.ModernWindow(div)
 
+modern_window.resize(1000, 600)
+modern_window.move(200, 100)
+modern_window.setWindowTitle("ChellyEditor Preview")
+modern_window.show()
+
 editor = ChellyEditor(div)
 editor.setCornerWidget(None)
 div.setStyleSheet(
@@ -334,11 +339,6 @@ editor1.follow(editor, follow_back=True)
 editor.style.selection_foreground = QColor("#2b2b2b")
 editor.style.selection_background = QColor(Qt.GlobalColor.red)
 
-print(editor.style.selection_background)
-print(editor1.style.selection_background)
-print(minimap.chelly_editor.style.selection_background)
-print(minimap1.chelly_editor.style.selection_background)
-
 #div.resize(1000, 600)
 #div.move(200, 100)
 #div.setWindowTitle("ChellyEditor Preview")
@@ -354,12 +354,5 @@ if __name__ == '__main__':
 
     editor.properties.text = content
     assert editor.properties.text == content
-
-    modern_window.resize(1000, 600)
-    modern_window.move(200, 100)
-    modern_window.setWindowTitle("ChellyEditor Preview")
-    modern_window.show()
-    
-    editor.style.selection_background = QColor(Qt.GlobalColor.red)
 
     app.exec()
