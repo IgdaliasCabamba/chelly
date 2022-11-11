@@ -277,6 +277,7 @@ class TextEngine:
         text_cursor.setPosition(end_pos, text_cursor.KeepAnchor)
         return text_cursor
 
+    @property
     def word_under_mouse_cursor(self):
         """
         Selects the word under the **mouse** cursor.
@@ -288,7 +289,6 @@ class TextEngine:
         return text_cursor
 
     # Cursor
-    
     def move_cursor(self, keep_anchor=False, nb_chars=1):
         """
         Moves the cursor on the right.
@@ -297,9 +297,13 @@ class TextEngine:
         :param nb_chars: Number of characters to move.
         """
         text_cursor = self._editor.textCursor()
-        text_cursor.movePosition(
-            text_cursor.Right, text_cursor.KeepAnchor if keep_anchor else
-            text_cursor.MoveAnchor, nb_chars)
+        
+        move_operation = text_cursor.MoveAnchor
+        if keep_anchor:
+            move_operation = text_cursor.KeepAnchor
+
+        text_cursor.movePosition(text_cursor.Right, move_operation, nb_chars)
+        
         self._editor.setTextCursor(text_cursor)
     
     def move_cursor_to_block(self, block:QTextBlock) -> QTextCursor:
@@ -375,6 +379,14 @@ class TextEngine:
         if move:
             self._editor.setTextCursor(text_cursor)
         return text_cursor
+    
+    @property
+    def mouse_cursor(self) -> QTextCursor():
+        self._editor.viewport().cursor()
+    
+    @mouse_cursor.setter
+    def mouse_cursor(self, cursor):
+        self._editor.viewport().setCursor(cursor)
     
 
 class FontEngine:

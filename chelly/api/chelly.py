@@ -1,4 +1,4 @@
-from typing import Dict, Union, List
+from typing import Dict, List, Union
 
 from qtpy import QtGui
 from qtpy.QtCore import QPoint, QSize, Qt, Signal
@@ -32,7 +32,7 @@ class ChellyEditor(QPlainTextEdit):
     @property
     def visible_blocks(self) -> list:
         return self._visible_blocks
-    
+
     @property
     def commands(self) -> BasicCommands:
         return self.__commands
@@ -40,25 +40,30 @@ class ChellyEditor(QPlainTextEdit):
     @property
     def followers(self) -> List[Self]:
         try:
-            return self.__followers_references # not initialized
+            return self.__followers_references  # not initialized
         except AttributeError:
             return []
-    
+
     @property
     def followed(self) -> bool:
         return bool(self.followers)
-    
+
     @property
     def shareables(self) -> dict:
-        return {"panels":self.panels,"features":self.features}
+        return {"panels": self.panels, "features": self.features}
 
     @property
     def imitables(self) -> dict:
-        return {"style":self.style,}
+        return {
+            "style": self.style,
+            "decorations": self.decorations,
+            "language": self.language,
+            "properties": self.properties
+        }
 
     def __init__(self, parent):
         super().__init__(parent)
-        
+
         self._panels = PanelsManager(self)
         self._features = FeaturesManager(self)
         self._language = LanguagesManager(self)
@@ -66,10 +71,11 @@ class ChellyEditor(QPlainTextEdit):
         self._chelly_document = ChellyDocument(self)
         self._style = ChellyStyle(self)
         self._decorations = TextDecorationsManager(self)
+
         self.__commands = BasicCommands(self)
 
         self._visible_blocks = list()
-        self._last_mouse_pos = QPoint(0,0)
+        self._last_mouse_pos = QPoint(0, 0)
         self.__followers_references = []
         self._shared_reference = None
         self.__build()
@@ -83,7 +89,7 @@ class ChellyEditor(QPlainTextEdit):
 
     def update_state(self):
         self.on_updated.emit()
-    
+
     def update(self):
         self.update_state()
         return super().update()
@@ -95,7 +101,7 @@ class ChellyEditor(QPlainTextEdit):
     @chelly_document.setter
     def chelly_document(self, new_document: ChellyDocument) -> ChellyDocument:
         old_document = self._chelly_document
-        
+
         if old_document is new_document:
             return None
 
@@ -202,7 +208,7 @@ class ChellyEditor(QPlainTextEdit):
         self._update_visible_blocks(event)
         super().paintEvent(event)
         self.on_painted.emit(event)
-        
+
     def resizeEvent(self, event) -> None:
         super().resizeEvent(event)
         self.on_resized.emit()
@@ -222,7 +228,8 @@ class ChellyEditor(QPlainTextEdit):
         first_block = True
 
         while block.isValid():
-            visible = (top >= editor_bottom_top and bottom <= editor_bottom_bottom)
+            visible = (top >= editor_bottom_top and bottom <=
+                       editor_bottom_bottom)
 
             if not visible and not first_block:
                 break
@@ -240,7 +247,7 @@ class ChellyEditor(QPlainTextEdit):
 
     def keyPressEvent(self, event: QtGui.QKeyEvent) -> Union[None, object]:
         self.on_key_pressed.emit(event)
-        
+
         if event.key() == Qt.Key_Tab and event.modifiers() == Qt.NoModifier:
             self.__commands.indent()
             return super().keyPressEvent(event)
@@ -250,45 +257,48 @@ class ChellyEditor(QPlainTextEdit):
             return super().keyPressEvent(event)
 
         elif event.key() == Qt.Key_Home and int(event.modifiers()) & Qt.ControlModifier == 0:
-            self.__commands.home_key(event, int(event.modifiers()) & Qt.ShiftModifier)
+            self.__commands.home_key(event, int(
+                event.modifiers()) & Qt.ShiftModifier)
             return super().keyPressEvent(event)
-    
+
         super().keyPressEvent(event)
         self.post_on_key_pressed.emit(event)
 
     def keyReleaseEvent(self, event: QtGui.QKeyEvent) -> None:
         self.on_key_released.emit(event)
         return super().keyReleaseEvent(event)
-    
+
     def wheelEvent(self, event: QtGui.QWheelEvent) -> None:
         self.on_mouse_wheel_activated.emit(event)
         return super().wheelEvent(event)
-    
+
     def mouseMoveEvent(self, event: QtGui.QMouseEvent) -> None:
         self.on_mouse_moved.emit(event)
         self._last_mouse_pos = event.pos()
         return super().mouseMoveEvent(event)
-    
+
     def mouseReleaseEvent(self, event: QtGui.QMouseEvent) -> None:
         self.on_mouse_released.emit(event)
         return super().mouseReleaseEvent(event)
-    
+
     def mouseDoubleClickEvent(self, event: QtGui.QMouseEvent) -> None:
         self.on_mouse_double_clicked.emit(event)
         return super().mouseDoubleClickEvent(event)
-    
+
     def setPlainText(self, text: str) -> None:
         self.on_text_setted.emit(text)
         self._update_visible_blocks()
         return super().setPlainText(text)
-    
-    def __setup_chelly_document(self, old_chelly_document:ChellyDocument, new_chelly_document:ChellyDocument):
+
+    def __setup_chelly_document(self, old_chelly_document: ChellyDocument, new_chelly_document: ChellyDocument):
         self.setPlainText(new_chelly_document.editor.toPlainText())
-        self.__cached_block_count = TextEngine(new_chelly_document.editor).line_count
-        old_chelly_document.on_contents_changed.disconnect(self._update_contents)
+        self.__cached_block_count = TextEngine(
+            new_chelly_document.editor).line_count
+        old_chelly_document.on_contents_changed.disconnect(
+            self._update_contents)
         new_chelly_document.on_contents_changed.connect(self._update_contents)
-    
-    def _update_contents(self, editor:QPlainTextEdit, pos:int, charsrem:int, charsadd:int):
+
+    def _update_contents(self, editor: QPlainTextEdit, pos: int, charsrem: int, charsadd: int):
         line_number = TextEngine(editor).current_line_nbr
         TextEngine(self).move_cursor_to_line(line_number)
         line_count = TextEngine(editor).line_count
@@ -298,13 +308,13 @@ class ChellyEditor(QPlainTextEdit):
             TextEngine(self).set_text_at_line(
                 self.textCursor().blockNumber(), text)
             TextEngine(self).move_cursor_to_line(line_number)
-        
+
         elif self.__cached_block_count == line_count-1:
             cursor = self.textCursor()
             cursor.setPosition(pos)
             cursor.insertText("\n")
             self.setTextCursor(cursor)
-        
+
         elif self.__cached_block_count == line_count+1:
             TextEngine(self).move_cursor_to_line(line_number+1)
             cursor = self.textCursor()
@@ -314,7 +324,7 @@ class ChellyEditor(QPlainTextEdit):
         else:
             cursor = self.textCursor()
             cursor.setPosition(pos)
-            
+
             if charsrem:
                 for _ in range(charsrem):
                     cursor.deleteChar()
@@ -323,17 +333,18 @@ class ChellyEditor(QPlainTextEdit):
                 calc = pos + charsadd
                 start_block = TextEngine(editor).block_from_position(pos)
                 end_block = TextEngine(editor).block_from_position(calc)
-                
-                new_blocks = list(TextEngine(editor).iterate_blocks_from(start_block, end_block.blockNumber()))
+
+                new_blocks = list(TextEngine(editor).iterate_blocks_from(
+                    start_block, end_block.blockNumber()))
                 for nb in new_blocks:
                     cursor.beginEditBlock()
                     cursor.insertText(nb.text())
 
                     if nb.next().blockNumber() >= 0 and nb != end_block:
                         cursor.insertText("\n")
-                    
+
                     cursor.endEditBlock()
-            
+
             self.setTextCursor(cursor)
 
             TextEngine(self).move_cursor_to_line(
@@ -341,19 +352,20 @@ class ChellyEditor(QPlainTextEdit):
             )
 
         self.__cached_block_count = TextEngine(editor).line_count
-    
-    def follow(self, other_editor:Self, follow_back:bool=False):
+
+    def follow(self, other_editor: Self, follow_back: bool = False):
         other_editor.followers.append(self)
         self.chelly_document = other_editor.chelly_document
 
         for key, value in other_editor.imitables.items():
             imitable = getattr(self, key, None)
-            imitable.imitate(value)
-                
+            if hasattr(imitable, "imitate"):
+                imitable.imitate(value)
+
         if follow_back:
             self.followers.append(other_editor)
-    
-    def unfollow(self, other_editor:Self, unfollow_back: bool=False):
+
+    def unfollow(self, other_editor: Self, unfollow_back: bool = False):
 
         if self.following(other_editor):
             other_editor.followers.remove(self)
@@ -361,18 +373,18 @@ class ChellyEditor(QPlainTextEdit):
         if unfollow_back:
             if other_editor.following(self):
                 self.followers.remove(other_editor)
-    
-    def following(self, other_editor:Self) -> bool:
+
+    def following(self, other_editor: Self) -> bool:
         return self in other_editor.followers
-    
+
     @property
     def shared_reference(self) -> list:
         return self.__shared_reference
-    
+
     @shared_reference.setter
-    def shared_reference(self, other_editor:Self):
-        self.__shared_reference = other_editor 
-        
+    def shared_reference(self, other_editor: Self):
+        self.__shared_reference = other_editor
+
         for key, from_manager in other_editor.shareables.items():
             if hasattr(self, key):
                 try:
@@ -380,17 +392,7 @@ class ChellyEditor(QPlainTextEdit):
                     to_manager.shared_reference = from_manager
                 except AttributeError as e:
                     print(e)
-    
+
     @shared_reference.deleter
     def shared_reference(self):
-        self.unfollow(self.shared_reference)
         self.__shared_reference = None
-
-    #TODO: Move this:
-    def set_mouse_cursor(self, cursor):
-        """
-        Changes the viewport's cursor
-        :param cursor: the mouse cursor to set.
-        :type cursor: QtWidgets.QCursor
-        """
-        self.viewport().setCursor(cursor)

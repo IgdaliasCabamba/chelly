@@ -43,7 +43,7 @@ class WordClick(Feature):
 
     def _select_word_cursor(self):
         """ Selects the word under the mouse cursor. """
-        cursor = TextEngine(self.editor).word_under_mouse_cursor()
+        cursor = TextEngine(self.editor).word_under_mouse_cursor
         if (self._previous_cursor_start != cursor.selectionStart() and
                 self._previous_cursor_end != cursor.selectionEnd()):
             self._remove_decoration()
@@ -56,14 +56,14 @@ class WordClick(Feature):
             self._remove_decoration()
         except ValueError:
             pass
-        self.editor.set_mouse_cursor(QtCore.Qt.IBeamCursor)
+        TextEngine(self.editor).mouse_cursor = QtCore.Qt.IBeamCursor
         self._previous_cursor_start = -1
         self._previous_cursor_end = -1
 
     def _on_mouse_moved(self, event):
         """ mouse moved callback """
         if event.modifiers() & QtCore.Qt.ControlModifier:
-            cursor = TextEngine(self.editor).word_under_mouse_cursor()
+            cursor = TextEngine(self.editor).word_under_mouse_cursor
             if (not self._cursor or
                     cursor.position() != self._cursor.position()):
                 self._check_word_cursor(cursor)
@@ -78,7 +78,7 @@ class WordClick(Feature):
     def _on_mouse_released(self, event):
         """ mouse pressed callback """
         if event.button() == 1 and self._deco:
-            cursor = TextEngine(self.editor).word_under_mouse_cursor()
+            cursor = TextEngine(self.editor).word_under_mouse_cursor
             if cursor and cursor.selectedText():
                 self._timer.request_job(
                     self.word_clicked.emit, cursor)
@@ -96,9 +96,9 @@ class WordClick(Feature):
                     self._deco.set_foreground(QtCore.Qt.blue)
                 self._deco.set_as_underlined()
                 self.editor.decorations.append(self._deco)
-                self.editor.set_mouse_cursor(QtCore.Qt.PointingHandCursor)
+                TextEngine(self.editor).mouse_cursor = QtCore.Qt.PointingHandCursor
             else:
-                self.editor.set_mouse_cursor(QtCore.Qt.IBeamCursor)
+                TextEngine(self.editor).mouse_cursor = QtCore.Qt.IBeamCursor
 
     def _remove_decoration(self):
         """
