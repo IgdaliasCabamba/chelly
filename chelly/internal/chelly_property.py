@@ -2,8 +2,7 @@ from inspect import signature, Signature
 from typing import Any, Type, Union, Optional, Type
 from typing_extensions import Self, get_origin, get_args, types
 from types import UnionType, NoneType
-
-from types import FunctionType
+from .chelly_follow import ChellyFollowedValue
 
 class ChellyShareableType(Type):
     ...
@@ -57,12 +56,13 @@ class chelly_property:
     def is_setting(klass: Any, c_property_name: str) -> Optional[bool]:
         return chelly_property.check_type(ChellyShareableSetting)
 
-    __slots__ = ("fget","fset","fdel", "_doc", "value_type", "args", "kwargs")
+    __slots__ = ("fget","fset","fdel", "ffollow", "_doc", "value_type", "args", "kwargs")
 
-    def __init__(self, fget=None, fset=None, fdel=None, doc=None, *args, **kwargs) -> None:
+    def __init__(self, fget=None, fset=None, fdel=None, ffollow=None, doc=None, *args, **kwargs) -> None:
         self.fget = fget
         self.fset = fset
         self.fdel = fdel
+        self.ffollow = ffollow
         if doc is None and fget is not None:
             doc = fget.__doc__
         self._doc = doc
@@ -94,7 +94,14 @@ class chelly_property:
                 if type(value) not in get_args(self.value_type):
                     raise TypeError(f"Expected {self.value_type}. Got: {type(value)}")
 
+        if isinstance(value, ChellyFollowedValue):
+            self.fset(obj, value.value)
+            return None
+        
         self.fset(obj, value)
+
+        if self.ffollow is not None:
+            self.ffollow(self=obj, origin=obj, value=value)
 
     def __delete__(self, obj):
         if self.fdel is None:
@@ -102,13 +109,16 @@ class chelly_property:
         self.fdel(obj)
 
     def getter(self, fget):
-        return type(self)(fget, self.fset, self.fdel, self._doc, *self.args, **self.kwargs)
+        return type(self)(fget, self.fset, self.fdel, self.ffollow, self._doc, *self.args, **self.kwargs)
 
     def setter(self, fset):
-        return type(self)(self.fget, fset, self.fdel, self._doc, *self.args, **self.kwargs)
+        return type(self)(self.fget, fset, self.fdel, self.ffollow, self._doc, *self.args, **self.kwargs)
 
     def deleter(self, fdel):
-        return type(self)(self.fget, self.fset, fdel, self._doc, *self.args, **self.kwargs)
+        return type(self)(self.fget, self.fset, fdel, self.ffollow, self._doc, *self.args, **self.kwargs)
+    
+    def follower(self, ffollow):
+        return type(self)(self.fget, self.fset, self.fdel, ffollow, self._doc, *self.args, **self.kwargs)
 
 if __name__ == "__main__":
     

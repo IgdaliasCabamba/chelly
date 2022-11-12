@@ -8,7 +8,7 @@ if TYPE_CHECKING:
 from qtpy.QtCore import Qt
 from qtpy.QtGui import QPalette, QBrush, QColor
 from .themes import ChellyTheme
-from ...internal import ChellyFollowable, chelly_imitable, ChellyTracked
+from ...internal import ChellyFollowable, ChellyFollowedValue, chelly_property
 from typing_extensions import Self
 
 class ChellyStyle(ChellyFollowable):
@@ -17,7 +17,7 @@ class ChellyStyle(ChellyFollowable):
     def name(self):
         return None
 
-    @chelly_imitable
+    @chelly_property
     def selection_background(self) -> QColor:
         return self._selection_background
     
@@ -30,12 +30,12 @@ class ChellyStyle(ChellyFollowable):
             self._selection_background = color
             self.update_palette_brush(QPalette.Highlight, self._selection_background)
     
-    @selection_background.tracker
+    @selection_background.follower
     def selection_background(self, origin:Self, value:Any):
         for editor in self.editor.followers:
-            editor.style.selection_background = ChellyTracked(value)
+            editor.style.selection_background = ChellyFollowedValue(value)
     
-    @chelly_imitable
+    @chelly_property
     def selection_foreground(self) -> QColor:
         return self._selection_foreground
     
@@ -46,11 +46,10 @@ class ChellyStyle(ChellyFollowable):
             self._selection_foreground = color
             self.update_palette_color(QPalette.HighlightedText, self._selection_foreground)
 
-    @selection_foreground.tracker
+    @selection_foreground.follower
     def selection_foreground(self, origin:Self, value:Any):
         for editor in self.editor.followers:
-            editor.style.selection_foreground = ChellyTracked(value)
-
+            editor.style.selection_foreground = ChellyFollowedValue(value)
 
     def __init__(self, editor) -> None:
         super().__init__(editor)
@@ -73,3 +72,6 @@ class ChellyStyle(ChellyFollowable):
         palette = self.editor.palette()
         palette.setColor(*args, **kargs)
         self.editor.setPalette(palette)
+    
+    def imitate(self, other_style):
+        print(other_style)

@@ -65,7 +65,7 @@ class TextEngine:
     
     @property
     def current_column_nbr(self):
-        return self.cursor_position()[1]
+        return self.cursor_position[1]
 
     @property
     def line_count(self):
@@ -80,6 +80,10 @@ class TextEngine:
     def visible_lines_from_line_count(self):
         count = self.line_count
         return count
+    
+    @property
+    def amount_of_visible_blocks(self) -> int:
+        return len(self._editor.visible_blocks)
     
     def blocks_from_selection_range(self, start:int, end:int = None) -> Tuple[QTextBlock, QTextBlock]:
         cursor = self._editor.textCursor()

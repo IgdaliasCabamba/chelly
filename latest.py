@@ -25,7 +25,7 @@ from chelly.components.externals.chelly_completer.text_completer import \
     Completer
 from chelly.core import Panel
 from chelly.features import (AutoComplete, AutoIndent, CaretLineHighLighter,
-                             CursorHistory, EdgeLine, ImageDrawer, IndentationGuides,
+                             CursorHistory, CursorScroller, EdgeLine, ImageDrawer, IndentationGuides,
                              IndentationMarks, SmartBackSpace, SymbolMatcher,
                              WordClick, ZoomMode)
 from chelly.languages import JavaScriptLanguage, PythonLanguage
@@ -144,6 +144,7 @@ editor.features.append(EdgeLine)
 editor.features.append(AutoComplete)
 editor.features.append(ZoomMode)
 editor.features.append(SymbolMatcher)
+#editor.features.append(CursorScroller)
 word_click = editor.features.append(WordClick)
 symbol_margin: MarkerMargin = editor.panels.append(
     MarkerMargin, Panel.Position.LEFT, Panel.WidgetSettings(level=2))
@@ -183,6 +184,7 @@ editor1.features.append(AutoIndent)
 editor1.features.append(CursorHistory)
 editor1.features.append(SmartBackSpace)
 editor1.features.append(IndentationMarks)
+#editor1.features.append(CursorScroller)
 editor1.features.append(SymbolMatcher)
 image_drawer1 = editor1.features.append(ImageDrawer)
 word_click1 = editor1.features.append(WordClick)
@@ -338,6 +340,7 @@ line_number_margin.properties.highlight = QColor("#72c3f0")
 editor.style.selection_foreground = QColor("#2b2b2b")
 editor.style.selection_background = QColor(Qt.GlobalColor.red)
 
+# use this to draw
 image_drawer1.draw = QImage(
     pathlib.Path.cwd()
         .joinpath("dev")
@@ -346,7 +349,10 @@ image_drawer1.draw = QImage(
         .as_posix()
 )
 
-del image_drawer1.draw
+# use this to undraw
+#del image_drawer1.draw
+#or
+image_drawer1.draw = None
 
 #div.resize(1000, 600)
 #div.move(200, 100)

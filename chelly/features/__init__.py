@@ -1,4 +1,5 @@
 from .brackethlighter import SymbolMatcher
+from .cursor_scroller import CursorScroller
 from .drawer import ImageDrawer
 from .line_highlighter import CaretLineHighLighter
 from .indentation_guides import IndentationGuides
