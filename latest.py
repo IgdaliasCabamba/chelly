@@ -27,7 +27,7 @@ from chelly.core import Panel
 from chelly.features import (AutoComplete, AutoIndent, CaretLineHighLighter,
                              CursorHistory, CursorScroller, EdgeLine, ImageDrawer, IndentationGuides,
                              IndentationMarks, SmartBackSpace, SymbolMatcher,
-                             WordClick, ZoomMode)
+                             WordClick, ZoomMode, RichAnnotation)
 from chelly.languages import JavaScriptLanguage, PythonLanguage
 from chelly.languages.sh.python_test import PythonLanguageNew
 from chelly.managers import FeaturesManager, LanguagesManager, PanelsManager
@@ -146,6 +146,7 @@ editor.features.append(EdgeLine)
 editor.features.append(AutoComplete)
 editor.features.append(ZoomMode)
 editor.features.append(SymbolMatcher)
+annotations1 = editor.features.append(RichAnnotation)
 #editor.features.append(CursorScroller)
 word_click = editor.features.append(WordClick)
 symbol_margin: MarkerMargin = editor.panels.append(
@@ -371,5 +372,6 @@ if __name__ == '__main__':
 
     editor.properties.text = content
     assert editor.properties.text == content
+    annotations1.append("<h1>OMG I made it </h1>")
 
     app.exec()
