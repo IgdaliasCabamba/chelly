@@ -4,7 +4,7 @@ from qtpy.QtCore import QSize
 from qtpy.QtGui import QColor
 from qtpy.QtWidgets import QGraphicsDropShadowEffect, QHBoxLayout
 from ...core import Panel
-from ...internal import chelly_property, ChellyShareableSetting, ChellyShareableStyle
+from ...internal import chelly_property
 from .editor import MiniMapEditor
 
 class MiniMap(Panel):
@@ -29,8 +29,8 @@ class MiniMap(Panel):
             drop_shadow.setBlurRadius(6)
             self.shadow = drop_shadow
         
-        @chelly_property(value_type=QGraphicsDropShadowEffect)
-        def shadow(self) -> ChellyShareableStyle:
+        @chelly_property
+        def shadow(self) -> QGraphicsDropShadowEffect:
             return self.__drop_shadow
         
         @shadow.setter
@@ -38,8 +38,8 @@ class MiniMap(Panel):
             self.__drop_shadow = new_shadow
             self.instance.setGraphicsEffect(self.__drop_shadow)
         
-        @chelly_property(value_type=int)
-        def max_width_hint(self) -> ChellyShareableSetting:
+        @chelly_property
+        def max_width_hint(self) -> float:
             if self.resizable:
                 editor_width = self.instance.editor.size().width()
                 
@@ -57,8 +57,8 @@ class MiniMap(Panel):
 
             return max_width
         
-        @chelly_property(value_type=int)
-        def max_width(self) -> ChellyShareableSetting:
+        @chelly_property
+        def max_width(self) -> int:
             return self.__max_width
         
         @max_width.setter
@@ -66,16 +66,16 @@ class MiniMap(Panel):
             self.__max_width = width
             self.__chelly_editor.slider.setFixedWidth(width)
         
-        @chelly_property(value_type=int)
-        def min_width(self) -> ChellyShareableSetting:
+        @chelly_property
+        def min_width(self) -> int:
             return self.__min_width
         
         @min_width.setter
         def min_width(self, width:int) -> None:
             self.__min_width = width
             
-        @chelly_property(value_type=int)
-        def width_percentage(self) -> ChellyShareableSetting:
+        @chelly_property
+        def width_percentage(self) -> int:
             return self.__width_percentage
         
         @width_percentage.setter
@@ -83,8 +83,8 @@ class MiniMap(Panel):
             if isinstance(width, int):
                 self.__width_percentage = width
         
-        @chelly_property(value_type=bool)
-        def resizable(self) -> ChellyShareableSetting:
+        @chelly_property
+        def resizable(self) -> bool:
             return self.__resizable
         
         @resizable.setter

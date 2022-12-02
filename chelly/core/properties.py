@@ -8,7 +8,7 @@ from qtpy.QtGui import QFont, QTextOption
 from qtpy.QtWidgets import QPlainTextEdit
 
 from .utils import Character, FontEngine
-from ..internal import BaseElement, chelly_property, ChellyShareableSetting, ChellyShareableStyle
+from ..internal import BaseElement, chelly_property
 
 class PropertyCollections:
 
@@ -35,28 +35,28 @@ class Properties(BaseElement):
         self._zoom: int = 0
         self._view_only = False
 
-    @chelly_property(value_type=list)
-    def lines_text(self) -> ChellyShareableSetting:
+    @chelly_property
+    def lines_text(self) -> list:
         return self.text.splitlines()
 
-    @chelly_property(value_type=list)
-    def decorations(self) -> ChellyShareableSetting:
+    @chelly_property
+    def decorations(self) -> list:
         return self.__decorations
 
-    @chelly_property(value_type=bool)
-    def show_whitespaces(self) -> ChellyShareableSetting:
+    @chelly_property
+    def show_whitespaces(self) -> bool:
         return self._show_whitespaces
 
-    @chelly_property(value_type=str)
-    def text(self) -> ChellyShareableSetting:
+    @chelly_property
+    def text(self) -> str:
         return self._editor.toPlainText()
 
     @text.setter
     def text(self, text: Any) -> None:
         self._editor.setPlainText(str(text))
 
-    @chelly_property(value_type=bool)
-    def view_only(self) -> ChellyShareableSetting:
+    @chelly_property
+    def view_only(self) -> bool:
         return self._view_only
 
     @view_only.setter
@@ -64,20 +64,20 @@ class Properties(BaseElement):
         if isinstance(value, bool):
             self._view_only = value
 
-    @chelly_property(value_type=int)
-    def indent_type(self) -> ChellyShareableSetting:
+    @chelly_property
+    def indent_type(self) -> int:
         return self._indent_type
 
-    @chelly_property(value_type=bool)
-    def indent_with_tabs(self) -> ChellyShareableSetting:
+    @chelly_property
+    def indent_with_tabs(self) -> bool:
         return (self._indent_type == PropertyCollections.Indentation.tabs)
 
-    @chelly_property(value_type=float)
-    def tab_stop_distance(self) -> ChellyShareableSetting:
+    @chelly_property
+    def tab_stop_distance(self) -> float:
         return self._editor.tabStopDistance()
 
-    @chelly_property(value_type=Character)
-    def indent_char(self) -> ChellyShareableSetting:
+    @chelly_property
+    def indent_char(self) -> Character:
         return self._indent_char
 
     @indent_with_tabs.setter
@@ -90,8 +90,8 @@ class Properties(BaseElement):
             self._indent_type = PropertyCollections.Indentation.spaces
         self.__set_tab_distance(Character.SPACE.value, self.indent_size)
 
-    @chelly_property(value_type=bool)
-    def indent_with_spaces(self) -> ChellyShareableSetting:
+    @chelly_property
+    def indent_with_spaces(self) -> bool:
         return (self._indent_type == PropertyCollections.Indentation.spaces)
 
     @indent_with_spaces.setter
@@ -104,8 +104,8 @@ class Properties(BaseElement):
             self._indent_type = PropertyCollections.Indentation.tabs
         self.__set_tab_distance(Character.SPACE.value, self.indent_size)
 
-    @chelly_property(value_type=int)
-    def indent_size(self) -> ChellyShareableSetting:
+    @chelly_property
+    def indent_size(self) -> int:
         return self._indent_size
 
     @indent_size.setter
@@ -113,8 +113,8 @@ class Properties(BaseElement):
         self._indent_size = size
         self.__set_tab_distance(Character.SPACE.value, size)
 
-    @chelly_property(value_type=QFont)
-    def font(self) -> ChellyShareableSetting:
+    @chelly_property
+    def font(self) -> QFont:
         return self._font
 
     @font.setter
@@ -123,8 +123,8 @@ class Properties(BaseElement):
         self._font_size = new_font.pointSize()
         self._editor.setFont(new_font)
 
-    @chelly_property(value_type=str)
-    def font_family(self) -> ChellyShareableSetting:
+    @chelly_property
+    def font_family(self) -> str:
         return self._font_family
 
     @font_family.setter
@@ -134,8 +134,8 @@ class Properties(BaseElement):
         font.setFamily(new_family)
         self._editor.setFont(font)
 
-    @chelly_property(value_type=Union[int, float])
-    def font_size(self) -> ChellyShareableSetting:
+    @chelly_property
+    def font_size(self) -> Union[int, float]:
         return self._font_size
 
     @font_size.setter
@@ -150,8 +150,8 @@ class Properties(BaseElement):
 
         self._editor.setFont(font)
 
-    @chelly_property(value_type=Union[int, float])
-    def zoom(self) -> ChellyShareableSetting:
+    @chelly_property
+    def zoom(self) -> Union[int, float]:
         return self._zoom
 
     @zoom.setter

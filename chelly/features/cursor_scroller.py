@@ -2,7 +2,7 @@ from ..core import Feature, TextEngine
 from ..internal import chelly_property, ChellyFollowedValue
 from qtpy.QtCore import Qt
 
-#Warning: Unstable
+#!warning: Unstable
 
 class CursorScroller(Feature):
     

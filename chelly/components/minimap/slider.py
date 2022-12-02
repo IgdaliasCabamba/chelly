@@ -2,7 +2,7 @@ from qtpy.QtCore import Qt, Signal
 from qtpy.QtGui import QResizeEvent, QColor
 from qtpy.QtWidgets import QFrame
 from ...core import Panel
-from ...internal import chelly_property, ChellyShareableSetting, ChellyShareableStyle
+from ...internal import chelly_property
 import string
 from typing import Any
     
@@ -18,32 +18,32 @@ class SliderArea(QFrame):
             self._color:tuple = (255, 255, 255, 15)
             self._no_state_color:tuple = (255, 255, 255, 0)
 
-        @chelly_property(value_type=tuple)
-        def color(self) -> ChellyShareableStyle:
+        @chelly_property
+        def color(self) -> tuple:
             return self._color
     
         @color.setter
         def color(self, new_color:tuple) -> None:
             self._color = new_color
 
-        @chelly_property(value_type=tuple)
-        def no_state_color(self) -> ChellyShareableStyle:
+        @chelly_property
+        def no_state_color(self) -> tuple:
             return self._no_state_color
         
         @no_state_color.setter
         def no_state_color(self, new_color:QColor) -> None:
             self._no_state_color = new_color
         
-        @chelly_property(value_type=tuple)
-        def hover_color(self) -> ChellyShareableStyle:
+        @chelly_property
+        def hover_color(self) -> tuple:
             return self._hover_color
     
         @hover_color.setter
         def hover_color(self, new_color:QColor) -> None:
             self._hover_color = new_color
 
-        @chelly_property(value_type=int)
-        def slider_heigth(self) -> ChellyShareableSetting:
+        @chelly_property
+        def slider_heigth(self) -> int:
             return self.__slider_fixed_heigth
         
         @slider_heigth.setter

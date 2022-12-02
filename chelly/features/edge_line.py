@@ -1,7 +1,7 @@
 from typing import Any, Union
 
 from ..core import TextEngine, Feature, FontEngine, Character, ChellyCache
-from ..internal import chelly_property, ChellyShareableSetting, ChellyShareableStyle
+from ..internal import chelly_property
 from qtpy.QtGui import QPen, QColor, QPaintEvent, QPainter
 from dataclasses import dataclass
 
@@ -22,12 +22,12 @@ class EdgeLine(Feature):
             self.__color = EdgeLine.Defaults.LINE_COLOR
             self._pen = QPen(self.color)
         
-        @chelly_property(value_type=QPen)
-        def pen(self) -> ChellyShareableStyle:
+        @chelly_property
+        def pen(self) -> QPen:
             return self._pen
 
-        @chelly_property(value_type=QColor)
-        def color(self) -> ChellyShareableStyle:
+        @chelly_property
+        def color(self) -> QColor:
             return self.__color
 
         @color.setter
@@ -37,8 +37,8 @@ class EdgeLine(Feature):
             TextEngine(self.feature.editor).mark_whole_doc_dirty() # TODO
             self.feature.editor.repaint()
         
-        @chelly_property(value_type=int)
-        def position(self) -> ChellyShareableSetting:
+        @chelly_property
+        def position(self) -> int:
             return self.__margin_pos
 
         @position.setter

@@ -17,12 +17,13 @@ class ChellyStyle(ChellyFollowable):
     def name(self):
         return None
 
+    
     @chelly_property
     def selection_background(self) -> QColor:
         return self._selection_background
     
     @selection_background.setter
-    def selection_background(self, color:QColor) -> None:
+    def selection_background(self, color:Union[int, str, float, Any]) -> None:
         if isinstance(color, QColor):
             color = QBrush(color)
         
@@ -73,5 +74,6 @@ class ChellyStyle(ChellyFollowable):
         palette.setColor(*args, **kargs)
         self.editor.setPalette(palette)
     
-    def imitate(self, other_style):
-        print(other_style)
+    def follow(self, other_style):
+        self.selection_background = other_style.selection_background
+        self.selection_foreground = other_style.selection_foreground

@@ -7,6 +7,10 @@ from types import FunctionType
 import abc
 
 class ChellyFollowable(metaclass=abc.ABCMeta):
+    
+    class NonFolloableValue:
+        ...
+
     def __init__(self, editor):
         self.__editor = editor
 
@@ -14,11 +18,9 @@ class ChellyFollowable(metaclass=abc.ABCMeta):
     def editor(self):
         return self.__editor
     
-    
     @abc.abstractmethod
-    def imitate(self, other:Self):
+    def follow(self, other:Self):
         ...
-        # TODO:
 
 class ChellyFollowedValue:
     
@@ -29,5 +31,16 @@ class ChellyFollowedValue:
     def __init__(self, value):
         self.__value = value
     
-    def __call__(self, *args, **kwargs):
-        ...
+    def __call__(self, *args, **kwargs) -> Any:
+        new_value = kwargs.get("value", ChellyFollowable.NonFolloableValue)
+        
+        if new_value is ChellyFollowable.NonFolloableValue:
+            return self.__value
+        
+        self.__value = new_value
+    
+    def __enter__(self) -> Any:
+        return self.__value
+    
+    def __exit__(self, *args, **kwargs) -> Any:
+        return self

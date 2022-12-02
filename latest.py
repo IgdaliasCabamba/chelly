@@ -352,7 +352,7 @@ image_drawer1.draw = QImage(
 # use this to undraw
 #del image_drawer1.draw
 #or
-image_drawer1.draw = None
+#image_drawer1.draw = None
 
 #div.resize(1000, 600)
 #div.move(200, 100)

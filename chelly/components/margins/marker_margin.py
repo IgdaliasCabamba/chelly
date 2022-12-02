@@ -2,7 +2,7 @@ from typing import Union
 from qtpy.QtGui import QBrush, QIcon, QColor, QPainter, QTextDocument, QFontMetricsF
 from qtpy.QtCore import Qt, QSize, QRect, QObject, Signal, QPoint
 from qtpy.QtWidgets import QToolTip, QStyle
-from ...internal import chelly_property, ChellyShareableSetting, ChellyShareableStyle
+from ...internal import chelly_property
 from ...core import Panel, FontEngine, DelayJobRunner, TextEngine, TextDecoration
 
 
@@ -67,8 +67,8 @@ class MarkerMargin(Panel):
             super().__init__(panel)
             self._background = QColor('#FFC8C8')
             
-        @chelly_property(value_type=QColor)
-        def background(self) -> ChellyShareableStyle:
+        @chelly_property
+        def background(self) -> QColor:
             """
             Marker background color in editor. Use None if no text decoration
             should be used.

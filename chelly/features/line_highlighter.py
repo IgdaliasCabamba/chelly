@@ -3,7 +3,7 @@ from qtpy.QtCore import Qt
 from typing import Any
 from dataclasses import dataclass
 from ..core import Feature, TextDecoration, drift_color
-from ..internal import chelly_property, ChellyShareableSetting, ChellyShareableStyle
+from ..internal import chelly_property
 
 class CaretLineHighLighter(Feature):
 
@@ -20,24 +20,24 @@ class CaretLineHighLighter(Feature):
             self._background.setAlpha(70)
             self._foreground = QColor(Qt.GlobalColor.white)
         
-        @chelly_property(value_type=QColor)
-        def foreground(self) -> ChellyShareableStyle:
+        @chelly_property
+        def foreground(self) -> QColor:
             return self._foreground
 
         @foreground.setter
         def foreground(self, new_color: QColor) -> None:
             self._foreground = new_color
 
-        @chelly_property(value_type=QColor)
-        def background(self) -> ChellyShareableStyle:
+        @chelly_property
+        def background(self) -> QColor:
             return self._background
 
         @background.setter
         def background(self, new_color: QColor) -> None:
             self._background = new_color
 
-        @chelly_property(value_type=bool)
-        def line_text_color(self) -> ChellyShareableSetting:
+        @chelly_property
+        def line_text_color(self) -> bool:
             return self.__line_text_color
         
         @line_text_color.setter

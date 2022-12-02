@@ -3,7 +3,7 @@ from dataclasses import dataclass
 from qtpy.QtGui import QFont, QPainter, QPen, QColor
 from qtpy.QtCore import Qt, QSize
 from ...core import Panel, FontEngine, TextEngine, ChellyCache
-from ...internal import chelly_property, ChellyShareableSetting, ChellyShareableStyle
+from ...internal import chelly_property
 import difflib
 
 
@@ -26,40 +26,40 @@ class EditionMargin(Panel):
             self.__show_text_help = EditionMargin.Defaults.SHOW_TEXT_HELP
             self.__max_lines_count = EditionMargin.Defaults.MAX_LINES_COUNT
 
-        @chelly_property(value_type=bool)
-        def show_text_help(self) -> ChellyShareableSetting:
+        @chelly_property
+        def show_text_help(self) -> bool:
             return self.__show_text_help
 
         @show_text_help.setter
         def show_text_help(self, show: bool) -> None:
             self.__show_text_help = show
 
-        @chelly_property(value_type=int)
-        def max_lines_count(self) -> ChellyShareableSetting:
+        @chelly_property
+        def max_lines_count(self) -> int:
             return self.__max_lines_count
 
         @max_lines_count.setter
         def max_lines_count(self, limit: int) -> None:
             self.__max_lines_count = limit
 
-        @chelly_property(value_type=QColor)
-        def unknow(self) -> ChellyShareableStyle:
+        @chelly_property
+        def unknow(self) -> QColor:
             return self._unknow
 
         @unknow.setter
         def unknow(self, color: QColor) -> None:
             self._unknow = color
 
-        @chelly_property(value_type=QColor)
-        def added(self) -> ChellyShareableStyle:
+        @chelly_property
+        def added(self) -> QColor:
             return self._added
 
         @added.setter
         def added(self, color: QColor) -> None:
             self._added = color
 
-        @chelly_property(value_type=QColor)
-        def removed(self) -> ChellyShareableStyle:
+        @chelly_property
+        def removed(self) -> QColor:
             return self._removed
 
         @removed.setter
