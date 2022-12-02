@@ -11,7 +11,7 @@ from typing import Any
 from qtpy.QtCore import Qt
 from qtpy.QtGui import QColor, QPalette
 from typing_extensions import Self
-from ..utils.helpers import ChellyEvent
+from ...internal import ChellyEvent
 
 class ChellyTheme:
     _selection_background = QColor(Qt.GlobalColor.darkBlue)

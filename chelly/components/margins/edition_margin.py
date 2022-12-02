@@ -1,13 +1,32 @@
 from typing import Any
 from dataclasses import dataclass
 from qtpy.QtGui import QFont, QPainter, QPen, QColor
-from qtpy.QtCore import Qt, QSize
-from ...core import Panel, FontEngine, TextEngine, ChellyCache
-from ...internal import chelly_property
+from qtpy.QtCore import Qt, QSize, QObject, Signal, QThread
+from ...core import Panel, FontEngine, TextEngine, ChellyCache, DelayJobRunner
+from ...internal import chelly_property, ChellyQThreadManager
 import difflib
+from nemoize import memoize
+
+
+class EditionMarginWorker(QObject):
+
+    on_compared = Signal(list)
+
+    def __init__(self, edition_margin):
+        super().__init__()
+        self.edition_margin = edition_margin
+        self.differ = difflib.Differ()
+
+    def run(self):
+        self.edition_margin.on_compare_request.connect(self.compare)
+
+    def compare(self, text1: str, text2: str):
+        self.on_compared.emit(list(self.differ.compare(text1, text2)))
 
 
 class EditionMargin(Panel):
+
+    on_compare_request = Signal(list, list)
 
     @dataclass(frozen=True)
     class Defaults:
@@ -82,12 +101,27 @@ class EditionMargin(Panel):
         super().__init__(editor)
         self.scrollable = True
         self.number_font = QFont()
-        self.__current_diffs = []
+        
         self.__cached_lines_text = []
         self.__cached_cursor_position = ChellyCache(
             None, None, lambda: TextEngine(self.editor).cursor_position)
-        self.differ = difflib.Differ()
+        self.__preloaded_diff = []
         self.__properties = EditionMargin.Properties(self)
+
+        self.thread_manager = ChellyQThreadManager()
+
+        self.job_delayer = DelayJobRunner(200)  # ? 0.2 seconds
+
+        self.thread = QThread()
+        self.thread_manager.append(self.thread)
+        self.comparasion_worker = EditionMarginWorker(self)
+        self.comparasion_worker.moveToThread(self.thread)
+        self.thread.started.connect(self.comparasion_worker.run)
+        self.thread.start()
+
+        self.comparasion_worker.on_compared.connect(self.preload_diffs)
+        self.editor.textChanged.connect(
+            lambda: self.job_delayer.request_job(self.update_diffs))
 
     def sizeHint(self):
         """
@@ -98,13 +132,12 @@ class EditionMargin(Panel):
 
     @property
     def lines_area_width(self) -> int:
-        space = (FontEngine(self.editor.font()
-                            ).real_horizontal_advance('|', True))
+        space = (FontEngine(self.editor.font())
+                 .real_horizontal_advance('|', True))
+
         return space
 
-    def paintEvent(self, event) -> None:
-        super().paintEvent(event)
-
+    def update_diffs(self):
         if self.editor.blockCount() <= 1:
             return None
 
@@ -112,7 +145,7 @@ class EditionMargin(Panel):
         if cached_lines_text_length >= self.properties.max_lines_count:
             return None
 
-        first_v_block = self.editor.firstVisibleBlock().blockNumber()
+        first_visible_block_number = self.editor.firstVisibleBlock().blockNumber()
         lines_text = []
 
         first_block = self.editor.document().firstBlock()
@@ -132,25 +165,31 @@ class EditionMargin(Panel):
                 lines_text.append(text_block.text())
 
         if self.__cached_cursor_position.changed:
-            diffs = list(self.differ.compare(
-                self.__cached_lines_text, lines_text))
-        else:
-            diffs = self.__current_diffs
+            self.on_compare_request.emit(
+                self.__cached_lines_text, lines_text)
+
+    def preload_diffs(self, diff: list) -> None:
+        self.__preloaded_diff = diff
+
+    def paintEvent(self, event) -> None:
+        super().paintEvent(event)
+
+        if not self.__preloaded_diff:
+            return None
 
         pen = QPen()
         pen.setCosmetic(True)
         pen.setJoinStyle(Qt.RoundJoin)
         pen.setWidth(8)
         point_x = 0
+
         height = self.editor.fontMetrics().height()
 
-        if first_v_block <= cached_lines_text_length:
-
-            self.__current_diffs = diffs
+        if self.editor.firstVisibleBlock().blockNumber() <= len(self.__cached_lines_text):
 
             with QPainter(self) as painter:
 
-                for idx, diff in enumerate(self.__current_diffs):
+                for idx, diff in enumerate(self.__preloaded_diff):
                     if diff.startswith(("-", "+", "?")):
                         top = TextEngine(
                             self.editor).point_y_from_line_number(idx)

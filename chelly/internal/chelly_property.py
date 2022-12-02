@@ -7,6 +7,7 @@ from typing_extensions import Self
 
 from .chelly_follow import ChellyFollowedValue
 from functools import lru_cache
+from nemoize import memoize
 
 
 class chelly_property:
@@ -25,13 +26,14 @@ class chelly_property:
 
     
     @staticmethod
+    @memoize(arg_hash_function=str, max_size=16)
     def check_types(required_types: Iterable, given_type: Type) -> bool:
         class_name = getattr(given_type, "__name__", None)
 
         if class_name is None:
             return True
 
-        for _type in ["Any", "None", "NoneType", Any, None, NoneType]:
+        for _type in ["Any", "None", "NoneType", "Optional", Any, None, NoneType, Optional]:
             if _type in required_types:
                 return True
 

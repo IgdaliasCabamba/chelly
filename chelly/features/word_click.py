@@ -2,7 +2,8 @@
 """
 This module contains the WordClickMode
 """
-from ..core import Feature, TextEngine, DelayJobRunner, TextDecoration, ChellyEvent
+from ..core import Feature, TextEngine, DelayJobRunner, TextDecoration
+from ..internal import ChellyEvent
 from qtpy import QtCore, QtGui
 
 class WordClick(Feature):

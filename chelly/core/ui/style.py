@@ -23,7 +23,7 @@ class ChellyStyle(ChellyFollowable):
         return self._selection_background
     
     @selection_background.setter
-    def selection_background(self, color:Union[int, str, float, Any]) -> None:
+    def selection_background(self, color:Union[QBrush, QColor]) -> None:
         if isinstance(color, QColor):
             color = QBrush(color)
         

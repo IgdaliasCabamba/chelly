@@ -2,7 +2,7 @@ from ..core import Feature, TextEngine
 from ..internal import chelly_property, ChellyFollowedValue
 from qtpy.QtGui import QImage, QPainter
 from qtpy.QtCore import QPoint, QSize
-from typing import Any
+from typing import Any, Optional
 from typing_extensions import Self
 
 class ImageDrawer(Feature):
@@ -25,11 +25,11 @@ class ImageDrawer(Feature):
             painter.drawImage(QPoint(0,0), self.__qimage_to_paint.scaled(QSize(drawable_x, drawable_y)))
 
     @chelly_property
-    def draw(self):
+    def draw(self) -> Optional[QImage]:
         return self.__qimage_to_paint
     
     @draw.setter
-    def draw(self, qimage:QImage):
+    def draw(self, qimage:Optional[QImage]):
         self.__qimage_to_paint = qimage
     
     @draw.deleter

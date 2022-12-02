@@ -1,6 +1,7 @@
 from typing import List
 from typing_extensions import Self
-from ..utils import TextEngine, Character, ChellyEvent
+from ..utils import TextEngine, Character
+from ...internal import ChellyEvent
 from qtpy.QtWidgets import QPlainTextEdit
 
 class ChellyDocument:

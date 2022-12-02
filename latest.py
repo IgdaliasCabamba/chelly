@@ -31,6 +31,7 @@ from chelly.features import (AutoComplete, AutoIndent, CaretLineHighLighter,
 from chelly.languages import JavaScriptLanguage, PythonLanguage
 from chelly.languages.sh.python_test import PythonLanguageNew
 from chelly.managers import FeaturesManager, LanguagesManager, PanelsManager
+from chelly.internal import ChellyQThreadManager
 from dev.libs.qtmodern import styles as qtmodern_styles
 from dev.libs.qtmodern import windows as qtmodern_windows
 
@@ -45,6 +46,7 @@ logging.basicConfig(filename=DEBUG_OUTPUT_FILE, filemode='a',
                     format='%(name)s - %(levelname)s - %(message)s')
 
 app = QApplication(sys.argv)
+app_thread_manager = ChellyQThreadManager(app)
 qtmodern_styles.dark(app)
 
 div = QSplitter()
@@ -352,7 +354,7 @@ image_drawer1.draw = QImage(
 # use this to undraw
 #del image_drawer1.draw
 #or
-#image_drawer1.draw = None
+image_drawer1.draw = None
 
 #div.resize(1000, 600)
 #div.move(200, 100)
