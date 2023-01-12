@@ -27,7 +27,7 @@ from chelly.core import Panel
 from chelly.features import (AutoComplete, AutoIndent, CaretLineHighLighter,
                              CursorHistory, CursorScroller, EdgeLine, ImageDrawer, IndentationGuides,
                              IndentationMarks, SmartBackSpace, SymbolMatcher,
-                             WordClick, ZoomMode, RichAnnotation)
+                             WordClick, ZoomMode, RichAnnotations)
 from chelly.languages import JavaScriptLanguage, PythonLanguage
 from chelly.languages.sh.python_test import PythonLanguageNew
 from chelly.managers import FeaturesManager, LanguagesManager, PanelsManager
@@ -138,7 +138,7 @@ div.setStyleSheet(
 caret_line = editor.features.append(CaretLineHighLighter)
 indentation_guides1: IndentationGuides = editor.features.append(
     IndentationGuides)
-auto_indent1: AutoIndent = editor.features.append(AutoIndent)
+auto_indent: AutoIndent = editor.features.append(AutoIndent)
 editor.features.append(CursorHistory)
 editor.features.append(SmartBackSpace)
 editor.features.append(IndentationMarks)
@@ -146,7 +146,7 @@ editor.features.append(EdgeLine)
 editor.features.append(AutoComplete)
 editor.features.append(ZoomMode)
 editor.features.append(SymbolMatcher)
-annotations1 = editor.features.append(RichAnnotation)
+annotations = editor.features.append(RichAnnotations)
 #editor.features.append(CursorScroller)
 word_click = editor.features.append(WordClick)
 symbol_margin: MarkerMargin = editor.panels.append(
@@ -266,6 +266,8 @@ def add_mark_at_line(sm: MarkerMargin, line: int):
             'color': 'red'
         }])
         sm.add_marker(MarkerObject(line, mark_icon))
+    
+    annotations.append((12, "<h1>OMG I made it </h1>")) # TODO
 
 
 def rem_mark_at_line(sm: MarkerMargin, line: int):
@@ -326,7 +328,10 @@ def create_breadcrumbs():
 
 create_breadcrumbs()
 
-editor1.shared_reference = editor
+#! be careful with it; this can cause qt objects reference issues; example with QtDropShadow
+#editor1.shared_reference = editor 
+
+#* this is secure and easy to debug
 editor1.follow(editor, follow_back=True)
 
 # TODO
@@ -372,6 +377,5 @@ if __name__ == '__main__':
 
     editor.properties.text = content
     assert editor.properties.text == content
-    annotations1.append("<h1>OMG I made it </h1>")
 
     app.exec()

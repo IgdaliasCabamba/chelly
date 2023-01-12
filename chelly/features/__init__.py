@@ -11,4 +11,4 @@ from .edge_line import EdgeLine
 from .autocomplete import AutoComplete
 from .word_click import WordClick
 from .zoom import ZoomMode
-from .rich_annotations import RichAnnotation
+from .rich_annotations import RichAnnotations

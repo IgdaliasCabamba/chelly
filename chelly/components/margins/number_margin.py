@@ -85,6 +85,10 @@ class LineNumberMargin(Panel):
         super().paintEvent(event)
         with QPainter(self) as painter:
             for top, block_number, block in self.editor.visible_blocks:
+                
+                if block.userState() == -999:
+                    continue
+
                 number = str(block_number + 1)
                     
                 if block_number == self.editor.textCursor().blockNumber():

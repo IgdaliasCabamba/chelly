@@ -1,7 +1,7 @@
 **/__pycache__
 pyenv/
 .dev*
-dev/*
+dev/
 !dev/local_resources
 !dev/libs
 *.pyi
