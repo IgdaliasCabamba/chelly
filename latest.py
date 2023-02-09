@@ -267,7 +267,7 @@ def add_mark_at_line(sm: MarkerMargin, line: int):
         }])
         sm.add_marker(MarkerObject(line, mark_icon))
     
-    annotations.append((12, "<h1>OMG I made it </h1>")) # TODO
+    rich_annotation = annotations.append("test", 100, 100, line) # TODO
 
 
 def rem_mark_at_line(sm: MarkerMargin, line: int):

@@ -31,7 +31,6 @@ class AnnotationTextObject(QPyTextObject):
         if isinstance(text_obj_data, dict):
             return QSizeF(text_obj_data["data"]["width"], text_obj_data["data"]["height"])
 
-        print(posInDocument)
         return QSizeF(50, 50)
 
     def drawObject(self, painter, rect, doc, posInDocument, format):
@@ -85,10 +84,14 @@ class RichAnnotations(Feature):
         super().__init__(editor)
         self.__annotation_lines = list()
         self.__annotations_data = dict()
+        
         #self.__annotation_lines.append(cursor.blockNumber())
     
     def append(self, id_: str, width: int, height: int, line: int) -> RichAnnotation:
-        ...
+        x = RichAnnotation(self.editor, id_, line)
+        x.display(width, height)
+        self.__annotation_lines.append(x)
+        return x
     
     def remove(self, id_: str = None, line: int = None) -> RichAnnotation:
         ...
