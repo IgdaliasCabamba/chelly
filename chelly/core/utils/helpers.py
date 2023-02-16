@@ -58,6 +58,7 @@ class DelayJobRunner:
         self._timer.stop()
         self._job(*self._args, **self._kwargs)
 
+
 class TextBlockHelper:
     """
     Helps retrieving the various part of the user state bitmask.
@@ -77,6 +78,7 @@ class TextBlockHelper:
         - bit26: 1 bit for the fold trigger flag (trigger or not trigger)
         - bit27: 1 bit for the fold trigger state (expanded/collapsed)
     """
+
     @staticmethod
     def get_state(block):
         """
@@ -202,3 +204,6 @@ class TextBlockHelper:
         state &= 0x77FFFFFF
         state |= int(val) << 27
         block.setUserState(state)
+
+
+__all__ = ["DelayJobRunner", "TextBlockHelper"]

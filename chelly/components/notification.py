@@ -1,6 +1,12 @@
 from typing import Union
 from typing_extensions import Self
-from qtpy.QtWidgets import QLabel, QPushButton, QGraphicsDropShadowEffect, QFrame, QHBoxLayout
+from qtpy.QtWidgets import (
+    QLabel,
+    QPushButton,
+    QGraphicsDropShadowEffect,
+    QFrame,
+    QHBoxLayout,
+)
 from qtpy.QtCore import QSize, Qt
 from qtpy.QtGui import QColor, QIcon, QPalette
 from ..core import Panel
@@ -8,44 +14,45 @@ import qtawesome
 
 
 class NotificationPanel(Panel):
-
     class CloseButton(QPushButton):
         def __init__(self, *args, **kvargs):
             super().__init__(*args, **kvargs)
 
     class NotificationCard:
-
         @property
         def buttons(self) -> list:
             return self.__buttons
-        
+
         @buttons.setter
-        def buttons(self, new_buttons:list):
+        def buttons(self, new_buttons: list):
             if isinstance(new_buttons, list):
                 self.__buttons = new_buttons
             else:
                 self.__buttons = [new_buttons]
-        
+
         @property
         def icon(self) -> str:
             return self.__icon
-        
+
         @icon.setter
-        def icon(self, new_icon:str):
+        def icon(self, new_icon: str):
             if isinstance(new_icon, QIcon):
                 self.__icon = new_icon
             else:
                 self.__icon = qtawesome.icon(str(new_icon))
-        
+
         @property
         def text(self) -> str:
             return self.__text
-        
+
         @text.setter
-        def text(self, new_text:str):
+        def text(self, new_text: str):
             self.__text = new_text
 
-        def __init__(self, icon:str=QIcon(), text:str=None, buttons:list=[]):
+        def __init__(self, icon: str = QIcon(), text: str = None, buttons: list = None):
+            if buttons is None:
+                buttons = []
+
             if isinstance(icon, QIcon):
                 self.__icon = icon
             else:
@@ -53,7 +60,6 @@ class NotificationPanel(Panel):
             self.__text = text
             self.__buttons = buttons
 
-    
     @property
     def card(self) -> NotificationCard:
         return self.__card
@@ -116,11 +122,11 @@ class NotificationPanel(Panel):
     def card(self, notication_card: NotificationCard) -> Self:
         self.__icon.setIcon(notication_card.icon)
         self.__display.setText(notication_card.text)
-        
+
         while self.__buttons.takeAt(0) is not None:
             widget = self.__buttons.itemAt(0).widget()
             self.__buttons.removeWidget(widget)
-        
+
         for button in notication_card.buttons:
             self.__buttons.addWidget(button)
 
@@ -130,3 +136,6 @@ class NotificationPanel(Panel):
         self.__card = None
         self.setVisible(False)
         return self
+
+
+__all__ = ["NotificationPanel"]

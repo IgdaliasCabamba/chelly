@@ -1,16 +1,16 @@
 from typing import Any, Dict, List, Optional, Union
 from .chelly_property import chelly_property
 
+
 class BaseElement:
     """The lowest level for editor elements"""
 
     def __init__(self, instance: Any) -> None:
         self._instance = instance
-    
+
     @property
     def instance(self) -> Any:
         return self._instance
-    
 
     def from_dict(self, element_properties_dict: Dict[str, Any]) -> None:
         for key, value in element_properties_dict.items():
@@ -19,8 +19,11 @@ class BaseElement:
                     setattr(self, key, value)
                 except AttributeError:
                     pass
-    
-    def to_dict(self, excludes:list=[]):
+
+    def to_dict(self, excludes: list = None):
+        if excludes is None:
+            excludes = []
+
         res_dict = self.as_dict
         for exclude in excludes:
             if exclude in res_dict.keys():
@@ -34,3 +37,6 @@ class BaseElement:
                 if chelly_property.is_shareable(value):
                     res[key] = value.fget(self)
         return res
+
+
+__all__ = ["BaseElement"]

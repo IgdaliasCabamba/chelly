@@ -10,13 +10,11 @@ class SmartBackSpace(Feature):
     def _on_key_pressed(self, event) -> None:
         no_modifiers = int(event.modifiers()) == QtCore.Qt.NoModifier
         if event.key() == QtCore.Qt.Key_Backspace and no_modifiers:
-            
             if self.editor.textCursor().atBlockStart():
                 return None
 
             indent_size = self.editor.properties.indent_size
             if self.editor.textCursor().positionInBlock() % indent_size == 0:
-                
                 # count the number of spaces deletable, stop at tab len
                 spaces = 0
                 tmp_cursor = QtGui.QTextCursor(self.editor.textCursor())
@@ -33,10 +31,13 @@ class SmartBackSpace(Feature):
                 cursor = self.editor.textCursor()
                 if spaces == 0:
                     return None
-            
+
                 cursor.beginEditBlock()
-                for _ in range(spaces-1):
+                for _ in range(spaces - 1):
                     cursor.deletePreviousChar()
                 cursor.endEditBlock()
 
                 self.editor.setTextCursor(cursor)
+
+
+__all__ = ["SmartBackSpace"]

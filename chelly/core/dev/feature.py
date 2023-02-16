@@ -48,3 +48,8 @@ class Feature(object):
                     setattr(self, key, value)
                 except AttributeError:
                     pass
+
+
+__all__ = [
+    'Feature'
+]

@@ -11,6 +11,7 @@ class MarkerObject(QObject):
     A marker is an icon draw on a marker panel at a specific line position and
     with a possible tooltip.
     """
+
     @property
     def position(self):
         """
@@ -33,15 +34,14 @@ class MarkerObject(QObject):
             else:
                 return QIcon(self._icon)
         elif isinstance(self._icon, tuple):
-            return QIcon.fromTheme(self._icon[0],
-                                   QIcon(self._icon[1]))
+            return QIcon.fromTheme(self._icon[0], QIcon(self._icon[1]))
         elif isinstance(self._icon, QIcon):
             return self._icon
         return QIcon()
 
     @property
     def description(self):
-        """ Gets the marker description. """
+        """Gets the marker description."""
         return self._description
 
     def __init__(self, position, icon="", description="", parent=None):
@@ -61,12 +61,11 @@ class MarkerObject(QObject):
 
 
 class MarkerMargin(Panel):
-    
     class Properties(Panel._Properties):
-        def __init__(self, panel:Panel):
+        def __init__(self, panel: Panel):
             super().__init__(panel)
-            self._background = QColor('#FFC8C8')
-            
+            self._background = QColor("#FFC8C8")
+
         @chelly_property
         def background(self) -> QColor:
             """
@@ -79,24 +78,22 @@ class MarkerMargin(Panel):
         def background(self, value):
             self._background = value
 
-
     @property
     def properties(self) -> Properties:
         return self.__properties
-    
+
     @properties.setter
-    def properties(self, new_properties:Properties) -> Properties:
+    def properties(self, new_properties: Properties) -> Properties:
         if new_properties is MarkerMargin.Properties:
             self.__properties = new_properties(self)
 
         elif isinstance(new_properties, MarkerMargin.Properties):
             self.__properties = new_properties
-    
-    
+
     on_add_marker = Signal(int)
-    
+
     on_edit_marker = Signal(int)
-    
+
     on_remove_marker = Signal(int)
 
     def __init__(self, editor) -> None:
@@ -124,18 +121,17 @@ class MarkerMargin(Panel):
         :type marker: pyqode.core.modes.Marker
         """
         self._markers.append(marker)
-        block = TextEngine(self.editor).block_from_line_number(
-            marker._position)
+        block = TextEngine(self.editor).block_from_line_number(marker._position)
 
         marker.block = block
 
-        #block_decoration = (
+        # block_decoration = (
         #    TextDecoration(block)
         #    .set_full_width()
         #    .set_background(QBrush(self._background))
-        #)
-        #marker.decoration = block_decoration
-        #self.editor.decorations.append(block_decoration)
+        # )
+        # marker.decoration = block_decoration
+        # self.editor.decorations.append(block_decoration)
         self.repaint()
 
     def __rem_marker(self, marker: MarkerObject):
@@ -155,12 +151,12 @@ class MarkerMargin(Panel):
         elif isinstance(markers, MarkerObject):
             self.__rem_marker(markers)
 
-        #if hasattr(markers, 'decoration'):
-            #self.editor.decorations.remove(markers.decoration)
+        # if hasattr(markers, 'decoration'):
+        # self.editor.decorations.remove(markers.decoration)
         self.repaint()
 
     def clear_markers(self):
-        """ Clears the markers list """
+        """Clears the markers list"""
         while len(self._markers):
             self.remove_marker(self._markers[0])
 
@@ -207,8 +203,7 @@ class MarkerMargin(Panel):
         #   cursor
         # - emit remove marker signal if there were one or more markers under
         #   the mouse cursor.
-        line = TextEngine(self.editor).line_number_from_position(
-            event.pos().y())
+        line = TextEngine(self.editor).line_number_from_position(event.pos().y())
         if self.marker_for_line(line):
             if event.button() == Qt.LeftButton:
                 self.on_remove_marker.emit(line)
@@ -219,18 +214,18 @@ class MarkerMargin(Panel):
 
     def mouseMoveEvent(self, event):
         # Requests a tooltip if the cursor is currently over a marker.
-        line = TextEngine(self.editor).line_number_from_position(
-            event.pos().y())
+        line = TextEngine(self.editor).line_number_from_position(event.pos().y())
         markers = self.marker_for_line(line)
-        text = '\n'.join([marker.description for marker in markers if
-                          marker.description])
+        text = "\n".join(
+            [marker.description for marker in markers if marker.description]
+        )
         if len(markers):
             if self._previous_line != line:
                 top = TextEngine(self.editor).point_y_from_line_number(
-                    markers[0].position)
+                    markers[0].position
+                )
                 if top:
-                    self._job_runner.request_job(self._display_tooltip,
-                                                 text, top)
+                    self._job_runner.request_job(self._display_tooltip, text, top)
         else:
             self._job_runner.cancel_requests()
         self._previous_line = line
@@ -246,5 +241,9 @@ class MarkerMargin(Panel):
         """
         Display tooltip at the specified top position.
         """
-        QToolTip.showText(self.mapToGlobal(QPoint(
-            self.sizeHint().width(), top)), tooltip, self)
+        QToolTip.showText(
+            self.mapToGlobal(QPoint(self.sizeHint().width(), top)), tooltip, self
+        )
+
+
+__all__ = ["MarkerMargin", "MarkerObject"]

@@ -1,10 +1,12 @@
 from ..core import Manager
 
+
 class TextDecorationsManager(Manager):
     """
     Manages the collection of TextDecoration that have been set on the editor
     widget.
     """
+
     def __init__(self, editor):
         super().__init__(editor)
         self._decorations = []
@@ -18,7 +20,8 @@ class TextDecorationsManager(Manager):
         if decoration not in self._decorations:
             self._decorations.append(decoration)
             self._decorations = sorted(
-                self._decorations, key=lambda sel: sel.draw_order)
+                self._decorations, key=lambda sel: sel.draw_order
+            )
             self.editor.setExtraSelections(self._decorations)
             return True
         return False
@@ -51,3 +54,6 @@ class TextDecorationsManager(Manager):
 
     def __len__(self):
         return len(self._decorations)
+
+
+__all__ = ["TextDecorationsManager"]

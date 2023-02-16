@@ -5,17 +5,25 @@ from qtpy.QtCore import QPoint, QSize, Qt, Signal
 from qtpy.QtWidgets import QLabel, QPlainTextEdit
 from typing_extensions import Self
 
-from ..core import (BasicCommands, ChellyDocument, ChellyStyle, Properties,
-                    TextEngine)
-from ..internal import (ChellyDocumentExceptions, FeaturesExceptions,
-                        LexerExceptions, PanelsExceptions,
-                        PropertiesExceptions, StyleExceptions, TextExceptions)
-from ..managers import (FeaturesManager, LanguagesManager, PanelsManager,
-                        TextDecorationsManager)
+from ..core import BasicCommands, ChellyDocument, ChellyStyle, Properties, TextEngine
+from ..internal import (
+    ChellyDocumentExceptions,
+    FeaturesExceptions,
+    LexerExceptions,
+    PanelsExceptions,
+    PropertiesExceptions,
+    StyleExceptions,
+    TextExceptions,
+)
+from ..managers import (
+    FeaturesManager,
+    LanguagesManager,
+    PanelsManager,
+    TextDecorationsManager,
+)
 
 
 class ChellyEditor(QPlainTextEdit):
-
     on_resized = Signal()
     on_painted = Signal(object)
     on_updated = Signal()
@@ -58,7 +66,7 @@ class ChellyEditor(QPlainTextEdit):
             "style": self.style,
             "decorations": self.decorations,
             "language": self.language,
-            "properties": self.properties
+            "properties": self.properties,
         }
 
     def __init__(self, parent):
@@ -111,7 +119,8 @@ class ChellyEditor(QPlainTextEdit):
             self._chelly_document = new_document
         else:
             raise ChellyDocumentExceptions.ChellyDocumentValueError(
-                f"invalid type: {new_document} expected: {ChellyDocument}")
+                f"invalid type: {new_document} expected: {ChellyDocument}"
+            )
         self.__setup_chelly_document(old_document, self._chelly_document)
         self.on_chelly_document_changed.emit(self._chelly_document)
 
@@ -127,7 +136,8 @@ class ChellyEditor(QPlainTextEdit):
             self._language = new_manager
         else:
             raise LexerExceptions.LexerValueError(
-                f"invalid type: {new_manager} expected: {LanguagesManager}")
+                f"invalid type: {new_manager} expected: {LanguagesManager}"
+            )
 
     @property
     def properties(self) -> Properties:
@@ -141,7 +151,8 @@ class ChellyEditor(QPlainTextEdit):
             self._properties = new_manager
         else:
             raise PropertiesExceptions.PropertyValueError(
-                f"invalid type: {new_manager} expected: {Properties}")
+                f"invalid type: {new_manager} expected: {Properties}"
+            )
 
     @property
     def panels(self) -> PanelsManager:
@@ -155,7 +166,8 @@ class ChellyEditor(QPlainTextEdit):
             self._panels = new_manager
         else:
             raise PanelsExceptions.PanelValueError(
-                f"invalid type: {new_manager} expected: {PanelsManager}")
+                f"invalid type: {new_manager} expected: {PanelsManager}"
+            )
 
     @property
     def features(self) -> FeaturesManager:
@@ -169,7 +181,8 @@ class ChellyEditor(QPlainTextEdit):
             self._features = new_manager
         else:
             raise FeaturesExceptions.FeatureValueError(
-                f"invalid type: {new_manager} expected: {FeaturesManager}")
+                f"invalid type: {new_manager} expected: {FeaturesManager}"
+            )
 
     @property
     def style(self) -> ChellyStyle:
@@ -184,7 +197,8 @@ class ChellyEditor(QPlainTextEdit):
 
         else:
             raise StyleExceptions.StyleValueError(
-                f"invalid type: {new_style} expected: {ChellyStyle}")
+                f"invalid type: {new_style} expected: {ChellyStyle}"
+            )
 
     @property
     def decorations(self) -> TextDecorationsManager:
@@ -198,7 +212,8 @@ class ChellyEditor(QPlainTextEdit):
             self._decorations = new_decorations
         else:
             raise TextExceptions.TextDecorationValueError(
-                f"invalid type: {new_decorations} expected: {TextDecorationsManager}")
+                f"invalid type: {new_decorations} expected: {TextDecorationsManager}"
+            )
 
     def showEvent(self, event):
         super().showEvent(event)
@@ -214,13 +229,13 @@ class ChellyEditor(QPlainTextEdit):
         self.on_resized.emit()
 
     def _update_visible_blocks(self, *args) -> None:
-        """ Updates the list of visible blocks """
+        """Updates the list of visible blocks"""
         self._visible_blocks[:] = []
         block = self.firstVisibleBlock()
         block_nbr = block.blockNumber()
 
-        top = int(self.blockBoundingGeometry(block).translated(
-            self.contentOffset()).top()
+        top = int(
+            self.blockBoundingGeometry(block).translated(self.contentOffset()).top()
         )
         bottom = top + int(self.blockBoundingRect(block).height())
         editor_bottom_top = 0
@@ -228,8 +243,7 @@ class ChellyEditor(QPlainTextEdit):
         first_block = True
 
         while block.isValid():
-            visible = (top >= editor_bottom_top and bottom <=
-                       editor_bottom_bottom)
+            visible = top >= editor_bottom_top and bottom <= editor_bottom_bottom
 
             if not visible and not first_block:
                 break
@@ -256,9 +270,11 @@ class ChellyEditor(QPlainTextEdit):
             self.__commands.un_indent()
             return super().keyPressEvent(event)
 
-        elif event.key() == Qt.Key_Home and int(event.modifiers()) & Qt.ControlModifier == 0:
-            self.__commands.home_key(event, int(
-                event.modifiers()) & Qt.ShiftModifier)
+        elif (
+            event.key() == Qt.Key_Home
+            and int(event.modifiers()) & Qt.ControlModifier == 0
+        ):
+            self.__commands.home_key(event, int(event.modifiers()) & Qt.ShiftModifier)
             return super().keyPressEvent(event)
 
         super().keyPressEvent(event)
@@ -290,33 +306,34 @@ class ChellyEditor(QPlainTextEdit):
         self._update_visible_blocks()
         return super().setPlainText(text)
 
-    def __setup_chelly_document(self, old_chelly_document: ChellyDocument, new_chelly_document: ChellyDocument):
+    def __setup_chelly_document(
+        self, old_chelly_document: ChellyDocument, new_chelly_document: ChellyDocument
+    ):
         self.setPlainText(new_chelly_document.editor.toPlainText())
-        self.__cached_block_count = TextEngine(
-            new_chelly_document.editor).line_count
-        old_chelly_document.on_contents_changed.disconnect(
-            self._update_contents)
+        self.__cached_block_count = TextEngine(new_chelly_document.editor).line_count
+        old_chelly_document.on_contents_changed.disconnect(self._update_contents)
         new_chelly_document.on_contents_changed.connect(self._update_contents)
 
-    def _update_contents(self, editor: QPlainTextEdit, pos: int, charsrem: int, charsadd: int):
+    def _update_contents(
+        self, editor: QPlainTextEdit, pos: int, charsrem: int, charsadd: int
+    ):
         line_number = TextEngine(editor).current_line_nbr
         TextEngine(self).move_cursor_to_line(line_number)
         line_count = TextEngine(editor).line_count
 
         if self.__cached_block_count == line_count:
             text = TextEngine(editor).text_at_line(line_number)
-            TextEngine(self).set_text_at_line(
-                self.textCursor().blockNumber(), text)
+            TextEngine(self).set_text_at_line(self.textCursor().blockNumber(), text)
             TextEngine(self).move_cursor_to_line(line_number)
 
-        elif self.__cached_block_count == line_count-1:
+        elif self.__cached_block_count == line_count - 1:
             cursor = self.textCursor()
             cursor.setPosition(pos)
             cursor.insertText("\n")
             self.setTextCursor(cursor)
 
-        elif self.__cached_block_count == line_count+1:
-            TextEngine(self).move_cursor_to_line(line_number+1)
+        elif self.__cached_block_count == line_count + 1:
+            TextEngine(self).move_cursor_to_line(line_number + 1)
             cursor = self.textCursor()
             cursor.deletePreviousChar()
             self.setTextCursor(cursor)
@@ -334,8 +351,11 @@ class ChellyEditor(QPlainTextEdit):
                 start_block = TextEngine(editor).block_from_position(pos)
                 end_block = TextEngine(editor).block_from_position(calc)
 
-                new_blocks = list(TextEngine(editor).iterate_blocks_from(
-                    start_block, end_block.blockNumber()))
+                new_blocks = list(
+                    TextEngine(editor).iterate_blocks_from(
+                        start_block, end_block.blockNumber()
+                    )
+                )
                 for nb in new_blocks:
                     cursor.beginEditBlock()
                     cursor.insertText(nb.text())
@@ -347,9 +367,7 @@ class ChellyEditor(QPlainTextEdit):
 
             self.setTextCursor(cursor)
 
-            TextEngine(self).move_cursor_to_line(
-                TextEngine(editor).current_line_nbr
-            )
+            TextEngine(self).move_cursor_to_line(TextEngine(editor).current_line_nbr)
 
         self.__cached_block_count = TextEngine(editor).line_count
 
@@ -366,7 +384,6 @@ class ChellyEditor(QPlainTextEdit):
             self.followers.append(other_editor)
 
     def unfollow(self, other_editor: Self, unfollow_back: bool = False):
-
         if self.following(other_editor):
             other_editor.followers.remove(self)
             ...
@@ -396,3 +413,6 @@ class ChellyEditor(QPlainTextEdit):
     @shared_reference.deleter
     def shared_reference(self):
         self.__shared_reference = None
+
+
+__all__ = ["ChellyEditor"]

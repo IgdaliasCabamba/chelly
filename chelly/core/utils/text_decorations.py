@@ -1,5 +1,6 @@
 from qtpy import QtWidgets, QtCore, QtGui
 
+
 class TextDecoration(QtWidgets.QTextEdit.ExtraSelection):
     """
     Helper class to quickly create a text decoration. The text decoration is an
@@ -14,17 +15,27 @@ class TextDecoration(QtWidgets.QTextEdit.ExtraSelection):
         def a_slot(decoration):
             print(decoration)
     """
+
     class Signals(QtCore.QObject):
         """
         Holds the signals for a TextDecoration (since we cannot make it a
         QObject, we need to store its signals in an external QObject).
         """
+
         #: Signal emitted when a TextDecoration has been clicked.
         clicked = QtCore.Signal(object)
 
-    def __init__(self, cursor_or_bloc_or_doc, start_pos=None, end_pos=None,
-                 start_line=None, end_line=None, draw_order=0, tooltip=None,
-                 full_width=False):
+    def __init__(
+        self,
+        cursor_or_bloc_or_doc,
+        start_pos=None,
+        end_pos=None,
+        start_line=None,
+        end_line=None,
+        draw_order=0,
+        tooltip=None,
+        full_width=False,
+    ):
         """
         Creates a text decoration.
         .. note:: start_pos/end_pos and start_line/end_line pairs let you
@@ -57,13 +68,15 @@ class TextDecoration(QtWidgets.QTextEdit.ExtraSelection):
             self.cursor.setPosition(end_pos, QtGui.QTextCursor.KeepAnchor)
         if start_line is not None:
             self.cursor.movePosition(self.cursor.Start, self.cursor.MoveAnchor)
-            self.cursor.movePosition(self.cursor.Down, self.cursor.MoveAnchor,
-                                     start_line)
+            self.cursor.movePosition(
+                self.cursor.Down, self.cursor.MoveAnchor, start_line
+            )
         if end_line is not None:
-            self.cursor.movePosition(self.cursor.Down, self.cursor.KeepAnchor,
-                                     end_line - start_line)
+            self.cursor.movePosition(
+                self.cursor.Down, self.cursor.KeepAnchor, end_line - start_line
+            )
 
-    def contains_cursor(self, cursor:QtGui.QTextCursor) -> bool:
+    def contains_cursor(self, cursor: QtGui.QTextCursor) -> bool:
         """
         Checks if the textCursor is in the decoration
         """
@@ -74,12 +87,12 @@ class TextDecoration(QtWidgets.QTextEdit.ExtraSelection):
         return start <= cursor.position() <= end
 
     def set_as_bold(self) -> None:
-        """ Uses bold text """
+        """Uses bold text"""
         self.format.setFontWeight(QtGui.QFont.Bold)
         return self
 
     def set_foreground(self, color):
-        """ Sets the foreground color.
+        """Sets the foreground color.
         :param color: Color
         :type color: QtGui.QColor
         """
@@ -101,8 +114,7 @@ class TextDecoration(QtWidgets.QTextEdit.ExtraSelection):
         :param color: Color of the outline rect
         :type color: QtGui.QColor
         """
-        self.format.setProperty(QtGui.QTextFormat.OutlinePen,
-                                QtGui.QPen(color))
+        self.format.setProperty(QtGui.QTextFormat.OutlinePen, QtGui.QPen(color))
         return self
 
     def select_line(self):
@@ -115,8 +127,7 @@ class TextDecoration(QtWidgets.QTextEdit.ExtraSelection):
         text = self.cursor.block().text()
         lindent = len(text) - len(text.lstrip())
         self.cursor.setPosition(self.cursor.block().position() + lindent)
-        self.cursor.movePosition(self.cursor.EndOfBlock,
-                                 self.cursor.KeepAnchor)
+        self.cursor.movePosition(self.cursor.EndOfBlock, self.cursor.KeepAnchor)
         return self
 
     def set_full_width(self, flag=True, clear=True):
@@ -138,28 +149,25 @@ class TextDecoration(QtWidgets.QTextEdit.ExtraSelection):
         Underlines the text
         :param color: underline color.
         """
-        self.format.setUnderlineStyle(
-            QtGui.QTextCharFormat.SingleUnderline)
+        self.format.setUnderlineStyle(QtGui.QTextCharFormat.SingleUnderline)
         self.format.setUnderlineColor(color)
         return self
 
     def set_as_spell_check(self, color=QtCore.Qt.blue):
-        """ Underlines text as a spellcheck error.
+        """Underlines text as a spellcheck error.
         :param color: Underline color
         :type color: QtGui.QColor
         """
-        self.format.setUnderlineStyle(
-            QtGui.QTextCharFormat.SpellCheckUnderline)
+        self.format.setUnderlineStyle(QtGui.QTextCharFormat.SpellCheckUnderline)
         self.format.setUnderlineColor(color)
         return self
 
     def set_as_error(self, color=QtCore.Qt.red):
-        """ Highlights text as a syntax error.
+        """Highlights text as a syntax error.
         :param color: Underline color
         :type color: QtGui.QColor
         """
-        self.format.setUnderlineStyle(
-            QtGui.QTextCharFormat.WaveUnderline)
+        self.format.setUnderlineStyle(QtGui.QTextCharFormat.WaveUnderline)
         self.format.setUnderlineColor(color)
         return self
 
@@ -169,7 +177,9 @@ class TextDecoration(QtWidgets.QTextEdit.ExtraSelection):
         :param color: Underline color
         :type color: QtGui.QColor
         """
-        self.format.setUnderlineStyle(
-            QtGui.QTextCharFormat.WaveUnderline)
+        self.format.setUnderlineStyle(QtGui.QTextCharFormat.WaveUnderline)
         self.format.setUnderlineColor(color)
         return self
+
+
+__all__ = ["TextDecoration"]

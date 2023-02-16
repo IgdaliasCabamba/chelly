@@ -13,13 +13,17 @@ from qtpy.QtGui import QColor, QPalette
 from typing_extensions import Self
 from ...internal import ChellyEvent
 
+
 class ChellyTheme:
     _selection_background = QColor(Qt.GlobalColor.darkBlue)
     _selection_background.setAlpha(180)
-    
+
     main = {
-        "selection":{
+        "selection": {
             "background": _selection_background,
-            "foreground":QColor(Qt.GlobalColor.white)
+            "foreground": QColor(Qt.GlobalColor.white),
         }
     }
+
+
+__all__ = ["ChellyTheme"]

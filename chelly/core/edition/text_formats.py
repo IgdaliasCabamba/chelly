@@ -2,8 +2,9 @@ from typing import Union
 
 from pygments.style import Style
 from pygments.token import Punctuation, Token
-from qtpy.QtGui import (QBrush, QColor, QFont, QTextCharFormat)
+from qtpy.QtGui import QBrush, QColor, QFont, QTextCharFormat
 from .. import drift_color
+
 
 class ColorScheme(object):
     """
@@ -12,6 +13,7 @@ class ColorScheme(object):
     See :attr:`pyqode.core.api.syntax_highligter.COLOR_SCHEM_KEYS` for the
     available keys.
     """
+
     highlighting_rules = []
 
     COLOR_SCHEME_KEYS = {
@@ -19,7 +21,6 @@ class ColorScheme(object):
         "keyword": Token.Keyword,
         "namespace": Token.Keyword.Namespace,
         "type": Token.Keyword.Type,
-        
         "keyword_reserved": Token.Keyword.Reserved,
         "keyword_constant": Token.Keyword.Constant,
         "keyword_declaration": Token.Keyword.Declaration,
@@ -41,7 +42,6 @@ class ColorScheme(object):
         "name_variable_global": Token.Name.Variable.Global,
         "name_variable_instance": Token.Name.Variable.Instance,
         "name_variable_magic": Token.Name.Variable.Magic,
-
         "builtin": Token.Name.Builtin,
         "definition": Token.Name.Class,
         "comment": Token.Comment,
@@ -50,26 +50,25 @@ class ColorScheme(object):
         "number": Token.Number,
         "instance": Token.Name.Variable,
         "whitespace": Token.Comment,
-        'tag': Token.Name.Tag,
-        'self': Token.Name.Builtin.Pseudo,
-        'decorator': Token.Name.Decorator,
-        'punctuation': Punctuation,
-        'constant': Token.Name.Constant,
-        'function': Token.Name.Function,
-        'operator': Token.Operator,
-        'operator_word': Token.Operator.Word
+        "tag": Token.Name.Tag,
+        "self": Token.Name.Builtin.Pseudo,
+        "decorator": Token.Name.Decorator,
+        "punctuation": Punctuation,
+        "constant": Token.Name.Constant,
+        "function": Token.Name.Function,
+        "operator": Token.Operator,
+        "operator_word": Token.Operator.Word,
     }
 
     @property
     def background(self) -> QColor:
-        return self.formats['background'].background().color()
+        return self.formats["background"].background().color()
 
     @property
     def brushes(self) -> dict:
         return self._brushes
 
     def __init__(self, style: Style) -> None:
-
         self._style = style
         self._brushes = {}
         self.formats = {}
@@ -77,8 +76,7 @@ class ColorScheme(object):
         self.load_formats_from_style(self._style)
 
     def load_formats_from_style(self, style: Style):
-        self.formats['background'] = self.get_format_from_color(
-            style.background_color)
+        self.formats["background"] = self.get_format_from_color(style.background_color)
 
         for key, token in self.COLOR_SCHEME_KEYS.items():
             if token and key:
@@ -90,44 +88,40 @@ class ColorScheme(object):
         return fmt
 
     def get_format_from_style(self, token, style):
-        """ Returns a QTextCharFormat for token by reading a Pygments style.
-        """
+        """Returns a QTextCharFormat for token by reading a Pygments style."""
         result = QTextCharFormat()
         items = list(style.style_for_token(token).items())
 
         for key, value in items:
-            if value is None and key == 'color':
+            if value is None and key == "color":
                 # make sure to use a default visible color for the foreground
                 # brush
-                 value = drift_color(self.background, 1000).name()
+                value = drift_color(self.background, 1000).name()
 
             if value:
-                if key == 'color':
+                if key == "color":
                     result.setForeground(self.get_brush(value))
-                elif key == 'bgcolor':
+                elif key == "bgcolor":
                     result.setBackground(self.get_brush(value))
-                elif key == 'bold':
+                elif key == "bold":
                     result.setFontWeight(QFont.Bold)
-                elif key == 'italic':
+                elif key == "italic":
                     result.setFontItalic(value)
-                elif key == 'underline':
-                    result.setUnderlineStyle(
-                        QTextCharFormat.SingleUnderline)
-                elif key == 'sans':
+                elif key == "underline":
+                    result.setUnderlineStyle(QTextCharFormat.SingleUnderline)
+                elif key == "sans":
                     result.setFontStyleHint(QFont.SansSerif)
-                elif key == 'roman':
+                elif key == "roman":
                     result.setFontStyleHint(QFont.Times)
-                elif key == 'mono':
+                elif key == "mono":
                     result.setFontStyleHint(QFont.TypeWriter)
-        if token in [Token.Literal.String, Token.Literal.String.Doc,
-                     Token.Comment]:
+        if token in [Token.Literal.String, Token.Literal.String.Doc, Token.Comment]:
             # mark strings, comments and docstrings regions for further queries
             result.setObjectType(result.UserObject)
         return result
 
-    def get_brush(self, color:str) -> QBrush:
-        """ Returns a brush for the color.
-        """
+    def get_brush(self, color: str) -> QBrush:
+        """Returns a brush for the color."""
         result = self._brushes.get(color)
         if result is None:
             qcolor = self.get_color(color)
@@ -137,10 +131,13 @@ class ColorScheme(object):
 
     @staticmethod
     def get_color(color):
-        """ Returns a QColor built from a Pygments color string. """
+        """Returns a QColor built from a Pygments color string."""
         color = str(color).replace("#", "")
         qcolor = QColor()
-        qcolor.setRgb(int(color[:2], base=16),
-                      int(color[2:4], base=16),
-                      int(color[4:6], base=16))
+        qcolor.setRgb(
+            int(color[:2], base=16), int(color[2:4], base=16), int(color[4:6], base=16)
+        )
         return qcolor
+
+
+__all__ = ["ColorScheme"]

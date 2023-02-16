@@ -3,7 +3,10 @@ from qtpy.QtGui import QColor, QIcon, QImage
 from qtpy.QtCore import QSize, QByteArray, QBuffer
 from bs4 import BeautifulSoup
 
-def sanitize_html(value:str, valid_tags:list=["span"]):
+
+def sanitize_html(value: str, valid_tags: list = None):
+    if valid_tags is None:
+        valid_tags = ["span"]
 
     soup = BeautifulSoup(value, features="html.parser")
 
@@ -12,6 +15,7 @@ def sanitize_html(value:str, valid_tags:list=["span"]):
             tag.hidden = True
 
     return soup.decode_contents()
+
 
 def drift_color(base_color, factor=110):
     """
@@ -26,19 +30,31 @@ def drift_color(base_color, factor=110):
     if base_color.lightness() > 128:
         return base_color.darker(factor)
     else:
-        if base_color == QColor('#000000'):
-            return drift_color(QColor('#101010'), factor + 20)
+        if base_color == QColor("#000000"):
+            return drift_color(QColor("#101010"), factor + 20)
         else:
             return base_color.lighter(factor + 10)
 
-def qimage_to_base64(image:QImage, format: str = "PNG") -> str:
+
+def qimage_to_base64(image: QImage, format: str = "PNG") -> str:
     byte_array = QByteArray()
     buffer = QBuffer(byte_array)
     image.save(buffer, format)
     return byte_array.toBase64().data().decode("utf-8")
 
+
 def icon_to_base64(icon: QIcon, size: Union[int, QSize], format: str = "PNG") -> str:
     return qimage_to_base64(icon.pixmap(size).toImage(), format)
 
-def image_to_base64(image:QImage, size: Union[int, QSize], format: str = "PNG") -> str:
+
+def image_to_base64(image: QImage, size: Union[int, QSize], format: str = "PNG") -> str:
     return qimage_to_base64(image.scaled(size), format)
+
+
+__all__ = [
+    "drift_color",
+    "icon_to_base64",
+    "image_to_base64",
+    "qimage_to_base64",
+    "sanitize_html",
+]

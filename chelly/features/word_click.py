@@ -6,8 +6,9 @@ from ..core import Feature, TextEngine, DelayJobRunner, TextDecoration
 from ..internal import ChellyEvent
 from qtpy import QtCore, QtGui
 
+
 class WordClick(Feature):
-    """ Adds support for word click events.
+    """Adds support for word click events.
     It will highlight the click-able word when the user press control and move
     the mouse over a word.
     Detecting whether a word is click-able is the responsability of the
@@ -17,6 +18,7 @@ class WordClick(Feature):
     :attr:`pyqode.core.modes.WordClickMode.word_clicked` is emitted
     when the word is clicked by the user (while keeping control pressed).
     """
+
     #: Signal emitted when a word is clicked. The parameter is a
     #: QTextCursor with the clicked word set as the selected text.
     word_clicked = ChellyEvent(QtGui.QTextCursor)
@@ -43,10 +45,12 @@ class WordClick(Feature):
             self._cursor = None
 
     def _select_word_cursor(self):
-        """ Selects the word under the mouse cursor. """
+        """Selects the word under the mouse cursor."""
         cursor = TextEngine(self.editor).word_under_mouse_cursor
-        if (self._previous_cursor_start != cursor.selectionStart() and
-                self._previous_cursor_end != cursor.selectionEnd()):
+        if (
+            self._previous_cursor_start != cursor.selectionStart()
+            and self._previous_cursor_end != cursor.selectionEnd()
+        ):
             self._remove_decoration()
             self._add_decoration(cursor)
         self._previous_cursor_start = cursor.selectionStart()
@@ -62,11 +66,10 @@ class WordClick(Feature):
         self._previous_cursor_end = -1
 
     def _on_mouse_moved(self, event):
-        """ mouse moved callback """
+        """mouse moved callback"""
         if event.modifiers() & QtCore.Qt.ControlModifier:
             cursor = TextEngine(self.editor).word_under_mouse_cursor
-            if (not self._cursor or
-                    cursor.position() != self._cursor.position()):
+            if not self._cursor or cursor.position() != self._cursor.position():
                 self._check_word_cursor(cursor)
             self._cursor = cursor
         else:
@@ -77,12 +80,11 @@ class WordClick(Feature):
         print(cursor.selectedText())
 
     def _on_mouse_released(self, event):
-        """ mouse pressed callback """
+        """mouse pressed callback"""
         if event.button() == 1 and self._deco:
             cursor = TextEngine(self.editor).word_under_mouse_cursor
             if cursor and cursor.selectedText():
-                self._timer.request_job(
-                    self.word_clicked.emit, cursor)
+                self._timer.request_job(self.word_clicked.emit, cursor)
 
     def _add_decoration(self, cursor):
         """
@@ -92,7 +94,7 @@ class WordClick(Feature):
             if cursor.selectedText():
                 self._deco = TextDecoration(cursor)
                 if self.editor.background.lightness() < 128:
-                    self._deco.set_foreground(QtGui.QColor('#0681e0'))
+                    self._deco.set_foreground(QtGui.QColor("#0681e0"))
                 else:
                     self._deco.set_foreground(QtCore.Qt.blue)
                 self._deco.set_as_underlined()
@@ -108,3 +110,6 @@ class WordClick(Feature):
         if self._deco is not None:
             self.editor.decorations.remove(self._deco)
             self._deco = None
+
+
+__all__ = ["WordClick"]

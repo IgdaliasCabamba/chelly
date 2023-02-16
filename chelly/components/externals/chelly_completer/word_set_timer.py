@@ -1,10 +1,12 @@
 from qtpy.QtCore import QTimer
 
+
 class GlobalUpdateWordSetTimer:
     """Timer updates word set, when editor is idle. (5 sec. after last change)
     Timer is global, for avoid situation, when all instances
     update set simultaneously
     """
+
     _IDLE_TIMEOUT_MS = 1000
 
     def __init__(self):
@@ -14,7 +16,7 @@ class GlobalUpdateWordSetTimer:
         self._scheduledMethods = []
 
     def schedule(self, method):
-        if not method in self._scheduledMethods:
+        if method not in self._scheduledMethods:
             self._scheduledMethods.append(method)
         self._timer.start(self._IDLE_TIMEOUT_MS)
 
@@ -32,3 +34,6 @@ class GlobalUpdateWordSetTimer:
         method()
         if self._scheduledMethods:
             self._timer.start(self._IDLE_TIMEOUT_MS)
+
+
+__all__ = ["GlobalUpdateWordSetTimer"]

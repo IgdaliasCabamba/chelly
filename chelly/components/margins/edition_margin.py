@@ -9,7 +9,6 @@ from nemoize import memoize
 
 
 class EditionMarginWorker(QObject):
-
     on_compared = Signal(list)
 
     def __init__(self, edition_margin):
@@ -25,7 +24,6 @@ class EditionMarginWorker(QObject):
 
 
 class EditionMargin(Panel):
-
     on_compare_request = Signal(list, list)
 
     @dataclass(frozen=True)
@@ -34,7 +32,6 @@ class EditionMargin(Panel):
         MAX_LINES_COUNT = 1000
 
     class Properties(Panel._Properties):
-
         def __init__(self, panel: Panel):
             super().__init__(panel)
 
@@ -101,10 +98,11 @@ class EditionMargin(Panel):
         super().__init__(editor)
         self.scrollable = True
         self.number_font = QFont()
-        
+
         self.__cached_lines_text = []
         self.__cached_cursor_position = ChellyCache(
-            None, None, lambda: TextEngine(self.editor).cursor_position)
+            None, None, lambda: TextEngine(self.editor).cursor_position
+        )
         self.__preloaded_diff = []
         self.__properties = EditionMargin.Properties(self)
 
@@ -121,7 +119,8 @@ class EditionMargin(Panel):
 
         self.comparasion_worker.on_compared.connect(self.preload_diffs)
         self.editor.textChanged.connect(
-            lambda: self.job_delayer.request_job(self.update_diffs))
+            lambda: self.job_delayer.request_job(self.update_diffs)
+        )
 
     def sizeHint(self):
         """
@@ -132,8 +131,7 @@ class EditionMargin(Panel):
 
     @property
     def lines_area_width(self) -> int:
-        space = (FontEngine(self.editor.font())
-                 .real_horizontal_advance('|', True))
+        space = FontEngine(self.editor.font()).real_horizontal_advance("|", True)
 
         return space
 
@@ -154,19 +152,24 @@ class EditionMargin(Panel):
             if self.editor.blockCount() > self.properties.max_lines_count:
                 return None
 
-            for text_block in list(TextEngine(self.editor).iterate_blocks_from(first_block)):
+            for text_block in list(
+                TextEngine(self.editor).iterate_blocks_from(first_block)
+            ):
                 lines_text.append(text_block.text())
 
             self.__cached_lines_text = lines_text.copy()
             return None
 
         else:
-            for text_block in list(TextEngine(self.editor).iterate_blocks_from(first_block, cached_lines_text_length)):
+            for text_block in list(
+                TextEngine(self.editor).iterate_blocks_from(
+                    first_block, cached_lines_text_length
+                )
+            ):
                 lines_text.append(text_block.text())
 
         if self.__cached_cursor_position.changed:
-            self.on_compare_request.emit(
-                self.__cached_lines_text, lines_text)
+            self.on_compare_request.emit(self.__cached_lines_text, lines_text)
 
     def preload_diffs(self, diff: list) -> None:
         self.__preloaded_diff = diff
@@ -185,42 +188,54 @@ class EditionMargin(Panel):
 
         height = self.editor.fontMetrics().height()
 
-        if self.editor.firstVisibleBlock().blockNumber() <= len(self.__cached_lines_text):
-
+        if self.editor.firstVisibleBlock().blockNumber() <= len(
+            self.__cached_lines_text
+        ):
             with QPainter(self) as painter:
-
                 for idx, diff in enumerate(self.__preloaded_diff):
                     if diff.startswith(("-", "+", "?")):
-                        top = TextEngine(
-                            self.editor).point_y_from_line_number(idx)
+                        top = TextEngine(self.editor).point_y_from_line_number(idx)
 
                         if diff.startswith("-"):
                             pen.setBrush(self.properties.removed)
                             painter.setPen(pen)
                             if self.properties.show_text_help:
-                                painter.drawText(6, top+height//1.5, "!")
+                                painter.drawText(6, top + height // 1.5, "!")
 
                         elif diff.startswith("+"):
                             pen.setBrush(self.properties.added)
                             painter.setPen(pen)
                             if self.properties.show_text_help:
-                                painter.drawText(6, top+height//1.5, "+")
+                                painter.drawText(6, top + height // 1.5, "+")
 
                         elif diff.startswith("?"):
                             pen.setBrush(self.properties.unknow)
                             painter.setPen(pen)
                             if self.properties.show_text_help:
-                                painter.drawText(6, top+height//1.5, "?")
+                                painter.drawText(6, top + height // 1.5, "?")
 
-                        painter.drawLine(point_x, TextEngine(self.editor).point_y_from_line_number(
-                            idx), point_x, TextEngine(self.editor).point_y_from_line_number(idx) + height)
+                        painter.drawLine(
+                            point_x,
+                            TextEngine(self.editor).point_y_from_line_number(idx),
+                            point_x,
+                            TextEngine(self.editor).point_y_from_line_number(idx)
+                            + height,
+                        )
         else:
             with QPainter(self) as painter:
                 pen.setBrush(Qt.GlobalColor.darkMagenta)
                 painter.setPen(pen)
                 if self.properties.show_text_help:
-                    painter.drawText(6, top+height//1.5, "+")
+                    painter.drawText(6, top + height // 1.5, "+")
 
                 for _top, block_number, _block in self.editor.visible_blocks:
-                    painter.drawLine(point_x, TextEngine(self.editor).point_y_from_line_number(
-                        block_number), point_x, TextEngine(self.editor).point_y_from_line_number(block_number) + height)
+                    painter.drawLine(
+                        point_x,
+                        TextEngine(self.editor).point_y_from_line_number(block_number),
+                        point_x,
+                        TextEngine(self.editor).point_y_from_line_number(block_number)
+                        + height,
+                    )
+
+
+__all__ = ["EditionMargin", "EditionMarginWorker"]

@@ -1,7 +1,13 @@
 from pprint import pprint
 from typing import Any, Union
 from typing_extensions import Self
-from qtpy.QtWidgets import QLabel, QHBoxLayout, QGraphicsDropShadowEffect, QWidget, QSizePolicy
+from qtpy.QtWidgets import (
+    QLabel,
+    QHBoxLayout,
+    QGraphicsDropShadowEffect,
+    QWidget,
+    QSizePolicy,
+)
 from qtpy.QtCore import QSize, Qt
 from qtpy.QtGui import QColor, QIcon
 from ..core import Panel, sanitize_html, icon_to_base64
@@ -9,16 +15,23 @@ import qtawesome
 
 
 class BreadcrumbNav(Panel):
-
     class BreadcrumbBlock:
-        def __init__(self, action: str = None, style: str = None, icon: str = None, content: str = None, *args, **kvargs):
+        def __init__(
+            self,
+            action: str = None,
+            style: str = None,
+            icon: str = None,
+            content: str = None,
+            *args,
+            **kvargs,
+        ):
             self.__action = action
             self.__style = style
             self.__icon = icon
             self.__content = content
             self.__index = -1
             self.__breadcrumb_item_layout = None
-        
+
         @property
         def index(self) -> int:
             return self.__index
@@ -70,70 +83,72 @@ class BreadcrumbNav(Panel):
         @content.setter
         def content(self, content: str) -> None:
             self.__content = content
-        
+
         @property
         def as_dict(self) -> dict:
             return {
-                "action":self.action,
-                "breadcrumb_item_layout":self.breadcrumb_item_layout,
-                "content":self.content,
-                "icon":self.icon,
-                "index":self.index,
-                "style":self.style
+                "action": self.action,
+                "breadcrumb_item_layout": self.breadcrumb_item_layout,
+                "content": self.content,
+                "icon": self.icon,
+                "index": self.index,
+                "style": self.style,
             }
-        
-        def update_properties(self, new_properties:dict) -> Self:
+
+        def update_properties(self, new_properties: dict) -> Self:
             for prop, value in new_properties.items():
                 if isinstance(prop, str):
                     if hasattr(self, prop) and value is not None:
                         setattr(self, prop, value)
             return self
 
-
     class BreadcrumbIcon(QLabel):
         def __init__(self, parent=None):
             super().__init__(parent)
-        
-        def set_icon(self, block_icon:Union[bytes, str, QIcon]) -> Self:
+
+        def set_icon(self, block_icon: Union[bytes, str, QIcon]) -> Self:
             base64_icon = str()
-            
+
             if block_icon is not None:
                 if isinstance(block_icon, bytes):
-                    base64_image:str = block_icon.decode("utf-8")
+                    base64_image: str = block_icon.decode("utf-8")
                 elif isinstance(block_icon, str):
-                    base64_image:str = block_icon
+                    base64_image: str = block_icon
                 elif isinstance(block_icon, QIcon):
-                    base64_image:str = icon_to_base64(block_icon, 18, "PNG")
+                    base64_image: str = icon_to_base64(block_icon, 18, "PNG")
 
                 base64_icon = f'<img src="data:image/png;base64,{base64_image}"></img>'
-            
+
             if base64_icon.startswith("<img"):
                 self.setText(base64_icon)
-            
+
             return self
-    
+
     class BreadcrumbNextArrow(QLabel):
-        def __init__(self, parent = None, name = "ri.arrow-right-s-line", size = 18):
+        def __init__(self, parent=None, name="ri.arrow-right-s-line", size=18):
             super().__init__(parent)
             self.update_icon(name, size)
-        
-        def update_icon(self, icon_name:str, icon_size:int = 18) -> Self:
-            _icon:QIcon = qtawesome.icon(icon_name)
-            base64_image:str = icon_to_base64(_icon, icon_size, "PNG")
+
+        def update_icon(self, icon_name: str, icon_size: int = 18) -> Self:
+            _icon: QIcon = qtawesome.icon(icon_name)
+            base64_image: str = icon_to_base64(_icon, icon_size, "PNG")
             self.setText(f'<img src="data:image/png;base64,{base64_image}"></img>')
             return self
-    
+
     class BreadcrumbItem(QLabel):
-        def __init__(self, parent, data:dict = {}, *args, **kvargs) -> None:
+        def __init__(self, parent, data: dict = None, *args, **kvargs) -> None:
+            if data is None:
+                data = {}
+
             super().__init__(parent, *args, **kvargs)
-            
+
             self.__data = data
 
             self.setAlignment(Qt.AlignmentFlag.AlignVCenter)
             self.setSizePolicy(QSizePolicy.Minimum, QSizePolicy.Minimum)
             self.refresh()
-        
-        def set_data(self, new_data:dict):
+
+        def set_data(self, new_data: dict):
             for key, value in new_data.items():
                 self.__data[key] = value
             self.refresh()
@@ -153,11 +168,10 @@ class BreadcrumbNav(Panel):
                 new_text += f"<a href={action} style='text-decoration:none; {style}'>{content}</a>"
 
             self.setText(new_text)
-            
+
             return self
 
     class BreadcrumbItemLayout(QHBoxLayout):
-
         @property
         def icon(self):
             return self.__icon
@@ -229,7 +243,7 @@ class BreadcrumbNav(Panel):
         size_hint.setWidth(20)
         size_hint.setHeight(20)
         return size_hint
-    
+
     def new_breadcrumb(self, block: BreadcrumbBlock) -> BreadcrumbItemLayout:
         breadcrumb_item = BreadcrumbNav.BreadcrumbItem(self, block.as_dict)
         breadcrumb_icon = BreadcrumbNav.BreadcrumbIcon(self)
@@ -237,13 +251,17 @@ class BreadcrumbNav(Panel):
 
         breadcrumb_icon.set_icon(block.icon)
 
-        return (BreadcrumbNav.BreadcrumbItemLayout()
-                      .set_icon(breadcrumb_icon)
-                      .set_breadcrumb_item(breadcrumb_item)
-                      .set_next_arrow(next_breadcrumb_arrow))
+        return (
+            BreadcrumbNav.BreadcrumbItemLayout()
+            .set_icon(breadcrumb_icon)
+            .set_breadcrumb_item(breadcrumb_item)
+            .set_next_arrow(next_breadcrumb_arrow)
+        )
 
-    def _setup_breadcrumb(self, block: BreadcrumbBlock, breadcrumb: BreadcrumbItemLayout):
-        block.index = lambda: self._box.indexOf(breadcrumb) # index can change
+    def _setup_breadcrumb(
+        self, block: BreadcrumbBlock, breadcrumb: BreadcrumbItemLayout
+    ):
+        block.index = lambda: self._box.indexOf(breadcrumb)  # index can change
         block.breadcrumb_item_layout = breadcrumb
         return block
 
@@ -252,36 +270,40 @@ class BreadcrumbNav(Panel):
         self._box.addLayout(breadcrumb)
         self.__blocks.append(block)
         return self._setup_breadcrumb(block, breadcrumb)
-    
-    def insert_breadcrumb(self, block: BreadcrumbBlock, index = 0):
+
+    def insert_breadcrumb(self, block: BreadcrumbBlock, index=0):
         breadcrumb = self.new_breadcrumb(block)
         self._box.insertLayout(index, breadcrumb)
         self.__blocks.insert(index, block)
         return self._setup_breadcrumb(block, breadcrumb)
 
-
-    def update_breadcrumb(self, block: BreadcrumbBlock, new_block: Union[dict, BreadcrumbBlock]) -> Self:
-        
+    def update_breadcrumb(
+        self, block: BreadcrumbBlock, new_block: Union[dict, BreadcrumbBlock]
+    ) -> Self:
         if isinstance(new_block, dict):
             block.update_properties(new_block)
-        
+
         elif isinstance(new_block, BreadcrumbNav.BreadcrumbBlock):
             block.update_properties(new_block.as_dict)
-        
-        breadcrumb_item:BreadcrumbNav.BreadcrumbItem = block.breadcrumb_item_layout.breadcrumb_item
+
+        breadcrumb_item: BreadcrumbNav.BreadcrumbItem = (
+            block.breadcrumb_item_layout.breadcrumb_item
+        )
         breadcrumb_item.set_data(block.as_dict)
 
         return self
 
-    def remove_breadcrumb(self, block: BreadcrumbBlock, remove_from_list = True) -> Self:    
-        idx:int = self._box.indexOf(block.breadcrumb_item_layout)
-        breadcrumb_item_layout:BreadcrumbNav.BreadcrumbItemLayout = self._box.itemAt(idx).layout()
-        
+    def remove_breadcrumb(self, block: BreadcrumbBlock, remove_from_list=True) -> Self:
+        idx: int = self._box.indexOf(block.breadcrumb_item_layout)
+        breadcrumb_item_layout: BreadcrumbNav.BreadcrumbItemLayout = self._box.itemAt(
+            idx
+        ).layout()
+
         for idx in range(breadcrumb_item_layout.count()):
             widget = breadcrumb_item_layout.itemAt(idx).widget()
             widget.setVisible(False)
             widget.deleteLater()
-        
+
         if remove_from_list:
             self.__blocks.remove(block)
 
@@ -290,10 +312,13 @@ class BreadcrumbNav(Panel):
     def clear_all_breadcrumbs(self) -> Self:
         for block in self.__blocks:
             self.remove_breadcrumb(block, remove_from_list=False)
-        
+
         self.__blocks.clear()
 
         while self._box.takeAt(0) is not None:
             ...
 
         return self
+
+
+__all__ = ["BreadcrumbNav"]

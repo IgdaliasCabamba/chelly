@@ -10,16 +10,17 @@ from qtpy.QtWidgets import QPlainTextEdit
 from .utils import Character, FontEngine
 from ..internal import BaseElement, chelly_property
 
-class PropertyCollections:
 
+class PropertyCollections:
     class Default:
         ZOOM_LEVEL = 0
         INDENT_SIZE = 4
-        FONT = 'Source Code Pro' if sys.platform != 'darwin' else 'Monaco'
+        FONT = "Source Code Pro" if sys.platform != "darwin" else "Monaco"
 
     class Indentation:
         spaces = 0
         tabs = 1
+
 
 class Properties(BaseElement):
     def __init__(self, editor: QPlainTextEdit) -> None:
@@ -70,7 +71,7 @@ class Properties(BaseElement):
 
     @chelly_property
     def indent_with_tabs(self) -> bool:
-        return (self._indent_type == PropertyCollections.Indentation.tabs)
+        return self._indent_type == PropertyCollections.Indentation.tabs
 
     @chelly_property
     def tab_stop_distance(self) -> float:
@@ -92,7 +93,7 @@ class Properties(BaseElement):
 
     @chelly_property
     def indent_with_spaces(self) -> bool:
-        return (self._indent_type == PropertyCollections.Indentation.spaces)
+        return self._indent_type == PropertyCollections.Indentation.spaces
 
     @indent_with_spaces.setter
     def indent_with_spaces(self, spaces: bool) -> None:
@@ -176,10 +177,14 @@ class Properties(BaseElement):
         self._editor.setFont(new_font)
 
     def __set_tab_distance(self, char: str, indent_size: int):
-        char_width: float = FontEngine(
-            self._editor.font()).real_horizontal_advance(char, min_zero=True)
+        char_width: float = FontEngine(self._editor.font()).real_horizontal_advance(
+            char, min_zero=True
+        )
         self._editor.setTabStopDistance(char_width * indent_size)
 
     def default(self):
         self.__set_tab_distance(Character.SPACE.value, self.indent_size)
         self._editor.setWordWrapMode(QTextOption.WrapMode.NoWrap)
+
+
+__all__ = ["Properties", "PropertyCollections"]

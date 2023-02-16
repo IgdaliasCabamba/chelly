@@ -18,3 +18,8 @@ class Manager(QObject):
     def editor(self):
         return self.__editor
     
+
+
+__all__ = [
+    'Manager'
+]

@@ -11,58 +11,70 @@ def any(name, alternates):
 
 
 kwlist = [
-    'self',
-    'False',
-    'None',
-    'True',
-    'assert',
-    'break',
-    'class',
-    'continue',
-    'def',
-    'del',
-    'elif',
-    'else',
-    'except',
-    'finally',
-    'for',
-    'global',
-    'if',
-    'lambda',
-    'nonlocal',
-    'pass',
-    'raise',
-    'return',
-    'try',
-    'while',
-    'with',
-    'yield',
+    "self",
+    "False",
+    "None",
+    "True",
+    "assert",
+    "break",
+    "class",
+    "continue",
+    "def",
+    "del",
+    "elif",
+    "else",
+    "except",
+    "finally",
+    "for",
+    "global",
+    "if",
+    "lambda",
+    "nonlocal",
+    "pass",
+    "raise",
+    "return",
+    "try",
+    "while",
+    "with",
+    "yield",
 ]
 
-kw_namespace_list = ['from', 'import', 'as']
-wordop_list = ['and', 'or', 'not', 'in', 'is']
+kw_namespace_list = ["from", "import", "as"]
+wordop_list = ["and", "or", "not", "in", "is"]
 
 
-def make_python_patterns(additional_keywords=[], additional_builtins=[]):
+def make_python_patterns(additional_keywords=None, additional_builtins=None):
     """Strongly inspired from idlelib.ColorDelegator.make_pat"""
+
+    if additional_keywords is None:
+        additional_keywords = []
+
+    if additional_builtins is None:
+        additional_builtins = []
+
     kw = r"\b" + any("keyword", kwlist + additional_keywords) + r"\b"
     kw_namespace = r"\b" + any("namespace", kw_namespace_list) + r"\b"
     word_operators = r"\b" + any("operator_word", wordop_list) + r"\b"
-    builtinlist = [str(name) for name in dir(builtins)
-                   if not name.startswith('_')] + additional_builtins
-    for v in ['None', 'True', 'False']:
+    builtinlist = [
+        str(name) for name in dir(builtins) if not name.startswith("_")
+    ] + additional_builtins
+    for v in ["None", "True", "False"]:
         builtinlist.remove(v)
     builtin = r"([^.'\"\\#]\b|^)" + any("builtin", builtinlist) + r"\b"
-    builtin_fct = any("builtin_fct", [r'_{2}[a-zA-Z_]*_{2}'])
+    builtin_fct = any("builtin_fct", [r"_{2}[a-zA-Z_]*_{2}"])
     comment = any("comment", [r"#[^\n]*"])
     instance = any("instance", [r"\bself\b", r"\bcls\b"])
-    decorator = any('decorator', [r'@\w*', r'.setter'])
-    number = any("number",
-                 [r"\b[+-]?[0-9]+[lLjJ]?\b",
-                  r"\b[+-]?0[xX][0-9A-Fa-f]+[lL]?\b",
-                  r"\b[+-]?0[oO][0-7]+[lL]?\b",
-                  r"\b[+-]?0[bB][01]+[lL]?\b",
-                  r"\b[+-]?[0-9]+(?:\.[0-9]+)?(?:[eE][+-]?[0-9]+)?[jJ]?\b"])
+    decorator = any("decorator", [r"@\w*", r".setter"])
+    number = any(
+        "number",
+        [
+            r"\b[+-]?[0-9]+[lLjJ]?\b",
+            r"\b[+-]?0[xX][0-9A-Fa-f]+[lL]?\b",
+            r"\b[+-]?0[oO][0-7]+[lL]?\b",
+            r"\b[+-]?0[bB][01]+[lL]?\b",
+            r"\b[+-]?[0-9]+(?:\.[0-9]+)?(?:[eE][+-]?[0-9]+)?[jJ]?\b",
+        ],
+    )
     sqstring = r"(\b[rRuU])?'[^'\\\n]*(\\.[^'\\\n]*)*'?"
     dqstring = r'(\b[rRuU])?"[^"\\\n]*(\\.[^"\\\n]*)*"?'
     uf_sqstring = r"(\b[rRuU])?'[^'\\\n]*(\\.[^'\\\n]*)*(\\)$(?!')$"
@@ -76,10 +88,25 @@ def make_python_patterns(additional_keywords=[], additional_builtins=[]):
     ufstring2 = any("uf_dqstring", [uf_dqstring])
     ufstring3 = any("uf_sq3string", [uf_sq3string])
     ufstring4 = any("uf_dq3string", [uf_dq3string])
-    return "|".join([instance, decorator, kw, kw_namespace, builtin,
-                     word_operators, builtin_fct, comment,
-                     ufstring1, ufstring2, ufstring3, ufstring4, string,
-                     number, any("SYNC", [r"\n"])])
+    return "|".join(
+        [
+            instance,
+            decorator,
+            kw,
+            kw_namespace,
+            builtin,
+            word_operators,
+            builtin_fct,
+            comment,
+            ufstring1,
+            ufstring2,
+            ufstring3,
+            ufstring4,
+            string,
+            number,
+            any("SYNC", [r"\n"]),
+        ]
+    )
 
 
 #
@@ -89,18 +116,24 @@ class PythonSH(Language):
     """
     Highlights python syntax in the editor.
     """
-    mimetype = 'text/x-python'
+
+    mimetype = "text/x-python"
 
     # Syntax highlighting rules:
     PROG = re.compile(make_python_patterns(), re.S)
     IDPROG = re.compile(r"\s+(\w+)", re.S)
     ASPROG = re.compile(r".*?\b(as)\b")
     # Syntax highlighting states (from one text block to another):
-    (NORMAL, INSIDE_SQ3STRING, INSIDE_DQ3STRING,
-     INSIDE_SQSTRING, INSIDE_DQSTRING) = list(range(5))
+    (
+        NORMAL,
+        INSIDE_SQ3STRING,
+        INSIDE_DQ3STRING,
+        INSIDE_SQSTRING,
+        INSIDE_DQSTRING,
+    ) = list(range(5))
 
     # Comments suitable for Outline Explorer
-    OECOMMENT = re.compile('^(# ?--[-]+|##[#]+ )[ -]*[^- ]+')
+    OECOMMENT = re.compile("^(# ?--[-]+|##[#]+ )[ -]*[^- ]+")
 
     def __init__(self, editor, color_scheme=None):
         super().__init__(editor, color_scheme)
@@ -141,73 +174,68 @@ class PythonSH(Language):
                     start = max([0, start + offset])
                     end = max([0, end + offset])
                     if key == "uf_sq3string":
-                        self.setFormat(start, end - start,
-                                       self.formats["docstring"])
+                        self.setFormat(start, end - start, self.formats["docstring"])
                         block.docstring = True
                         state = self.INSIDE_SQ3STRING
                     elif key == "uf_dq3string":
-                        self.setFormat(start, end - start,
-                                       self.formats["docstring"])
+                        self.setFormat(start, end - start, self.formats["docstring"])
                         block.docstring = True
                         state = self.INSIDE_DQ3STRING
                     elif key == "uf_sqstring":
-                        self.setFormat(start, end - start,
-                                       self.formats["string"])
+                        self.setFormat(start, end - start, self.formats["string"])
                         state = self.INSIDE_SQSTRING
                     elif key == "uf_dqstring":
-                        self.setFormat(start, end - start,
-                                       self.formats["string"])
+                        self.setFormat(start, end - start, self.formats["string"])
                         state = self.INSIDE_DQSTRING
-                    elif key == 'builtin_fct':
+                    elif key == "builtin_fct":
                         # trick to highlight __init__, __add__ and so on with
                         # builtin color
-                        self.setFormat(start, end - start,
-                                       self.formats["constant"])
+                        self.setFormat(start, end - start, self.formats["constant"])
                     else:
-                        if ('"""' in value or "'''" in value) and \
-                                key != 'comment':
+                        if ('"""' in value or "'''" in value) and key != "comment":
                             # highlight docstring with a different color
                             block.docstring = True
-                            self.setFormat(start, end - start,
-                                           self.formats["docstring"])
-                        elif key == 'decorator':
+                            self.setFormat(
+                                start, end - start, self.formats["docstring"]
+                            )
+                        elif key == "decorator":
                             # highlight decorators
-                            self.setFormat(start, end - start,
-                                           self.formats["decorator"])
-                        elif value in ['self', 'cls']:
+                            self.setFormat(
+                                start, end - start, self.formats["decorator"]
+                            )
+                        elif value in ["self", "cls"]:
                             # highlight self attribute
-                            self.setFormat(start, end - start,
-                                           self.formats["self"])
+                            self.setFormat(start, end - start, self.formats["self"])
                         else:
                             # highlight all other tokens
-                            self.setFormat(start, end - start,
-                                           self.formats[key])
+                            self.setFormat(start, end - start, self.formats[key])
                         if key == "keyword":
                             if value in ("def", "class"):
                                 match1 = self.IDPROG.match(text, end)
                                 if match1:
                                     start1, end1 = match1.span(1)
-                                    fmt_key = ('definition' if value == 'class'
-                                               else 'function')
+                                    fmt_key = (
+                                        "definition" if value == "class" else "function"
+                                    )
                                     fmt = self.formats[fmt_key]
                                     self.setFormat(start1, end1 - start1, fmt)
-                        if key == 'namespace':
+                        if key == "namespace":
                             import_stmt = text.strip()
                             # color all the "as" words on same line, except
                             # if in a comment; cheap approximation to the
                             # truth
-                            if '#' in text:
-                                endpos = text.index('#')
+                            if "#" in text:
+                                endpos = text.index("#")
                             else:
                                 endpos = len(text)
                             while True:
-                                match1 = self.ASPROG.match(text, end,
-                                                           endpos)
+                                match1 = self.ASPROG.match(text, end, endpos)
                                 if not match1:
                                     break
                                 start, end = match1.span(1)
-                                self.setFormat(start, end - start,
-                                               self.formats["namespace"])
+                                self.setFormat(
+                                    start, end - start, self.formats["namespace"]
+                                )
             # next match
             match = self.PROG.search(text, match.end())
         TextBlockHelper.set_state(block, state)
@@ -226,5 +254,17 @@ class PythonSH(Language):
         self.docstrings[:] = []
         super(PythonSH, self).rehighlight()
 
+
 class PythonLanguage(PythonSH):
     ...
+
+
+__all__ = [
+    "PythonLanguage",
+    "PythonSH",
+    "any",
+    "kw_namespace_list",
+    "kwlist",
+    "make_python_patterns",
+    "wordop_list",
+]

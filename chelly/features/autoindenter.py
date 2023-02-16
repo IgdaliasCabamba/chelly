@@ -3,7 +3,7 @@ from qtpy.QtCore import Qt
 
 
 class AutoIndent(Feature):
-    """ Indents text automatically.
+    """Indents text automatically.
     Generic indenter mode that indents the text when the user press RETURN.
     You can customize this mode by overriding
     :meth:`pyqode.core.modes.AutoIndentMode._get_indent`
@@ -34,14 +34,16 @@ class AutoIndent(Feature):
         if last_line:
             indent = (
                 TextEngine(self.editor).line_indent(
-                    TextEngine(self.editor).current_line_nbr-1,
-                    self._indent_char
-                ) * self._indent_char
+                    TextEngine(self.editor).current_line_nbr - 1, self._indent_char
+                )
+                * self._indent_char
             )
         else:
-            indent = (TextEngine(self.editor).line_indent(indent_char=self._indent_char)
-                      * self._indent_char)
-        return (str(), indent)
+            indent = (
+                TextEngine(self.editor).line_indent(indent_char=self._indent_char)
+                * self._indent_char
+            )
+        return str(), indent
 
     def __key_released(self, event):
         """
@@ -60,8 +62,12 @@ class AutoIndent(Feature):
 
             if text.startswith(Character.SPACE.value):
                 new_txt: str = text.replace(
-                    Character.SPACE.value, Character.EMPTY.value)
+                    Character.SPACE.value, Character.EMPTY.value
+                )
                 if len(text) > len(new_txt):
                     cursor.insertText(new_txt)
 
             cursor.endEditBlock()
+
+
+__all__ = ["AutoIndent"]

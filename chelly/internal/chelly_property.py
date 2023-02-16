@@ -24,7 +24,6 @@ class chelly_property:
 
         return inspect.signature(c_property.fget)
 
-    
     @staticmethod
     @memoize(arg_hash_function=str, max_size=16)
     def check_types(required_types: Iterable, given_type: Type) -> bool:
@@ -33,13 +32,21 @@ class chelly_property:
         if class_name is None:
             return True
 
-        for _type in ["Any", "None", "NoneType", "Optional", Any, None, NoneType, Optional]:
+        for _type in [
+            "Any",
+            "None",
+            "NoneType",
+            "Optional",
+            Any,
+            None,
+            NoneType,
+            Optional,
+        ]:
             if _type in required_types:
                 return True
 
         for required_type in required_types:
-
-            if (required_type == class_name or required_type == given_type):
+            if required_type == class_name or required_type == given_type:
                 return True
 
         return False
@@ -49,13 +56,12 @@ class chelly_property:
         res = []
 
         for function in functions:
-            
             type_hints = typing_extensions.get_type_hints(function)
 
             for param, type_hint in type_hints.items():
                 if param == "return":
                     continue
-                
+
                 if typing_extensions.get_origin(type_hint) in {UnionType, Union}:
                     for arg in typing_extensions.get_args(type_hint):
                         res.append(arg)
@@ -64,10 +70,11 @@ class chelly_property:
 
         return res
 
-    __slots__ = ("fget", "fset", "fdel", "ffollow",
-                 "_doc", "typed", "args", "kwargs")
+    __slots__ = ("fget", "fset", "fdel", "ffollow", "_doc", "typed", "args", "kwargs")
 
-    def __init__(self, fget=None, fset=None, fdel=None, ffollow=None, doc=None, *args, **kwargs) -> None:
+    def __init__(
+        self, fget=None, fset=None, fdel=None, ffollow=None, doc=None, *args, **kwargs
+    ) -> None:
         self.fget = fget
         self.fset = fset
         self.fdel = fdel
@@ -99,7 +106,6 @@ class chelly_property:
             raise AttributeError("Can't set attribute")
 
         if self.typed:
-
             given_type = type(value)
 
             if isinstance(value, ChellyFollowedValue):
@@ -108,8 +114,7 @@ class chelly_property:
             required_types: tuple = self.get_functions_arg_types(self.fset)
 
             if not self.check_types(required_types, given_type):
-                raise TypeError(
-                    f"Expected {required_types}. Got: {given_type}")
+                raise TypeError(f"Expected {required_types}. Got: {given_type}")
 
         if isinstance(value, ChellyFollowedValue):
             self.fset(obj, value.value)
@@ -126,16 +131,48 @@ class chelly_property:
         self.fdel(obj)
 
     def getter(self, fget):
-        return type(self)(fget, self.fset, self.fdel, self.ffollow, self._doc, *self.args, **self.kwargs)
+        return type(self)(
+            fget,
+            self.fset,
+            self.fdel,
+            self.ffollow,
+            self._doc,
+            *self.args,
+            **self.kwargs,
+        )
 
     def setter(self, fset):
-        return type(self)(self.fget, fset, self.fdel, self.ffollow, self._doc, *self.args, **self.kwargs)
+        return type(self)(
+            self.fget,
+            fset,
+            self.fdel,
+            self.ffollow,
+            self._doc,
+            *self.args,
+            **self.kwargs,
+        )
 
     def deleter(self, fdel):
-        return type(self)(self.fget, self.fset, fdel, self.ffollow, self._doc, *self.args, **self.kwargs)
+        return type(self)(
+            self.fget,
+            self.fset,
+            fdel,
+            self.ffollow,
+            self._doc,
+            *self.args,
+            **self.kwargs,
+        )
 
     def follower(self, ffollow):
-        return type(self)(self.fget, self.fset, self.fdel, ffollow, self._doc, *self.args, **self.kwargs)
+        return type(self)(
+            self.fget,
+            self.fset,
+            self.fdel,
+            ffollow,
+            self._doc,
+            *self.args,
+            **self.kwargs,
+        )
 
 
 if __name__ == "__main__":
@@ -175,3 +212,6 @@ if __name__ == "__main__":
     assert test.val is None
 
     test.val1 = "Icode"
+
+
+__all__ = ["Test", "chelly_property", "res", "test"]

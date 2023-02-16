@@ -4,31 +4,31 @@ from qtpy.QtGui import QPalette, QColor
 
 from ._utils import QT_VERSION
 
-_STYLESHEET = join(dirname(abspath(__file__)), 'resources/style.qss')
+_STYLESHEET = join(dirname(abspath(__file__)), "resources/style.qss")
 """ str: Main stylesheet. """
 
 
 def _apply_base_theme(app):
-    """ Apply base theme to the application.
+    """Apply base theme to the application.
 
-        Args:
-            app (QApplication): QApplication instance.
+    Args:
+        app (QApplication): QApplication instance.
     """
 
     if QT_VERSION < (5,):
-        app.setStyle('plastique')
+        app.setStyle("plastique")
     else:
-        app.setStyle('Fusion')
+        app.setStyle("Fusion")
 
     with open(_STYLESHEET) as stylesheet:
         app.setStyleSheet(stylesheet.read())
 
 
 def dark(app):
-    """ Apply Dark Theme to the Qt application instance.
+    """Apply Dark Theme to the Qt application instance.
 
-        Args:
-            app (QApplication): QApplication instance.
+    Args:
+        app (QApplication): QApplication instance.
     """
 
     darkPalette = QPalette()
@@ -53,27 +53,24 @@ def dark(app):
     darkPalette.setColor(QPalette.ToolTipText, QColor(180, 180, 180))
 
     # disabled
-    darkPalette.setColor(QPalette.Disabled, QPalette.WindowText,
-                         QColor(127, 127, 127))
-    darkPalette.setColor(QPalette.Disabled, QPalette.Text,
-                         QColor(127, 127, 127))
-    darkPalette.setColor(QPalette.Disabled, QPalette.ButtonText,
-                         QColor(127, 127, 127))
-    darkPalette.setColor(QPalette.Disabled, QPalette.Highlight,
-                         QColor(80, 80, 80))
-    darkPalette.setColor(QPalette.Disabled, QPalette.HighlightedText,
-                         QColor(127, 127, 127))
+    darkPalette.setColor(QPalette.Disabled, QPalette.WindowText, QColor(127, 127, 127))
+    darkPalette.setColor(QPalette.Disabled, QPalette.Text, QColor(127, 127, 127))
+    darkPalette.setColor(QPalette.Disabled, QPalette.ButtonText, QColor(127, 127, 127))
+    darkPalette.setColor(QPalette.Disabled, QPalette.Highlight, QColor(80, 80, 80))
+    darkPalette.setColor(
+        QPalette.Disabled, QPalette.HighlightedText, QColor(127, 127, 127)
+    )
 
     app.setPalette(darkPalette)
-    
+
     _apply_base_theme(app)
 
 
 def light(app):
-    """ Apply Light Theme to the Qt application instance.
+    """Apply Light Theme to the Qt application instance.
 
-        Args:
-            app (QApplication): QApplication instance.
+    Args:
+        app (QApplication): QApplication instance.
     """
 
     lightPalette = QPalette()
@@ -98,18 +95,14 @@ def light(app):
     lightPalette.setColor(QPalette.ToolTipText, QColor(0, 0, 0))
 
     # disabled
-    lightPalette.setColor(QPalette.Disabled, QPalette.WindowText,
-                         QColor(115, 115, 115))
-    lightPalette.setColor(QPalette.Disabled, QPalette.Text,
-                         QColor(115, 115, 115))
-    lightPalette.setColor(QPalette.Disabled, QPalette.ButtonText,
-                         QColor(115, 115, 115))
-    lightPalette.setColor(QPalette.Disabled, QPalette.Highlight,
-                         QColor(190, 190, 190))
-    lightPalette.setColor(QPalette.Disabled, QPalette.HighlightedText,
-                         QColor(115, 115, 115))
+    lightPalette.setColor(QPalette.Disabled, QPalette.WindowText, QColor(115, 115, 115))
+    lightPalette.setColor(QPalette.Disabled, QPalette.Text, QColor(115, 115, 115))
+    lightPalette.setColor(QPalette.Disabled, QPalette.ButtonText, QColor(115, 115, 115))
+    lightPalette.setColor(QPalette.Disabled, QPalette.Highlight, QColor(190, 190, 190))
+    lightPalette.setColor(
+        QPalette.Disabled, QPalette.HighlightedText, QColor(115, 115, 115)
+    )
 
     app.setPalette(lightPalette)
 
     _apply_base_theme(app)
-    

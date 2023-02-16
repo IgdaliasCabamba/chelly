@@ -1,6 +1,7 @@
 from ..core import Feature
 from qtpy import QtCore, QtGui, QtWidgets
 
+
 class ZoomMode(Feature):
     def __init__(self, editor):
         super().__init__(editor)
@@ -15,5 +16,8 @@ class ZoomMode(Feature):
                 self.editor.commands.zoom_out(delta)
             else:
                 self.editor.commands.zoom_in(delta)
-            
+
             self.prev_delta = delta
+
+
+__all__ = ["ZoomMode"]

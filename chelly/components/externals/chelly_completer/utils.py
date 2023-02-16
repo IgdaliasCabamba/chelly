@@ -1,7 +1,6 @@
 import re
 
-_HTML_ESCAPE_TABLE = \
-{
+_HTML_ESCAPE_TABLE = {
     "&": "&amp;",
     '"': "&quot;",
     "'": "&apos;",
@@ -13,14 +12,23 @@ _HTML_ESCAPE_TABLE = \
 
 
 def htmlEscape(text):
-    """Replace special HTML symbols with escase sequences
-    """
-    return "".join(_HTML_ESCAPE_TABLE.get(c,c) for c in text)
+    """Replace special HTML symbols with escase sequences"""
+    return "".join(_HTML_ESCAPE_TABLE.get(c, c) for c in text)
 
 
 wordPattern = "\w+"
 wordRegExp = re.compile(wordPattern)
-wordAtEndRegExp = re.compile(wordPattern + '$')
-wordAtStartRegExp = re.compile('^' + wordPattern)
+wordAtEndRegExp = re.compile(wordPattern + "$")
+wordAtStartRegExp = re.compile("^" + wordPattern)
 
 MAX_VISIBLE_WORD_COUNT = 256
+
+
+__all__ = [
+    "MAX_VISIBLE_WORD_COUNT",
+    "htmlEscape",
+    "wordAtEndRegExp",
+    "wordAtStartRegExp",
+    "wordPattern",
+    "wordRegExp",
+]

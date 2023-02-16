@@ -5,11 +5,13 @@ from ...internal import chelly_property
 from typing import Any
 from dataclasses import dataclass
 
+
 class LineNumberMargin(Panel):
-    """Line Number Widget for Editor based 
+    """Line Number Widget for Editor based
     on https://github.com/luchko/QCodeEditor/blob/master/QCodeEditor.py
     and https://doc.qt.io/qtforpython/examples/example_widgets__codeeditor.html
     """
+
     @dataclass(frozen=True)
     class Defaults:
         ...
@@ -20,7 +22,7 @@ class LineNumberMargin(Panel):
             self._background = QColor(Qt.GlobalColor.transparent)
             self._foreground = QColor(Qt.GlobalColor.darkGray)
             self._highlight = QColor(Qt.GlobalColor.lightGray)
-        
+
         @chelly_property
         def foreground(self) -> QColor:
             return self._foreground
@@ -36,7 +38,7 @@ class LineNumberMargin(Panel):
         @background.setter
         def background(self, new_color: QColor) -> None:
             self._background = new_color
-        
+
         @chelly_property
         def highlight(self) -> QColor:
             return self._highlight
@@ -48,9 +50,9 @@ class LineNumberMargin(Panel):
     @property
     def properties(self) -> Properties:
         return self.__properties
-    
+
     @properties.setter
-    def properties(self, new_properties:Properties) -> Properties:
+    def properties(self, new_properties: Properties) -> Properties:
         if new_properties is LineNumberMargin.Properties:
             self.__properties = new_properties(self)
 
@@ -62,7 +64,7 @@ class LineNumberMargin(Panel):
         self.__properties = LineNumberMargin.Properties(self)
         self.scrollable = True
         self.number_font = QFont()
-    
+
     def sizeHint(self):
         """
         Returns the panel size hint (as the panel is on the left, we only need
@@ -78,27 +80,33 @@ class LineNumberMargin(Panel):
             max_num *= 0.1
             digits += 1
 
-        space = (FontEngine(self.font()).real_horizontal_advance('9', True) * digits) + 2
+        space = (
+            FontEngine(self.font()).real_horizontal_advance("9", True) * digits
+        ) + 2
         return space
-                    
+
     def paintEvent(self, event):
         super().paintEvent(event)
         with QPainter(self) as painter:
             for top, block_number, block in self.editor.visible_blocks:
-                
                 if block.userState() == -999:
                     continue
 
                 number = str(block_number + 1)
-                    
+
                 if block_number == self.editor.textCursor().blockNumber():
                     self.number_font.setBold(True)
                     painter.setPen(self.properties.highlight)
                 else:
                     self.number_font.setBold(False)
                     painter.setPen(self.properties.foreground)
-            
+
                 painter.setFont(self.number_font)
                 width = self.width()
                 height = self.fontMetrics().height()
-                painter.drawText(0, top, width, height, Qt.AlignmentFlag.AlignRight, number)
+                painter.drawText(
+                    0, top, width, height, Qt.AlignmentFlag.AlignRight, number
+                )
+
+
+__all__ = ["LineNumberMargin"]

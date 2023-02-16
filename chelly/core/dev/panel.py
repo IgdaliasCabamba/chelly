@@ -107,3 +107,8 @@ class Panel(QFrame):
                     setattr(self, key, value)
                 except AttributeError:
                     pass
+
+
+__all__ = [
+    'Panel'
+]

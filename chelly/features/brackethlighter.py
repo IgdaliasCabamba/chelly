@@ -4,6 +4,8 @@ This module contains the symbol matcher mode
 """
 from ..core import Feature, TextDecoration
 from qtpy import QtGui
+from qtpy.QtGui import QTextCursor
+
 
 class ParenthesisInfo(object):
     """
@@ -16,12 +18,14 @@ class ParenthesisInfo(object):
         #: The parenthesis character, one of "(", ")", "{", "}", "[", "]"
         self.character = char
 
+
 def get_block_symbol_data(editor, block):
     """
     Gets the list of ParenthesisInfo for specific text block.
     :param editor: Code edit instance
     :param block: block to parse
     """
+
     def list_symbols(editor, block, character):
         """
         Retuns  a list of symbols found in the block text
@@ -37,7 +41,6 @@ def get_block_symbol_data(editor, block):
         cursor.movePosition(cursor.Right, cursor.MoveAnchor, pos)
 
         while pos != -1:
-            
             # skips symbols in string literal or comment
             info = ParenthesisInfo(pos, character)
             symbols.append(info)
@@ -48,16 +51,18 @@ def get_block_symbol_data(editor, block):
         return symbols
 
     parentheses = sorted(
-        list_symbols(editor, block, '(') + list_symbols(editor, block, ')'),
-        key=lambda x: x.position)
+        list_symbols(editor, block, "(") + list_symbols(editor, block, ")"),
+        key=lambda x: x.position,
+    )
     square_brackets = sorted(
-        list_symbols(editor, block, '[') + list_symbols(editor, block, ']'),
-        key=lambda x: x.position)
+        list_symbols(editor, block, "[") + list_symbols(editor, block, "]"),
+        key=lambda x: x.position,
+    )
     braces = sorted(
-        list_symbols(editor, block, '{') + list_symbols(editor, block, '}'),
-        key=lambda x: x.position)
+        list_symbols(editor, block, "{") + list_symbols(editor, block, "}"),
+        key=lambda x: x.position,
+    )
     return parentheses, square_brackets, braces
-
 
 
 #: symbols indices in SymbolMatcherMode.SYMBOLS map
@@ -71,76 +76,67 @@ CLOSE = 1
 
 
 class SymbolMatcher(Feature):
-    """ Highlights matching symbols (parentheses, braces,...)
-    .. note:: This mode requires the document to be filled with
-        :class:`pyqode.core.api.TextBlockUserData`, i.e. a
-        :class:`pyqode.core.api.SyntaxHighlighter` must be installed on
-        the editor instance.
-    """
-    #: known symbols {SYMBOL: (OPEN, CLOSE)}, you can customise this map to
-    #: add support for other symbols
-    SYMBOLS = {
-        PAREN: ('(', ')'),
-        SQUARE: ('[', ']'),
-        BRACE: ('{', '}')
-    }
+    SYMBOLS = {PAREN: ("(", ")"), SQUARE: ("[", "]"), BRACE: ("{", "}")}
 
-    @property
-    def match_background(self):
-        """
-        Background color of matching symbols.
-        """
-        return self._match_background
+    class Properties(Feature._Properties):
+        def __init__(self, feature: Feature) -> None:
+            super().__init__(feature)
 
-    @match_background.setter
-    def match_background(self, value):
-        self._match_background = value
-        self._refresh_decorations()
+        @property
+        def match_background(self):
+            """
+            Background color of matching symbols.
+            """
+            return self._match_background
 
-    @property
-    def match_foreground(self):
-        """
-        Foreground color of matching symbols.
-        """
-        return self._match_foreground
+        @match_background.setter
+        def match_background(self, value):
+            self._match_background = value
+            self._refresh_decorations()
 
-    @match_foreground.setter
-    def match_foreground(self, value):
-        self._match_foreground = value
-        self._refresh_decorations()
+        @property
+        def match_foreground(self):
+            """
+            Foreground color of matching symbols.
+            """
+            return self._match_foreground
 
+        @match_foreground.setter
+        def match_foreground(self, value):
+            self._match_foreground = value
+            self._refresh_decorations()
 
-    @property
-    def unmatch_background(self):
-        """
-        Background color of non-matching symbols.
-        """
-        return self._unmatch_background
+        @property
+        def unmatch_background(self):
+            """
+            Background color of non-matching symbols.
+            """
+            return self._unmatch_background
 
-    @unmatch_background.setter
-    def unmatch_background(self, value):
-        self._unmatch_background = value
-        self._refresh_decorations()
+        @unmatch_background.setter
+        def unmatch_background(self, value):
+            self._unmatch_background = value
+            self._refresh_decorations()
 
-    @property
-    def unmatch_foreground(self):
-        """
-        Foreground color of matching symbols.
-        """
-        return self._unmatch_foreground
+        @property
+        def unmatch_foreground(self):
+            """
+            Foreground color of matching symbols.
+            """
+            return self._unmatch_foreground
 
-    @unmatch_foreground.setter
-    def unmatch_foreground(self, value):
-        self._unmatch_foreground = value
-        self._refresh_decorations()
+        @unmatch_foreground.setter
+        def unmatch_foreground(self, value):
+            self._unmatch_foreground = value
+            self._refresh_decorations()
 
     def __init__(self, editor):
         super().__init__(editor)
         self._decorations = []
-        self._match_background = QtGui.QBrush(QtGui.QColor('#B4EEB4'))
-        self._match_foreground = QtGui.QColor('red')
-        self._unmatch_background = QtGui.QBrush(QtGui.QColor('transparent'))
-        self._unmatch_foreground = QtGui.QColor('red')
+        self._match_background = QtGui.QBrush(QtGui.QColor("#B4EEB4"))
+        self._match_foreground = QtGui.QColor("red")
+        self._unmatch_background = QtGui.QBrush(QtGui.QColor("transparent"))
+        self._unmatch_foreground = QtGui.QColor("red")
         self.editor.cursorPositionChanged.connect(self.do_symbols_matching)
 
     def _clear_decorations(self):
@@ -148,15 +144,7 @@ class SymbolMatcher(Feature):
             self.editor.decorations.remove(deco)
         self._decorations[:] = []
 
-    def symbol_pos(self, cursor, character_type=OPEN, symbol_type=PAREN):
-        """
-        Find the corresponding symbol position (line, column) of the specified
-        symbol. If symbol type is PAREN and character_type is OPEN, the
-        function will look for '('.
-        :param cursor: QTextCursor
-        :param character_type: character type to look for (open or close char)
-        :param symbol_type: symbol type (index in the SYMBOLS map).
-        """
+    def symbol_pos(self, cursor: QTextCursor, character_type=OPEN, symbol_type=PAREN):
         retval = None, None
         original_cursor = self.editor.textCursor()
         self.editor.setTextCursor(cursor)
@@ -185,20 +173,27 @@ class SymbolMatcher(Feature):
     def _match(self, symbol, data, cursor_pos):
         symbols = data[symbol]
         for i, info in enumerate(symbols):
-            pos = (self.editor.textCursor().position() -
-                   self.editor.textCursor().block().position())
-            if info.character == self.SYMBOLS[symbol][OPEN] and \
-                    info.position == pos:
+            pos = (
+                self.editor.textCursor().position()
+                - self.editor.textCursor().block().position()
+            )
+            if info.character == self.SYMBOLS[symbol][OPEN] and info.position == pos:
                 self._create_decoration(
                     cursor_pos + info.position,
                     self._match_left(
-                        symbol, self.editor.textCursor().block(), i + 1, 0))
-            elif info.character == self.SYMBOLS[symbol][CLOSE] and \
-                    info.position == pos - 1:
+                        symbol, self.editor.textCursor().block(), i + 1, 0
+                    ),
+                )
+            elif (
+                info.character == self.SYMBOLS[symbol][CLOSE]
+                and info.position == pos - 1
+            ):
                 self._create_decoration(
                     cursor_pos + info.position,
                     self._match_right(
-                        symbol, self.editor.textCursor().block(), i - 1, 0))
+                        symbol, self.editor.textCursor().block(), i - 1, 0
+                    ),
+                )
 
     def _match_left(self, symbol, current_block, i, cpt):
         while current_block.isValid():
@@ -210,8 +205,7 @@ class SymbolMatcher(Feature):
                     cpt += 1
                     continue
                 if info.character == self.SYMBOLS[symbol][CLOSE] and cpt == 0:
-                    self._create_decoration(current_block.position() +
-                                            info.position)
+                    self._create_decoration(current_block.position() + info.position)
                     return True
                 elif info.character == self.SYMBOLS[symbol][CLOSE]:
                     cpt -= 1
@@ -232,7 +226,8 @@ class SymbolMatcher(Feature):
                 if info.character == self.SYMBOLS[symbol][OPEN]:
                     if nb_right_paren == 0:
                         self._create_decoration(
-                            current_block.position() + info.position)
+                            current_block.position() + info.position
+                        )
                         return True
                     else:
                         nb_right_paren -= 1
@@ -277,3 +272,15 @@ class SymbolMatcher(Feature):
         self.match_foreground = original.match_foreground
         self.unmatch_background = original.unmatch_background
         self.unmatch_foreground = original.unmatch_foreground
+
+
+__all__ = [
+    "BRACE",
+    "CLOSE",
+    "OPEN",
+    "PAREN",
+    "ParenthesisInfo",
+    "SQUARE",
+    "SymbolMatcher",
+    "get_block_symbol_data",
+]
