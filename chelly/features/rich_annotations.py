@@ -63,6 +63,8 @@ class RichAnnotation(QWidget):
 
         self.id_ = id_
         self._line = line
+        self.vbox = QVBoxLayout(self)
+        self.setLayout(self.vbox)
 
     def setup_text_object(self) -> None:
         annotation_interface = AnnotationTextObject(self)
@@ -81,6 +83,16 @@ class RichAnnotation(QWidget):
         cursor.insertText(chr(0xFFFC), annotation_char_format)
         cursor.insertText("\n")
         self._editor.setTextCursor(cursor)
+
+        self.setParent(self._editor.viewport())
+
+        self.lbl = QLabel(self)
+        self.lbl.setText("A-Z"*40)
+        self.vbox.addWidget(self.lbl)
+        self.resize(self._editor.viewport().rect().width(), height)
+        self.show()
+
+        # TODO: replace into annotation_char_format position
 
         return {
             "block_number": cursor.blockNumber(),

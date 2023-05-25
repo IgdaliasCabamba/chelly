@@ -28,7 +28,7 @@ from chelly.components import (
     VerticalScrollBar,
 )
 from chelly.components.externals.chelly_completer.manager import CompleterManager
-from chelly.components.externals.chelly_completer.text_completer import Completer
+#from chelly.components.externals.chelly_completer.text_completer import Completer
 from chelly.core import Panel
 from chelly.features import (
     AutoComplete,
@@ -386,16 +386,16 @@ image_drawer1.draw = QImage(
 # use this to undraw
 # del image_drawer1.draw
 # or
-image_drawer1.draw = None
+#image_drawer1.draw = None
 
 # div.resize(1000, 600)
 # div.move(200, 100)
 # div.setWindowTitle("ChellyEditor Preview")
 # div.show()
 
-x = CompleterManager(editor)
-y: Completer = x.set_completion_list(Completer)
-y.setCustomCompletions({"ola", "hello", "hi", "thanks", "more", "love"})
+#x = CompleterManager(editor)
+#y: Completer = x.set_completion_list(Completer)
+#y.setCustomCompletions({"ola", "hello", "hi", "thanks", "more", "love"})
 
 if __name__ == "__main__":
     with open(__file__, "r") as infile:

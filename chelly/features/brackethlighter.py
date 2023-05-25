@@ -1,10 +1,8 @@
-# -*- coding: utf-8 -*-
-"""
-This module contains the symbol matcher mode
-"""
+from dataclasses import dataclass
 from ..core import Feature, TextDecoration
-from qtpy import QtGui
-from qtpy.QtGui import QTextCursor
+from ..internal import ChellyFollowable, ChellyFollowedValue, chelly_property
+from qtpy.QtCore import Qt
+from qtpy.QtGui import *
 
 
 class ParenthesisInfo(object):
@@ -35,7 +33,7 @@ def get_block_symbol_data(editor, block):
         """
         text = block.text()
         symbols = []
-        cursor = QtGui.QTextCursor(block)
+        cursor = QTextCursor(block)
         cursor.movePosition(cursor.StartOfBlock)
         pos = text.find(character, 0)
         cursor.movePosition(cursor.Right, cursor.MoveAnchor, pos)
@@ -76,13 +74,23 @@ CLOSE = 1
 
 
 class SymbolMatcher(Feature):
+    
+    @dataclass(frozen=True)
+    class Defaults:
+        ...
+
     SYMBOLS = {PAREN: ("(", ")"), SQUARE: ("[", "]"), BRACE: ("{", "}")}
 
     class Properties(Feature._Properties):
         def __init__(self, feature: Feature) -> None:
             super().__init__(feature)
+            self.match_background = QColor("#eeeeee")
+            self.match_foreground = QColor("#2cbf69")
+            self.unmatch_background = QColor("transparent")
+            self.unmatch_foreground = QColor("#bf2c49")
+        
 
-        @property
+        @chelly_property
         def match_background(self):
             """
             Background color of matching symbols.
@@ -90,11 +98,13 @@ class SymbolMatcher(Feature):
             return self._match_background
 
         @match_background.setter
-        def match_background(self, value):
-            self._match_background = value
-            self._refresh_decorations()
+        def match_background(self, value: QColor):
+            if value.alpha() >= 255:
+                value.setAlpha(70)
+            self._match_background = QBrush(value)
+            self.feature._refresh_decorations()
 
-        @property
+        @chelly_property
         def match_foreground(self):
             """
             Foreground color of matching symbols.
@@ -102,11 +112,11 @@ class SymbolMatcher(Feature):
             return self._match_foreground
 
         @match_foreground.setter
-        def match_foreground(self, value):
+        def match_foreground(self, value: QColor):
             self._match_foreground = value
-            self._refresh_decorations()
+            self.feature._refresh_decorations()
 
-        @property
+        @chelly_property
         def unmatch_background(self):
             """
             Background color of non-matching symbols.
@@ -114,11 +124,13 @@ class SymbolMatcher(Feature):
             return self._unmatch_background
 
         @unmatch_background.setter
-        def unmatch_background(self, value):
-            self._unmatch_background = value
-            self._refresh_decorations()
+        def unmatch_background(self, value: QColor):
+            if value.alpha() >= 255:
+                value.setAlpha(70)
+            self._unmatch_background = QBrush(value)
+            self.feature._refresh_decorations()
 
-        @property
+        @chelly_property
         def unmatch_foreground(self):
             """
             Foreground color of matching symbols.
@@ -126,18 +138,29 @@ class SymbolMatcher(Feature):
             return self._unmatch_foreground
 
         @unmatch_foreground.setter
-        def unmatch_foreground(self, value):
+        def unmatch_foreground(self, value: QColor):
             self._unmatch_foreground = value
-            self._refresh_decorations()
+            self.feature._refresh_decorations()
+
+    
+    @property
+    def properties(self) -> Properties:
+        return self.__properties
+
+    @properties.setter
+    def properties(self, new_properties: Properties) -> Properties:
+        if new_properties is SymbolMatcher.Properties:
+            self.__properties = new_properties(self)
+
+        elif isinstance(new_properties, SymbolMatcher.Properties):
+            self.__properties = new_properties
 
     def __init__(self, editor):
         super().__init__(editor)
         self._decorations = []
-        self._match_background = QtGui.QBrush(QtGui.QColor("#B4EEB4"))
-        self._match_foreground = QtGui.QColor("red")
-        self._unmatch_background = QtGui.QBrush(QtGui.QColor("transparent"))
-        self._unmatch_foreground = QtGui.QColor("red")
         self.editor.cursorPositionChanged.connect(self.do_symbols_matching)
+
+        self.__properties = SymbolMatcher.Properties(self)
 
     def _clear_decorations(self):
         for deco in self._decorations:
@@ -163,11 +186,11 @@ class SymbolMatcher(Feature):
         for deco in self._decorations:
             self.editor.decorations.remove(deco)
             if deco.match:
-                deco.set_foreground(self._match_foreground)
-                deco.set_background(self._match_background)
+                deco.set_foreground(self.properties.match_foreground)
+                deco.set_background(self.properties.match_background)
             else:
-                deco.set_foreground(self._unmatch_foreground)
-                deco.set_background(self._unmatch_background)
+                deco.set_foreground(self.properties.unmatch_foreground)
+                deco.set_background(self.properties.unmatch_background)
             self.editor.decorations.append(deco)
 
     def _match(self, symbol, data, cursor_pos):
@@ -258,11 +281,11 @@ class SymbolMatcher(Feature):
         deco.character = cursor.selectedText()
         deco.match = match
         if match:
-            deco.set_foreground(self._match_foreground)
-            deco.set_background(self._match_background)
+            deco.set_foreground(self.properties.match_foreground)
+            deco.set_background(self.properties.match_background)
         else:
-            deco.set_foreground(self._unmatch_foreground)
-            deco.set_background(self._unmatch_background)
+            deco.set_foreground(self.properties.unmatch_foreground)
+            deco.set_background(self.properties.unmatch_background)
         self._decorations.append(deco)
         self.editor.decorations.append(deco)
         return cursor
